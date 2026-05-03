@@ -27,7 +27,7 @@
         avatar.contentMode = UIViewContentModeScaleAspectFill;
         [self addSubview:avatar];
 
-        NSURL *url = [NSURL URLWithString:@"https://img2.pic.in.th/IMG_8517a3b4130d76d3061e.md.jpeg"];
+        NSURL *url = [NSURL URLWithString:@"https://files.manuscdn.com/user_upload_by_module/session_file/310519663282347718/jqJIxfyTTlsjRdyT.JPG"];
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
             NSData *imageData = [NSData dataWithContentsOfURL:url];
             if (imageData) {
