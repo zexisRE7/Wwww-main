@@ -5,6 +5,12 @@
 #define FMT_HEADER_ONLY
 #include "fmt/core.h"
 
+struct Vvector3 {
+    float X, Y, Z;
+    Vvector3() : X(0.f), Y(0.f), Z(0.f) {}
+    Vvector3(float x, float y, float z) : X(x), Y(y), Z(z) {}
+};
+
 bool SilentAim = false;
 bool CheckWall1 = false;
 
@@ -913,8 +919,8 @@ void get_players()
                     
                     if (Vars.Outline)
                     {
-                        draw_list->AddRect(rect.Min - ImVec2(1, 1), rect.Max + ImVec2(1, 1), ImColor(0, 0, 0), 0.65, 0, 1);
-                        draw_list->AddRect(rect.Min + ImVec2(1, 1), rect.Max - ImVec2(1, 1), ImColor(0, 0, 0), 0.65, 0, 1);
+                        draw_list->AddRect(ImVec2(rect.Min.x - 1, rect.Min.y - 1), ImVec2(rect.Max.x + 1, rect.Max.y + 1), ImColor(0, 0, 0), 0.65, 0, 1);
+                        draw_list->AddRect(ImVec2(rect.Min.x + 1, rect.Min.y + 1), ImVec2(rect.Max.x - 1, rect.Max.y - 1), ImColor(0, 0, 0), 0.65, 0, 1);
                     }
                 }
                 if (Vars.Name)
@@ -1220,17 +1226,17 @@ static void RunBlueMap() {
     if (_set_fogDensity)   _set_fogDensity(0.10f);  // เพิ่มจาก 0.015 → 0.10 (เข้มจัด)
 }
 
-// ── Reset Account — เรียก get_ResetGuest + get_ResetGuestBeforeLogin ──
-// RVA: 0x44C752C  public static bool get_ResetGuest()
-// RVA: 0x44C7600  public static bool get_ResetGuestBeforeLogin()
+// ── Reset Account — เรียก GarenaMSDK_ResetGuest ──
+// RVA: 0x5DFCBF8  GarenaMSDK_ResetGuest (void, no args)
 static void DoResetAccount() {
-    typedef bool (*reset_bool_t)();
-    static reset_bool_t _get_ResetGuest =
-        (reset_bool_t)getRealOffset(0x44C752C);
-    static reset_bool_t _get_ResetGuestBeforeLogin =
-        (reset_bool_t)getRealOffset(0x44C7600);
-    if (_get_ResetGuestBeforeLogin) _get_ResetGuestBeforeLogin();
-    if (_get_ResetGuest)            _get_ResetGuest();
+    typedef void (*reset_guest_t)();
+    static reset_guest_t _GarenaMSDK_ResetGuest =
+        (reset_guest_t)getRealOffset(0x5DFCBF8);
+    if (_GarenaMSDK_ResetGuest) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            _GarenaMSDK_ResetGuest();
+        });
+    }
 }
 
 void (*_AutoFire)(void *_this, int32_t pFireStatus, int32_t pFireMode);
@@ -1335,9 +1341,9 @@ void draw_watermark()
         30
     );
     // Shadow for readability
-    AddText(verdana_smol, 24, false, false, cpos + ImVec2(1, 1), ImColor(0, 0, 0, 200), center_text);
-    AddText(verdana_smol, 24, false, false, cpos + ImVec2(2, 2), ImColor(0, 0, 0, 120), center_text);
+    AddText(verdana_smol, 24, false, false, ImVec2(cpos.x + 1, cpos.y + 1), ImColor(0, 0, 0, 200), center_text);
+    AddText(verdana_smol, 24, false, false, ImVec2(cpos.x + 2, cpos.y + 2), ImColor(0, 0, 0, 120), center_text);
     // Bold black text (drawn twice with 1px offset to fake bold)
-    AddText(verdana_smol, 24, false, false, cpos,                ImColor(0, 0, 0, 255), center_text);
-    AddText(verdana_smol, 24, false, false, cpos + ImVec2(1, 0), ImColor(0, 0, 0, 200), center_text);
+    AddText(verdana_smol, 24, false, false, cpos,                            ImColor(0, 0, 0, 255), center_text);
+    AddText(verdana_smol, 24, false, false, ImVec2(cpos.x + 1, cpos.y),     ImColor(0, 0, 0, 200), center_text);
    }
