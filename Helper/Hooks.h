@@ -19,7 +19,7 @@ enum FireStatus {
     CANCEL
 };
 
-static float FireDelay = 0.01f;   // ปรับได้ตอนรัน (Fast Fire จะลด delay ลง)
+static float FireDelay = 0.01f;   // ปรับได้ตอนรัน
 
 struct Vars_t
 {
@@ -86,12 +86,12 @@ struct Vars_t
     bool  AIPlayerAim       = false;     // AI ช่วยเล็งศัตรูใกล้สุดแบบ headshot
     int   AimManagerHitbox  = 0;         // 0=Head 1=Neck 2=Body
     float AimManagerSpeed   = 30.0f;     // 1..50  ความเร็ว aim
-    // RVA reference (สำหรับ hook อนาคต):
+    //  สำหรับ hook อนาค
     //   set_AmmoInClip  = 0x61C8308
     //   set_ReloadSpeed = 0x61C82F8
     //   set_OnceAmmo    = 0x61C82E8
 
-    // ── New OB53 features ทุกตัว toggle 
+    //  ทุกตัว toggle 
     bool  MarkTeleport      = false;     // เปิด → teleport ไป mark ที่บันทึกไว้ (loop ขณะเปิด)
     bool  AutoTeleport      = false;     // เปิด → teleport ไปข้างศัตรูใกล้สุดเป็นจังหวะ
     bool  AmmoSpeedFast     = false;     // เปิด → reload speed สูงสุด + clip เต็มตลอด
@@ -416,7 +416,6 @@ void DrawSkeleton(void *player, ImDrawList *drawList)
     Vector3 leftForeArmPos = GetBonePosition(player, game_sdk->_getLeftForeArmTF);
     Vector3 rightForeArmPos = GetBonePosition(player, game_sdk->_getRightForeArmTF);
 
-    // Chuyển đổi vị trí xương sang tọa độ màn hình
     bool visible;
     ImVec2 headScreen = Camera$$WorldToScreen::Checker(headPos, visible);
     if (!visible)
@@ -434,16 +433,16 @@ void DrawSkeleton(void *player, ImDrawList *drawList)
     ImColor boneColor = isPlayerVisible ? ImColor(0, 255, 0) : ImColor(255, 255, 255);
     float thickness = 1.0f;
 
-    // Vẽ đầu
+ 
     drawList->AddCircle(headScreen, 2.0f, boneColor, 12, thickness);
-    // Vẽ thân
+   
     drawList->AddLine(headScreen, hipScreen, boneColor, thickness);
-    // Vẽ tay
+   
     drawList->AddLine(headScreen, leftForeArmScreen, boneColor, thickness);
     drawList->AddLine(headScreen, rightForeArmScreen, boneColor, thickness);
     drawList->AddLine(leftForeArmScreen, leftHandScreen, boneColor, thickness);
     drawList->AddLine(rightForeArmScreen, rightHandScreen, boneColor, thickness);
-    // Vẽ chân
+    
     drawList->AddLine(hipScreen, leftAnkleScreen, boneColor, thickness);
     drawList->AddLine(hipScreen, rightAnkleScreen, boneColor, thickness);
     drawList->AddLine(leftAnkleScreen, leftToeScreen, boneColor, thickness);
@@ -676,7 +675,7 @@ int BLAGCMCGEJG1(void *ist, HitObjectInfo *HitObject) {
                         HitObject->IgnoreHappens = false;
                         HitObject->ViewBlocked = false;
 
-                        // ── Chain Damage: ดาเมจสูง 1 นัดน็อค ──
+                        // Chain Damage
                         if (Vars.ChainDamage) {
                             HitObject->Damage = Vars.ChainDamageValue;
                         }
@@ -966,9 +965,7 @@ void get_players()
                     DrawSkeleton(closestEnemy, draw_list);
                 }
 
-                // ════════════════════════════════════════════════════════════
-                // DIAMOND CROSSHAIR  (◇ + เส้น +) — ตรงหัวศัตรู
-                // ════════════════════════════════════════════════════════════
+               
                 {
                     Vector3 headPos = GetHeadPosition(closestEnemy);
                     bool w2sh;
@@ -991,13 +988,10 @@ void get_players()
                         draw_list->AddLine({hs.x + gap, hs.y}, {hs.x + arm, hs.y}, dCol, 1.8f);
                         draw_list->AddLine({hs.x, hs.y - arm}, {hs.x, hs.y - gap}, dCol, 1.8f);
                         draw_list->AddLine({hs.x, hs.y + gap}, {hs.x, hs.y + arm}, dCol, 1.8f);
-                        draw_list->AddCircleFilled(hs, 3.0f, dCol, 8);
-
-                        // ════════════════════════════════════════════════════
-                        // INFO BOX — DIST + HP bar + HP text
-                        // ════════════════════════════════════════════════════
+                        draw_list->AddCircleFilled(hs, 3.0f, dCol, 
                         int hp    = game_sdk->GetHp(closestEnemy);
                         int maxHP = game_sdk->get_MaxHP(closestEnemy);
+                        
                         if (maxHP <= 0) maxHP = 200;
                         if (hp < 0)     hp    = 0;
                         if (hp > maxHP) hp    = maxHP;
@@ -1086,7 +1080,7 @@ void get_players()
             }
         }
 
-        // ── แสดง ENEMIES: X กลางบนจอ ─────────────────────────────────────
+  
         if (Vars.ESPCount) {
             char ecBuf[32];
             snprintf(ecBuf, sizeof ecBuf, "ENEMIES: %d", g_EnemyCount);
@@ -1111,7 +1105,7 @@ void get_players()
 }
 
 
-// Offsets ทั้งหมด ob53
+// Offsets all
 //   set_AmmoInClip                 = 0x61C8308
 //   set_ReloadSpeed                = 0x61C82F8
 //   set_OnceAmmo                   = 0x61C82E8
@@ -1137,7 +1131,7 @@ static void Player_TeleportTo(const Vector3& pos) {
     Transform_INTERNAL_SetPosition(tf, Vvector3(pos.x, pos.y, pos.z));
 }
 
-// ── Set Mark — บันทึก position ปัจจุบัน
+
 static void SetMarkAtCurrentPos() {
     void* match = game_sdk->Curent_Match();
     if (!match) return;
@@ -1149,7 +1143,7 @@ static void SetMarkAtCurrentPos() {
     g_HasMark = true;
 }
 
-// ── Mark Teleport — teleport กลับไปยัง mark ที่บันทึกไว้
+
 static void RunMarkTeleport() {
     if (!g_HasMark) return;
     Player_TeleportTo(g_MarkPos);
@@ -1169,7 +1163,7 @@ static void RunAutoTeleport() {
     Player_TeleportTo(Vector3(head.x + 1.5f, head.y - 1.0f, head.z + 1.5f));
 }
 
-// ── Weapon_StartFiring — บังคับให้อาวุธเริ่มยิงทันที ──
+
 // RVA: 0x4EA8A54  private void StartFiring()
 static void Weapon_StartFiring(void* weapon) {
     if (!weapon) return;
@@ -1237,7 +1231,7 @@ void (*_AutoFire)(void *_this, int32_t pFireStatus, int32_t pFireMode);
 
 void old_AutoFire(void *_this, int32_t pFireStatus, int32_t pFireMode) 
 {
-    // ✅ ใช้ steady_clock (ความละเอียดระดับ nanosecond)
+    // ใช้ steady_clock (ความละเอียดระดับ nanosecond)
     // แทน clock() ที่บน iOS มี granularity ~10ms ทำให้ FireDelay ต่ำกว่า 10ms ไร้ผล
     using namespace std::chrono;
     static auto lastTime = steady_clock::now();
@@ -1252,7 +1246,7 @@ void old_AutoFire(void *_this, int32_t pFireStatus, int32_t pFireMode)
             auto now = steady_clock::now();
             double elapsed = duration<double>(now - lastTime).count();
 
-            // ✅ toggle ทุก FireDelay/2 → 1 นัดเต็มใช้เวลา = FireDelay
+            // toggle ทุก FireDelay/2 → 1 นัดเต็มใช้เวลา = FireDelay
             // เดิม toggle ทุก FireDelay → 1 นัดเต็มใช้ 2*FireDelay (ช้าครึ่งนึง)
             // ถ้า FireDelay = 0 (FastFire) → toggle ทุกเฟรม
             // → semi-auto (DEagle/Sniper) ได้ pulse FIRING→NONE→FIRING ทุก ~16ms
