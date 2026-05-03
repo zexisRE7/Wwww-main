@@ -1217,7 +1217,7 @@ void draw_watermark()
 
     // ===== Center floating text - always // ===== Center floating text - always std::string center_text = oxorany("Fluck all right reverse");
     // ===== Center floating text - always visible =====
-    std::string center_text = "Fluck all right reverse";
+    std::string center_text = "2K COMMUNITY/monalisa";
     ImVec2 ctext_size = verdana_smol->CalcTextSizeA(24, FLT_MAX, 0, center_text.c_str());
     ImVec2 cpos(
         (ImGui::GetIO().DisplaySize.x - ctext_size.x) * 0.5f,
