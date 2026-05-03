@@ -1,4 +1,4 @@
-#import "vinhtran.hpp"
+#"vinhtran.hpp"
 #import "loading.hxx"
 #include <fstream>
 #include <chrono>
@@ -988,7 +988,7 @@ void get_players()
                         draw_list->AddLine({hs.x + gap, hs.y}, {hs.x + arm, hs.y}, dCol, 1.8f);
                         draw_list->AddLine({hs.x, hs.y - arm}, {hs.x, hs.y - gap}, dCol, 1.8f);
                         draw_list->AddLine({hs.x, hs.y + gap}, {hs.x, hs.y + arm}, dCol, 1.8f);
-                        draw_list->AddCircleFilled(hs, 3.0f, dCol, 
+                        draw_list->AddCircleFilled(hs, 3.0f, dCol, 12);
                         int hp    = game_sdk->GetHp(closestEnemy);
                         int maxHP = game_sdk->get_MaxHP(closestEnemy);
                         
