@@ -355,13 +355,13 @@ ImFont* Urbanist;
 }
 
 - (void)updateFloatButtonsVisibility {
-    BOOL hide = !ZX_FloatBtnEnabled;
-    self.flyButton.hidden      = hide;
-    self.telekillButton.hidden = hide;
-    self.aimkillButton.hidden  = hide;
-    self.norecoilButton.hidden = hide;
-    self.markTPButton.hidden   = hide;
-    self.autoTPButton.hidden   = hide;
+    self.flyButton.hidden      = !ZX_ShowFlyBtn;
+    self.telekillButton.hidden = !ZX_ShowTelekillBtn;
+    self.aimkillButton.hidden  = !ZX_ShowAimkillBtn;
+    self.norecoilButton.hidden = !ZX_ShowNorecoilBtn;
+    self.markTPButton.hidden   = !ZX_ShowMarkTPBtn;
+    self.autoTPButton.hidden   = !ZX_ShowAutoTPBtn;
+    
     // ✅ ซิงก์สถานะสวิตช์ให้ตรงกับ ZX_var (เผื่อกดเปิดจากเมนู)
     if (self.flySwitch.on      != ZX_FlyAlt)       self.flySwitch.on      = ZX_FlyAlt;
     if (self.telekillSwitch.on != ZX_Telekill)     self.telekillSwitch.on = ZX_Telekill;
@@ -506,6 +506,12 @@ static bool  ZX_CameraLeft     = false;
 static float ZX_CameraHeight   = 5.0f;
 static float ZX_CameraSide     = 0.0f;
 static bool  ZX_FloatBtnEnabled = false;   // ✅ master toggle — เปิดจากเมนูก่อนปุ่มลอยถึงจะโผล่
+static bool  ZX_ShowFlyBtn      = false;
+static bool  ZX_ShowTelekillBtn = false;
+static bool  ZX_ShowAimkillBtn  = false;
+static bool  ZX_ShowNorecoilBtn = false;
+static bool  ZX_ShowMarkTPBtn   = false;
+static bool  ZX_ShowAutoTPBtn   = false;
 // ✅ MODDER %7 — ตัวเลือกใหม่ในแท็บ AIM ตามรูป
 static bool  ZX_AimRadius180   = false;
 static bool  ZX_AimRadius360   = false;
@@ -1302,7 +1308,9 @@ static void RenderMenu() {
             ZX_SonicCheckRow2("Ammo Speed Fast", &ZX_AmmoSpeedFast, "Blue Map", &ZX_BlueMap);
             ZX_SonicCheckRow2("Set Mark Pos", &ZX_SetMark, "Reset Account", &ZX_ResetAcc);
             ZX_SonicSection("Floating Buttons", false);
-            ZX_SonicCheckRow("Show Float Buttons", &ZX_FloatBtnEnabled);
+            ZX_SonicCheckRow2("Fly Move", &ZX_ShowFlyBtn, "Telekill", &ZX_ShowTelekillBtn);
+            ZX_SonicCheckRow2("Aimkill", &ZX_ShowAimkillBtn, "No Recoil", &ZX_ShowNorecoilBtn);
+            ZX_SonicCheckRow2("TP Mark", &ZX_ShowMarkTPBtn, "Auto TP", &ZX_ShowAutoTPBtn);
             ZX_SonicSection("Misc", false);
             ZX_SonicCheckRow2("Fast Fire", &ZX_FastFire, "Long Range", &ZX_LongRange);
             ZX_SonicCheckRow2("Bullet Thru Wall", &ZX_BulletThru, "Chain Damage", &ZX_ChainDamage);
