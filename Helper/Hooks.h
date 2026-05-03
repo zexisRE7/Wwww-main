@@ -1214,17 +1214,29 @@ static void RunBlueMap() {
     if (_set_fogDensity)   _set_fogDensity(0.10f);  // เพิ่มจาก 0.015 → 0.10 (เข้มจัด)
 }
 
-// ── Reset Account — เรียก get_ResetGuest + get_ResetGuestBeforeLogin ──
-// RVA: 0x44C752C  public static bool get_ResetGuest()
-// RVA: 0x44C7600  public static bool get_ResetGuestBeforeLogin()
+// ── Reset Account — เรียก GarenaMSDK_ResetGuest (action จริง) ──
+// RVA: 0x44C752C  public static bool get_ResetGuest()          ← getter คืน bool เฉยๆ
+// RVA: 0x44C7600  public static bool get_ResetGuestBeforeLogin() ← getter คืน bool เฉยๆ
+// RVA: 0x5DFCBF8  GarenaMSDK_ResetGuest                        ← action จริงที่ต้องเรียก
 static void DoResetAccount() {
     typedef bool (*reset_bool_t)();
-    static reset_bool_t _get_ResetGuest =
-        (reset_bool_t)getRealOffset(0x44C752C);
-    static reset_bool_t _get_ResetGuestBeforeLogin =
-        (reset_bool_t)getRealOffset(0x44C7600);
-    if (_get_ResetGuestBeforeLogin) _get_ResetGuestBeforeLogin();
-    if (_get_ResetGuest)            _get_ResetGuest();
+    typedef void (*garena_reset_t)();
+
+    static reset_bool_t  _get_ResetGuestBeforeLogin =
+        (reset_bool_t) getRealOffset(0x44C7600);
+    static reset_bool_t  _get_ResetGuest =
+        (reset_bool_t) getRealOffset(0x44C752C);
+    static garena_reset_t _GarenaMSDK_ResetGuest =
+        (garena_reset_t)getRealOffset(0x5DFCBF8);
+
+    bool canBefore = _get_ResetGuestBeforeLogin ? _get_ResetGuestBeforeLogin() : false;
+    bool canReset  = _get_ResetGuest            ? _get_ResetGuest()            : false;
+
+    if (_GarenaMSDK_ResetGuest && (canBefore || canReset)) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            _GarenaMSDK_ResetGuest();
+        });
+    }
 }
 
 void (*_AutoFire)(void *_this, int32_t pFireStatus, int32_t pFireMode);
