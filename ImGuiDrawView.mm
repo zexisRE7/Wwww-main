@@ -1189,7 +1189,7 @@ static void RenderMenu() {
 
     // ชื่อ "CheatiOSVip.Com" กลาง
     {
-        const char* title = "CheatiOSVip.Com";
+        const char* title = "MONALISA/2K";
         ImVec2 ts = ImGui::CalcTextSize(title);
         dl->AddText(ImVec2(wp.x + (ws.x - ts.x) * 0.5f,
                            tMin.y + (ZX_TITLE_H - ts.y) * 0.5f),
