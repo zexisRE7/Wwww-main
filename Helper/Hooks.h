@@ -5,12 +5,6 @@
 #define FMT_HEADER_ONLY
 #include "fmt/core.h"
 
-struct Vvector3 {
-    float X, Y, Z;
-    Vvector3() : X(0.f), Y(0.f), Z(0.f) {}
-    Vvector3(float x, float y, float z) : X(x), Y(y), Z(z) {}
-};
-
 bool SilentAim = false;
 bool CheckWall1 = false;
 
