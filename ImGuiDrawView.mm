@@ -303,13 +303,14 @@ ImFont* Urbanist;
 }
 
 - (void)updateFloatButtonsVisibility {
-    // ✅ ปุ่มโผล่เมื่อเปิดฟังก์ชันนั้นจากเมนู — ผูกตรงกับ feature flag
-    self.flyButton.hidden      = !ZX_FlyAlt;
-    self.telekillButton.hidden = !ZX_Telekill;
-    self.aimkillButton.hidden  = !ZX_AimKill;
-    self.norecoilButton.hidden = !ZX_NoRecoil;
-    self.markTPButton.hidden   = !ZX_MarkTeleport;
-    self.autoTPButton.hidden   = !ZX_AutoTeleport;
+    // ✅ visibility ผูกกับ ZX_ShowXxxBtn (toggle แยกในเมนู BUTTON)
+    // — สวิตช์บนปุ่มเปิด/ปิดฟีเจอร์เอง  ปุ่มไม่หายแม้ฟีเจอร์ปิด
+    self.flyButton.hidden      = !ZX_ShowFlyBtn;
+    self.telekillButton.hidden = !ZX_ShowTelekillBtn;
+    self.aimkillButton.hidden  = !ZX_ShowAimkillBtn;
+    self.norecoilButton.hidden = !ZX_ShowNorecoilBtn;
+    self.markTPButton.hidden   = !ZX_ShowMarkTPBtn;
+    self.autoTPButton.hidden   = !ZX_ShowAutoTPBtn;
 
     // ✅ ซิงก์สถานะสวิตช์บนปุ่มให้ตรงกับ ZX_var
     if (self.flySwitch.on      != ZX_FlyAlt)       self.flySwitch.on      = ZX_FlyAlt;
@@ -1243,6 +1244,13 @@ static void RenderMenu() {
             ZX_SonicCheckRow("Camera Left",       &ZX_CameraLeft);
             ZX_PillSlider("Fly Spd",              &ZX_FlySpeed, 1.0f, 20.0f);
             ZX_Slider("Cam Height",               &ZX_CameraHeight, 1.0f, 25.0f);
+            // ── แสดง/ซ่อนปุ่มลอย (ปุ่มไม่หายแม้ปิดฟีเจอร์) ──────────────
+            ZX_SonicCheckRow("Show FLY ALT Btn",  &ZX_ShowFlyBtn);
+            ZX_SonicCheckRow("Show TELE VIP Btn", &ZX_ShowTelekillBtn);
+            ZX_SonicCheckRow("Show AI KILL Btn",  &ZX_ShowAimkillBtn);
+            ZX_SonicCheckRow("Show KILL Btn",     &ZX_ShowNorecoilBtn);
+            ZX_SonicCheckRow("Show NINJA Btn",    &ZX_ShowMarkTPBtn);
+            ZX_SonicCheckRow("Show GHOST Btn",    &ZX_ShowAutoTPBtn);
             break;
         }
         case 3: { // OTHER
