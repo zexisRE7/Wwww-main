@@ -1286,7 +1286,7 @@ static void RenderMenu() {
 
     // "DS Gaming" — centered, bold
     {
-        const char* title = "DS Gaming";
+        const char* title = "MONALISA W9";
         ImVec2 ts = ImGui::CalcTextSize(title);
         dl->AddText(ImVec2(wp.x + (ws.x - ts.x) * 0.5f,
                            wp.y + (ZX_TITLE_H - ts.y) * 0.5f),
@@ -1438,11 +1438,11 @@ static void RenderMenu() {
     float   fSm  = ImGui::GetFontSize() * 0.78f;
     float   ftY  = botY0 + (ZX_BOT_H - fnt->CalcTextSizeA(fSm, FLT_MAX, 0, "X").y) * 0.5f;
     dl->AddText(fnt, fSm, ImVec2(wp.x + ZX_PAD_LEFT, ftY),
-                ZX_TEXT_DIM, "FF: External");
+                ZX_TEXT_DIM, "FF: antiban");
 
     // "Author: Mr D" right
     {
-        const char* auth = "Author: Mr D";
+        const char* auth = "Author: mona w9";
         ImVec2 ts = fnt->CalcTextSizeA(fSm, FLT_MAX, 0.0f, auth);
         dl->AddText(fnt, fSm,
                     ImVec2(wp.x + ws.x - ZX_PAD_LEFT - ts.x, ftY),
