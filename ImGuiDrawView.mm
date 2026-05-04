@@ -303,14 +303,13 @@ ImFont* Urbanist;
 }
 
 - (void)updateFloatButtonsVisibility {
-    // ✅ visibility ผูกกับ ZX_ShowXxxBtn (toggle แยกในเมนู BUTTON)
-    // — สวิตช์บนปุ่มเปิด/ปิดฟีเจอร์เอง  ปุ่มไม่หายแม้ฟีเจอร์ปิด
-    self.flyButton.hidden      = !ZX_ShowFlyBtn;
-    self.telekillButton.hidden = !ZX_ShowTelekillBtn;
-    self.aimkillButton.hidden  = !ZX_ShowAimkillBtn;
-    self.norecoilButton.hidden = !ZX_ShowNorecoilBtn;
-    self.markTPButton.hidden   = !ZX_ShowMarkTPBtn;
-    self.autoTPButton.hidden   = !ZX_ShowAutoTPBtn;
+    // ✅ ปุ่มโผล่เมื่อเปิดฟังก์ชันนั้นจากเมนู — ผูกตรงกับ feature flag
+    self.flyButton.hidden      = !ZX_FlyAlt;
+    self.telekillButton.hidden = !ZX_Telekill;
+    self.aimkillButton.hidden  = !ZX_AimKill;
+    self.norecoilButton.hidden = !ZX_NoRecoil;
+    self.markTPButton.hidden   = !ZX_MarkTeleport;
+    self.autoTPButton.hidden   = !ZX_AutoTeleport;
 
     // ✅ ซิงก์สถานะสวิตช์บนปุ่มให้ตรงกับ ZX_var
     if (self.flySwitch.on      != ZX_FlyAlt)       self.flySwitch.on      = ZX_FlyAlt;
@@ -461,17 +460,23 @@ static bool  ZX_CameraLeft     = false;
 static float ZX_CameraHeight   = 5.0f;
 static float ZX_CameraSide     = 0.0f;
 static bool  ZX_FloatBtnEnabled = false;   // ✅ master toggle — เปิดจากเมนูก่อนปุ่มลอยถึงจะโผล่
-static bool  ZX_ShowFlyBtn      = true;
-static bool  ZX_ShowTelekillBtn = true;
-static bool  ZX_ShowAimkillBtn  = true;
-static bool  ZX_ShowNorecoilBtn = true;
-static bool  ZX_ShowMarkTPBtn   = true;
-static bool  ZX_ShowAutoTPBtn   = true;
+static bool  ZX_ShowFlyBtn      = false;
+static bool  ZX_ShowTelekillBtn = false;
+static bool  ZX_ShowAimkillBtn  = false;
+static bool  ZX_ShowNorecoilBtn = false;
+static bool  ZX_ShowMarkTPBtn   = false;
+static bool  ZX_ShowAutoTPBtn   = false;
 // ✅ MODDER %7 — ตัวเลือกใหม่ในแท็บ AIM ตามรูป
 static bool  ZX_AimRadius180   = false;
 static bool  ZX_AimRadius360   = false;
 static int   ZX_WhenShootIdx   = 0;        // 0=When Shoot and Scope
 static int   ZX_HitboxIdx      = 0;        // 0=Head
+
+// ── Key System ──────────────────────────────────────────────────────────────
+static bool  ZX_KeyVerified    = false;    // ผ่าน key แล้ว → เข้าเมนูหลัก
+static bool  ZX_ShowSuccess    = false;    // กำลังแสดงหน้าสำเร็จ
+static float ZX_SuccessTimer   = 5.0f;    // countdown (วินาที)
+static char  ZX_KeyBuf[128]    = "";      // input buffer
 
 static void ZX_DrawSidebarIcon(ImDrawList* dl, int idx, ImVec2 c, float s, ImU32 col) {
     switch (idx) {
@@ -1121,6 +1126,223 @@ static void ZX_DrawTopTabIcon(ImDrawList* dl, int idx, ImVec2 c, float s, ImU32 
     }
 }
 
+// ── Key System Screen ────────────────────────────────────────────────────────
+static void RenderKeyScreen() {
+    ImGuiIO& io = ImGui::GetIO();
+
+    // ── สีที่ใช้ ────────────────────────────────────────────────────────────
+    const ImU32 KS_BG         = IM_COL32( 75,  85, 105, 255);   // พื้นหลังเทาน้ำเงิน
+    const ImU32 KS_CARD       = IM_COL32( 30,  36,  50, 235);   // card มืด (rgba 93%)
+    const ImU32 KS_TITLE      = IM_COL32( 90, 200, 250, 255);   // ฟ้า "Free Fire MAX"
+    const ImU32 KS_SUBTITLE   = IM_COL32(255, 255, 255, 140);   // ขาวจาง subtitle
+    const ImU32 KS_TEXT       = IM_COL32(255, 255, 255, 230);   // ขาว body text
+    const ImU32 KS_FIELD_BG   = IM_COL32(  0,   0,   0, 115);   // กล่อง input
+    const ImU32 KS_FIELD_BOR  = IM_COL32( 90, 200, 250,  90);   // ขอบกล่อง
+    const ImU32 KS_BTN_WEB    = IM_COL32(255, 255, 255,  38);   // ปุ่ม 網站
+    const ImU32 KS_BTN_LOGIN  = IM_COL32( 90, 200, 250, 255);   // ปุ่ม 登入 ฟ้า
+
+    // สีสำหรับหน้าสำเร็จ (ขาว/เทาอ่อน)
+    const ImU32 KS_CARD2      = IM_COL32(242, 242, 247, 255);   // card ขาวอ่อน
+    const ImU32 KS_ORANGE     = IM_COL32(232, 168,  48, 255);   // ส้มหัว + สถานะ
+    const ImU32 KS_DARK_TXT   = IM_COL32( 44,  44,  46, 255);   // ข้อความเข้ม
+    const ImU32 KS_DIV        = IM_COL32(216, 216, 216, 255);   // เส้นแบ่ง
+    const ImU32 KS_BG2        = IM_COL32(107, 114, 128, 255);   // พื้นหลังหน้า 2
+
+    const float SW = io.DisplaySize.x;
+    const float SH = io.DisplaySize.y;
+
+    // วาด overlay พื้นหลัง
+    ImDrawList* bg = ImGui::GetBackgroundDrawList();
+    bg->AddRectFilled(ImVec2(0, 0), ImVec2(SW, SH),
+                      ZX_ShowSuccess ? KS_BG2 : KS_BG, 0.0f);
+
+    // ── Push style: no title bar, no border, transparent ───────────────────
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0,0,0,0));
+    ImGui::PushStyleColor(ImGuiCol_Border,   ImVec4(0,0,0,0));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding,   0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,    ImVec2(0,0));
+
+    const float W = 300.0f;
+    const float H = ZX_ShowSuccess ? 360.0f : 230.0f;
+    ImGui::SetNextWindowSize(ImVec2(W, H), ImGuiCond_Always);
+    ImGui::SetNextWindowPos(ImVec2((SW - W) * 0.5f, (SH - H) * 0.5f), ImGuiCond_Always);
+    ImGui::Begin("##KeyScreen", nullptr,
+        ImGuiWindowFlags_NoTitleBar    | ImGuiWindowFlags_NoResize   |
+        ImGuiWindowFlags_NoMove        | ImGuiWindowFlags_NoScrollbar |
+        ImGuiWindowFlags_NoCollapse    | ImGuiWindowFlags_NoBringToFrontOnFocus);
+
+    ImDrawList* dl = ImGui::GetWindowDrawList();
+    ImVec2 wp = ImGui::GetWindowPos();
+    const float R = 22.0f;   // corner radius ของ card
+
+    // วาด card
+    dl->AddRectFilled(wp, ImVec2(wp.x + W, wp.y + H),
+                      ZX_ShowSuccess ? KS_CARD2 : KS_CARD, R);
+
+    // ── หน้า 1: ใส่คีย์ ─────────────────────────────────────────────────────
+    if (!ZX_ShowSuccess) {
+        // "Free Fire MAX"
+        const char* t1 = "Free Fire MAX";
+        ImVec2 ts1 = ImGui::CalcTextSize(t1);
+        dl->AddText(ImVec2(wp.x + (W - ts1.x)*0.5f, wp.y + 28),
+                    KS_TITLE, t1);
+
+        // subtitle
+        const char* t2 = "Please enter your key";
+        ImVec2 ts2 = ImGui::CalcTextSize(t2);
+        dl->AddText(ImVec2(wp.x + (W - ts2.x)*0.5f, wp.y + 52),
+                    KS_SUBTITLE, t2);
+
+        // ── กล่อง input ──────────────────────────────────────────────────────
+        const float FX0 = wp.x + 20;
+        const float FY0 = wp.y + 82;
+        const float FX1 = wp.x + W - 20;
+        const float FY1 = FY0 + 44;
+        dl->AddRectFilled(ImVec2(FX0, FY0), ImVec2(FX1, FY1), KS_FIELD_BG, 12.0f);
+        dl->AddRect(ImVec2(FX0, FY0), ImVec2(FX1, FY1), KS_FIELD_BOR, 12.0f, 0, 1.5f);
+
+        // InputText widget (invisible bg, ใช้แค่ text input)
+        ImGui::PushStyleColor(ImGuiCol_FrameBg,        ImVec4(0,0,0,0));
+        ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0,0,0,0));
+        ImGui::PushStyleColor(ImGuiCol_FrameBgActive,  ImVec4(0,0,0,0));
+        ImGui::PushStyleColor(ImGuiCol_Text,           ImVec4(1,1,1,0.9f));
+        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 12.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(14, 12));
+        ImGui::SetCursorScreenPos(ImVec2(FX0, FY0));
+        ImGui::SetNextItemWidth(FX1 - FX0);
+
+        // placeholder "金鑰" เมื่อว่าง
+        if (ZX_KeyBuf[0] == '\0') {
+            ImVec2 plp(FX0 + 14, FY0 + (44 - ImGui::GetFontSize()) * 0.5f);
+            dl->AddText(plp, IM_COL32(255,255,255, 90), "Key");
+        }
+        ImGui::InputText("##keyinput", ZX_KeyBuf, sizeof(ZX_KeyBuf),
+                         ImGuiInputTextFlags_Password);
+        // แสดง key แบบ plain text ทับ (เอา password mask ออก — วาดทับ)
+        if (ZX_KeyBuf[0] != '\0') {
+            // วาด text จริงทับ widget
+            ImVec2 tp(FX0 + 14, FY0 + (44 - ImGui::GetFontSize()) * 0.5f);
+            dl->AddText(tp, KS_TEXT, ZX_KeyBuf);
+        }
+
+        ImGui::PopStyleVar(2);
+        ImGui::PopStyleColor(4);
+
+        // ── 2 ปุ่ม ──────────────────────────────────────────────────────────
+        const float BH = 48.0f;
+        const float BY = wp.y + 144;
+        const float BX0 = wp.x + 20;
+        const float BMid = wp.x + W * 0.5f - 6;
+        const float BX1  = wp.x + W - 20;
+
+        // ปุ่ม 網站
+        dl->AddRectFilled(ImVec2(BX0, BY), ImVec2(BMid, BY + BH), KS_BTN_WEB, 24.0f);
+        {
+            const char* lw = "Website";
+            ImVec2 ts = ImGui::CalcTextSize(lw);
+            dl->AddText(ImVec2(BX0 + (BMid - BX0 - ts.x)*0.5f, BY + (BH - ts.y)*0.5f), KS_TEXT, lw);
+        }
+        ImGui::SetCursorScreenPos(ImVec2(BX0, BY));
+        ImGui::InvisibleButton("##ksweb", ImVec2(BMid - BX0, BH));
+
+        // ปุ่ม 登入
+        dl->AddRectFilled(ImVec2(BMid + 12, BY), ImVec2(BX1, BY + BH), KS_BTN_LOGIN, 24.0f);
+        {
+            const char* ll = "Login";
+            ImVec2 ts = ImGui::CalcTextSize(ll);
+            float lx = BMid + 12;
+            dl->AddText(ImVec2(lx + (BX1 - lx - ts.x)*0.5f, BY + (BH - ts.y)*0.5f), KS_TEXT, ll);
+        }
+        ImGui::SetCursorScreenPos(ImVec2(BMid + 12, BY));
+        if (ImGui::InvisibleButton("##kslogin", ImVec2(BX1 - BMid - 12, BH))) {
+            // ยอมรับ key อะไรก็ได้ → ไปหน้าสำเร็จ
+            ZX_ShowSuccess  = true;
+            ZX_SuccessTimer = 5.0f;
+        }
+
+    // ── หน้า 2: สำเร็จ (5 วินาที) ───────────────────────────────────────────
+    } else {
+        ZX_SuccessTimer -= io.DeltaTime;
+        if (ZX_SuccessTimer <= 0.0f) {
+            ZX_KeyVerified = true;   // ผ่านแล้ว → ปิดหน้า key เข้าเมนูหลัก
+            ZX_ShowSuccess = false;
+        }
+
+        const float PX = 20.0f;   // padding
+
+        // "Free Fire" title
+        const char* tf = "Free Fire";
+        ImVec2 tsf = ImGui::CalcTextSize(tf);
+        dl->AddText(ImVec2(wp.x + (W - tsf.x)*0.5f, wp.y + 24), KS_DARK_TXT, tf);
+
+        // "授權驗證成功"
+        const char* ts2 = "Authorization Successful";
+        ImVec2 tss = ImGui::CalcTextSize(ts2);
+        dl->AddText(ImVec2(wp.x + (W - tss.x)*0.5f, wp.y + 48), KS_ORANGE, ts2);
+
+        float y = wp.y + 82;
+        float lineY;
+        auto addSection = [&](const char* text) {
+            dl->AddText(ImVec2(wp.x + PX, y), KS_DARK_TXT, text);
+            y += ImGui::GetFontSize() + 6;
+            lineY = y;
+            dl->AddLine(ImVec2(wp.x + PX, y), ImVec2(wp.x + W - PX, y), KS_DIV, 1.0f);
+            y += 10;
+        };
+        auto addRow = [&](const char* key, const char* val, bool orange) {
+            char buf[128];
+            snprintf(buf, sizeof(buf), "%s: %s", key, val);
+            dl->AddText(ImVec2(wp.x + PX, y), orange ? KS_ORANGE : KS_DARK_TXT, buf);
+            y += ImGui::GetFontSize() + 7;
+        };
+
+        // 套件資訊
+        addSection("Package Info");
+        addRow("App",      "FreeFire",  false);
+        addRow("Version",  "2.1.0",     false);
+        addRow("Author",   "Fluck",     false);
+
+        y += 6;
+
+        // 金鑰資訊
+        addSection("Key Info");
+
+        // key — แสดงแค่ 18 ตัวแรก
+        char shortKey[24] = "—";
+        if (ZX_KeyBuf[0] != '\0') {
+            snprintf(shortKey, sizeof(shortKey), "%.18s", ZX_KeyBuf);
+        }
+        addRow("Key",    shortKey,  false);
+
+        // Device ID ย่อ
+        NSString* udidNS = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
+        const char* udidC = udidNS.UTF8String ?: "unknown";
+        char shortDev[20];
+        snprintf(shortDev, sizeof(shortDev), "%.14s...", udidC);
+        addRow("Device", shortDev, false);
+
+        // เวลาปัจจุบัน
+        time_t now = time(nullptr);
+        struct tm* t = localtime(&now);
+        char timeBuf[20];
+        strftime(timeBuf, sizeof(timeBuf), "%Y-%m-%d %H:%M", t);
+        addRow("Time",   timeBuf,  false);
+        addRow("Status", "Bound to this device", true);
+
+        // countdown เส้นล่าง
+        char cdBuf[32];
+        snprintf(cdBuf, sizeof(cdBuf), "Closing in %.0f s...", ZX_SuccessTimer > 0 ? ZX_SuccessTimer : 0);
+        ImVec2 cdTs = ImGui::CalcTextSize(cdBuf);
+        dl->AddText(ImVec2(wp.x + (W - cdTs.x)*0.5f, wp.y + H - 26),
+                    IM_COL32(0, 0, 0, 90), cdBuf);
+    }
+
+    ImGui::End();
+    ImGui::PopStyleVar(3);
+    ImGui::PopStyleColor(2);
+}
+
 static void RenderMenu() {
     if (!MenDeal) return;
 
@@ -1244,13 +1466,6 @@ static void RenderMenu() {
             ZX_SonicCheckRow("Camera Left",       &ZX_CameraLeft);
             ZX_PillSlider("Fly Spd",              &ZX_FlySpeed, 1.0f, 20.0f);
             ZX_Slider("Cam Height",               &ZX_CameraHeight, 1.0f, 25.0f);
-            // ── แสดง/ซ่อนปุ่มลอย (ปุ่มไม่หายแม้ปิดฟีเจอร์) ──────────────
-            ZX_SonicCheckRow("Show FLY ALT Btn",  &ZX_ShowFlyBtn);
-            ZX_SonicCheckRow("Show TELE VIP Btn", &ZX_ShowTelekillBtn);
-            ZX_SonicCheckRow("Show AI KILL Btn",  &ZX_ShowAimkillBtn);
-            ZX_SonicCheckRow("Show KILL Btn",     &ZX_ShowNorecoilBtn);
-            ZX_SonicCheckRow("Show NINJA Btn",    &ZX_ShowMarkTPBtn);
-            ZX_SonicCheckRow("Show GHOST Btn",    &ZX_ShowAutoTPBtn);
             break;
         }
         case 3: { // OTHER
@@ -1378,7 +1593,8 @@ void initAutoFireHook(void) {
         CGFloat screenW = [UIApplication sharedApplication].windows[0].rootViewController.view.frame.size.width;
         CGFloat screenH = [UIApplication sharedApplication].windows[0].rootViewController.view.frame.size.height;
         ImGui::SetNextWindowPos(ImVec2((screenW - ZX_WIN_W) * 0.5f, (screenH - ZX_WIN_H) * 0.5f), ImGuiCond_FirstUseEver);
-        if (MenDeal) RenderMenu();
+        if (!ZX_KeyVerified) { RenderKeyScreen(); }
+        else if (MenDeal) { RenderMenu(); }
         ZX_ApplyAndRun();   // ✅ ทำงานทุกเฟรม ไม่ต้องเปิดเมนูค้าง
         [self updateFloatButtonsVisibility];   // ✅ โชว์/ซ่อน + ซิงก์ปุ่มลอย
         ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
