@@ -357,69 +357,69 @@ ImFont* Urbanist;
     Vars.AutoTeleport = ZX_AutoTeleport;
 }
 
-// ui — CheatiOSVip style (left sidebar + iOS toggles)
+// ui — DS Gaming style (white iOS, top tabs)
 
-// ── Colors — pure black + white text ─────────────────────────────────────────
-static const ImU32 ZX_WIN_BG        = IM_COL32(  0,   0,   0, 252);   // pure black
-static const ImU32 ZX_TITLE_BG      = IM_COL32(  8,   8,   8, 255);
-static const ImU32 ZX_PANEL_BG      = IM_COL32(  0,   0,   0, 255);
-static const ImU32 ZX_PANEL_BORDER  = IM_COL32( 50,  50,  50, 255);
-static const ImU32 ZX_SIDE_BTN_BG   = IM_COL32( 38,  38,  38, 255);   // ปุ่ม tab เทาเข้ม
-static const ImU32 ZX_SIDE_BTN_ACT  = IM_COL32( 60,  60,  60, 255);   // tab ที่เลือก
-static const ImU32 ZX_SIDE_BORDER   = IM_COL32( 45,  45,  45, 255);
-static const ImU32 ZX_SIDE_BORDER_A = IM_COL32( 70,  70,  70, 255);
-static const ImU32 ZX_TAB_TEXT      = IM_COL32(255, 255, 255, 255);   // ขาวสด
-static const ImU32 ZX_TAB_TEXT_DIM  = IM_COL32(160, 160, 160, 255);   // เทาอ่อน
-static const ImU32 ZX_TAB_UNDERLINE = IM_COL32(255, 255, 255, 180);
-static const ImU32 ZX_TAB_DIV       = IM_COL32( 60,  60,  60, 255);
-static const ImU32 ZX_SEP           = IM_COL32( 60,  60,  60, 255);   // เส้นชัดขึ้น
-static const ImU32 ZX_SECTION       = IM_COL32(255, 255, 255, 255);
-static const ImU32 ZX_SUB           = IM_COL32(160, 160, 160, 255);
-static const ImU32 ZX_TEXT          = IM_COL32(255, 255, 255, 255);   // ขาวสด
-static const ImU32 ZX_TEXT_DIM      = IM_COL32(130, 130, 130, 255);
+// ── Colors — white iOS style ──────────────────────────────────────────────────
+static const ImU32 ZX_WIN_BG        = IM_COL32(255, 255, 255, 255);   // pure white
+static const ImU32 ZX_TITLE_BG      = IM_COL32(255, 255, 255, 255);   // white title
+static const ImU32 ZX_PANEL_BG      = IM_COL32(242, 242, 247, 255);   // iOS section bg
+static const ImU32 ZX_PANEL_BORDER  = IM_COL32(209, 209, 214, 255);
+static const ImU32 ZX_SIDE_BTN_BG   = IM_COL32(229, 229, 234, 255);   // tab bar bg
+static const ImU32 ZX_SIDE_BTN_ACT  = IM_COL32(255, 255, 255, 255);   // active tab white
+static const ImU32 ZX_SIDE_BORDER   = IM_COL32(209, 209, 214, 255);
+static const ImU32 ZX_SIDE_BORDER_A = IM_COL32(180, 180, 185, 255);
+static const ImU32 ZX_TAB_TEXT      = IM_COL32(  0,   0,   0, 255);   // black text
+static const ImU32 ZX_TAB_TEXT_DIM  = IM_COL32( 60,  60,  67, 180);   // dim tab text
+static const ImU32 ZX_TAB_UNDERLINE = IM_COL32(  0,   0,   0,  80);
+static const ImU32 ZX_TAB_DIV       = IM_COL32(209, 209, 214, 255);
+static const ImU32 ZX_SEP           = IM_COL32(229, 229, 234, 255);   // iOS separator
+static const ImU32 ZX_SECTION       = IM_COL32( 60,  60,  67, 255);   // section label
+static const ImU32 ZX_SUB           = IM_COL32(142, 142, 147, 255);
+static const ImU32 ZX_TEXT          = IM_COL32(  0,   0,   0, 255);   // black text
+static const ImU32 ZX_TEXT_DIM      = IM_COL32(142, 142, 147, 255);   // gray sub
 // iOS toggle
 static const ImU32 ZX_TGL_ON        = IM_COL32( 52, 199,  89, 255);   // iOS green
-static const ImU32 ZX_TGL_OFF       = IM_COL32( 80,  80,  80, 255);   // เทาเข้ม
+static const ImU32 ZX_TGL_OFF       = IM_COL32(229, 229, 234, 255);   // iOS gray
 static const ImU32 ZX_TGL_KNOB      = IM_COL32(255, 255, 255, 255);
-static const ImU32 ZX_HOVER         = IM_COL32(255, 255, 255,  10);
-// slider / checkbox
-static const ImU32 ZX_CHK_BG        = IM_COL32( 38,  38,  38, 255);
+static const ImU32 ZX_HOVER         = IM_COL32(  0,   0,   0,  12);
+// slider
+static const ImU32 ZX_CHK_BG        = IM_COL32(229, 229, 234, 255);
 static const ImU32 ZX_CHK_BG_ON     = IM_COL32( 52, 199,  89, 255);
-static const ImU32 ZX_CHK_BORDER    = IM_COL32( 70,  70,  70, 255);
+static const ImU32 ZX_CHK_BORDER    = IM_COL32(209, 209, 214, 255);
 static const ImU32 ZX_CHK_BORDER_ON = IM_COL32( 52, 199,  89, 255);
-static const ImU32 ZX_CORNER_YELLOW = IM_COL32(255, 255, 255, 200);
-static const ImU32 ZX_SLIDER_BG     = IM_COL32( 38,  38,  38, 255);
-static const ImU32 ZX_SLIDER_FILL   = IM_COL32( 52, 199,  89, 240);
-static const ImU32 ZX_KNOB_OUTLINE  = IM_COL32(255, 255, 255, 200);
-static const ImU32 ZX_CYAN          = IM_COL32(140, 200, 230, 255);
+static const ImU32 ZX_CORNER_YELLOW = IM_COL32(  0,   0,   0, 120);
+static const ImU32 ZX_SLIDER_BG     = IM_COL32(209, 209, 214, 255);   // gray track
+static const ImU32 ZX_SLIDER_FILL   = IM_COL32(  0, 122, 255, 255);   // iOS blue
+static const ImU32 ZX_KNOB_OUTLINE  = IM_COL32(200, 200, 200, 200);
+static const ImU32 ZX_CYAN          = IM_COL32(  0, 122, 255, 255);
 static const ImU32 ZX_GREEN         = IM_COL32( 52, 199,  89, 255);
-static const ImU32 ZX_RED           = IM_COL32(220,  40,  50, 255);
-static const ImU32 ZX_PURPLE        = IM_COL32(160, 120, 200, 255);
-static const ImU32 ZX_YELLOW        = IM_COL32(210, 170,  70, 255);
+static const ImU32 ZX_RED           = IM_COL32(255,  59,  48, 255);
+static const ImU32 ZX_PURPLE        = IM_COL32(175,  82, 222, 255);
+static const ImU32 ZX_YELLOW        = IM_COL32(255, 204,   0, 255);
 
-// ── Layout — compact ─────────────────────────────────────────────────────────
-static const float ZX_WIN_W      = 300.0f;   // ลดกว้างให้ตรงรูป
-static const float ZX_WIN_H      = 360.0f;
-static const float ZX_TITLE_H    = 38.0f;
+// ── Layout — DS Gaming iOS card ───────────────────────────────────────────────
+static const float ZX_WIN_W      = 320.0f;
+static const float ZX_WIN_H      = 420.0f;
+static const float ZX_TITLE_H    = 50.0f;   // header "DS Gaming"
 static const float ZX_TOP_PAD    = 0.0f;
-static const float ZX_TAB_H      = 0.0f;
-static const float ZX_SIDE_W     = 82.0f;    // sidebar แคบลงตามสัดส่วน
-static const float ZX_BOT_H      = 46.0f;    // ลดลงจาก 54
+static const float ZX_TAB_H      = 44.0f;   // top tab bar height
+static const float ZX_SIDE_W     = 0.0f;    // no sidebar
+static const float ZX_BOT_H      = 34.0f;   // footer "FF: External | Author: Mr D"
 static const float ZX_SIDE_BTN   = 40.0f;
-static const float ZX_SIDE_GAP   = 6.0f;
-static const float ZX_ROW_H      = 40.0f;    // ลดลงจาก 50 — compact rows
-static const float ZX_SLIDER_H   = 20.0f;
+static const float ZX_SIDE_GAP   = 4.0f;
+static const float ZX_ROW_H      = 50.0f;   // toggle row height
+static const float ZX_SLIDER_H   = 6.0f;    // track thickness
 static const float ZX_DROP_H     = 22.0f;
-static const float ZX_LABEL_H    = 20.0f;
+static const float ZX_LABEL_H    = 24.0f;   // section header height
 static const float ZX_SUB_H      = 18.0f;
-static const float ZX_PAD_LEFT   = 14.0f;
+static const float ZX_PAD_LEFT   = 16.0f;
 static const float ZX_PAD_TOP    = 5.0f;
 static const float ZX_CHK_BOX    = 16.0f;
 static const float ZX_CHK_RAD    = 4.0f;
-static const float ZX_KNOB_R     = 5.0f;
-static const float ZX_WIN_RAD    = 10.0f;
+static const float ZX_KNOB_R     = 11.0f;   // slider thumb radius
+static const float ZX_WIN_RAD    = 18.0f;
 static const float ZX_FRAME_RAD  = 5.0f;
-static const float ZX_FONT_SIZE  = 13.0f;
+static const float ZX_FONT_SIZE  = 15.0f;
 
 // STATE
 static int   ZX_Tab            = 0;   // ✅ MODDER %7: เริ่มแท็บ AIM
@@ -457,8 +457,8 @@ static bool  ZX_ResetAcc       = false;
 static bool  ZX_DashForward    = false;   // กดปุ่ม → พุ่งไปข้างหน้า 100m ทันที
 static float ZX_DashDistance   = 100.0f;  // ระยะ dash (เมตร)
 static bool  ZX_HideModMenu    = false;
-static bool  ZX_Esp2DCorner    = true;
-static bool  ZX_Esp3DBox       = true;
+static bool  ZX_Esp2DCorner    = false;
+static bool  ZX_Esp3DBox       = false;
 static bool  ZX_CameraLeft     = false;
 static float ZX_CameraHeight   = 5.0f;
 static float ZX_CameraSide     = 0.0f;
@@ -1126,18 +1126,149 @@ static void ZX_DrawTopTabIcon(ImDrawList* dl, int idx, ImVec2 c, float s, ImU32 
     }
 }
 
+// ── DS Gaming: Section header row (gray bg, bold label) ──────────────────────
+static void ZX_DSSection(ImDrawList* dl, ImVec2 pos, float w, const char* label) {
+    const float H = ZX_LABEL_H + 10.0f;
+    // gray background stripe
+    dl->AddRectFilled(pos, ImVec2(pos.x + w, pos.y + H), ZX_PANEL_BG);
+    // top + bottom separator lines
+    dl->AddLine(pos, ImVec2(pos.x + w, pos.y), ZX_SEP, 1.0f);
+    dl->AddLine(ImVec2(pos.x, pos.y + H), ImVec2(pos.x + w, pos.y + H), ZX_SEP, 1.0f);
+    // label text
+    dl->AddText(ImVec2(pos.x + ZX_PAD_LEFT, pos.y + (H - ImGui::GetFontSize()) * 0.5f),
+                ZX_SECTION, label);
+    ImGui::ItemSize(ImVec2(w, H), 0.0f);
+}
+
+// ── DS Gaming: iOS toggle row — label left, toggle right ─────────────────────
+static bool ZX_DSToggleRow(const char* label, bool* v, bool last = false) {
+    ImGuiWindow* window = ImGui::GetCurrentWindow();
+    if (window->SkipItems) return false;
+    ImVec2 pos  = window->DC.CursorPos;
+    float  aw   = ImGui::GetContentRegionAvail().x;
+    ImVec2 size(aw, ZX_ROW_H);
+    const ImGuiID id = window->GetID(label);
+    ImRect bb(pos, ImVec2(pos.x + size.x, pos.y + size.y));
+    ImGui::ItemSize(size, 0.0f);
+    if (!ImGui::ItemAdd(bb, id)) return false;
+
+    bool hovered, held;
+    bool pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held);
+    if (pressed) *v = !*v;
+
+    ImDrawList* dl = window->DrawList;
+    if (hovered) dl->AddRectFilled(bb.Min, bb.Max, ZX_HOVER, 0.0f);
+
+    // white row bg
+    dl->AddRectFilled(bb.Min, bb.Max, ZX_WIN_BG, 0.0f);
+    if (hovered) dl->AddRectFilled(bb.Min, bb.Max, ZX_HOVER, 0.0f);
+
+    // bottom separator (skip if last in group)
+    if (!last)
+        dl->AddLine(ImVec2(bb.Min.x + ZX_PAD_LEFT, bb.Max.y - 1.0f),
+                    ImVec2(bb.Max.x, bb.Max.y - 1.0f), ZX_SEP, 1.0f);
+
+    float cy = (bb.Min.y + bb.Max.y) * 0.5f;
+
+    // label — black, left
+    dl->AddText(ImVec2(bb.Min.x + ZX_PAD_LEFT,
+                       cy - ImGui::GetFontSize() * 0.5f),
+                ZX_TEXT, label);
+
+    // iOS toggle — right side
+    const float TW = 51.0f, TH = 31.0f, TR = TH * 0.5f;
+    float tX = bb.Max.x - TW - ZX_PAD_LEFT;
+    float tY = cy - TH * 0.5f;
+    ImU32 track = *v ? ZX_TGL_ON : ZX_TGL_OFF;
+    dl->AddRectFilled(ImVec2(tX, tY), ImVec2(tX + TW, tY + TH), track, TR);
+    float kX = *v ? (tX + TW - TR) : (tX + TR);
+    // knob shadow
+    dl->AddCircleFilled(ImVec2(kX, cy), TR - 1.5f,
+                        IM_COL32(0, 0, 0, 22), 28);
+    dl->AddCircleFilled(ImVec2(kX, cy), TR - 2.5f, ZX_TGL_KNOB, 28);
+
+    return pressed;
+}
+
+// ── DS Gaming: iOS blue slider row ───────────────────────────────────────────
+static bool ZX_DSSliderRow(const char* label, float* v, float vmin, float vmax) {
+    ImGuiWindow* window = ImGui::GetCurrentWindow();
+    if (window->SkipItems) return false;
+    ImGuiContext& g = *GImGui;
+    const ImGuiID id = window->GetID(label);
+    ImVec2 pos = window->DC.CursorPos;
+    float  aw  = ImGui::GetContentRegionAvail().x;
+    const float rowH = 58.0f;
+    ImVec2 size(aw, rowH);
+    const ImRect bb(pos, ImVec2(pos.x + size.x, pos.y + size.y));
+    ImGui::ItemSize(size, 0.0f);
+    if (!ImGui::ItemAdd(bb, id)) return false;
+
+    ImDrawList* dl = window->DrawList;
+    dl->AddRectFilled(bb.Min, bb.Max, ZX_WIN_BG, 0.0f);
+
+    // label row
+    float labelY = pos.y + 10.0f;
+    dl->AddText(ImVec2(pos.x + ZX_PAD_LEFT, labelY), ZX_TEXT, label);
+
+    // value right
+    char vbuf[32]; snprintf(vbuf, sizeof(vbuf), "%.1f", *v);
+    ImVec2 vts = ImGui::CalcTextSize(vbuf);
+    dl->AddText(ImVec2(pos.x + aw - ZX_PAD_LEFT - vts.x, labelY), ZX_TEXT_DIM, vbuf);
+
+    // track geometry
+    const float TH  = ZX_SLIDER_H;
+    const float KR  = ZX_KNOB_R;
+    const float tX0 = pos.x + ZX_PAD_LEFT;
+    const float tX1 = pos.x + aw - ZX_PAD_LEFT;
+    const float tY  = pos.y + rowH - 18.0f;
+
+    float t = (*v - vmin) / (vmax - vmin);
+    if (t < 0.0f) t = 0.0f;
+    if (t > 1.0f) t = 1.0f;
+
+    // dragging
+    ImRect trackBB(ImVec2(tX0 - KR, tY - KR), ImVec2(tX1 + KR, tY + KR));
+    bool hovered, held;
+    bool pressed = ImGui::ButtonBehavior(trackBB, id, &hovered, &held);
+    if (held) {
+        float nt = (g.IO.MousePos.x - tX0) / (tX1 - tX0);
+        if (nt < 0.0f) nt = 0.0f;
+        if (nt > 1.0f) nt = 1.0f;
+        *v = vmin + nt * (vmax - vmin);
+        t  = nt;
+        ImGui::MarkItemEdited(id);
+    }
+
+    // track
+    dl->AddRectFilled(ImVec2(tX0, tY - TH * 0.5f),
+                      ImVec2(tX1, tY + TH * 0.5f), ZX_SLIDER_BG, TH);
+    dl->AddRectFilled(ImVec2(tX0, tY - TH * 0.5f),
+                      ImVec2(tX0 + (tX1 - tX0) * t, tY + TH * 0.5f),
+                      ZX_SLIDER_FILL, TH);
+    // thumb
+    float kX = tX0 + (tX1 - tX0) * t;
+    dl->AddCircleFilled(ImVec2(kX, tY), KR + 1.0f,
+                        IM_COL32(0, 0, 0, 25), 28);   // shadow
+    dl->AddCircleFilled(ImVec2(kX, tY), KR, ZX_TGL_KNOB, 28);
+
+    return pressed;
+}
+
 static void RenderMenu() {
     if (!MenDeal) return;
 
     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImColor(ZX_WIN_BG).Value);
-    ImGui::PushStyleColor(ImGuiCol_Border,   ImVec4(0,0,0,0));
+    ImGui::PushStyleColor(ImGuiCol_Border,   ImVec4(0, 0, 0, 0));
+    ImGui::PushStyleColor(ImGuiCol_ScrollbarBg,   ImVec4(0, 0, 0, 0));
+    ImGui::PushStyleColor(ImGuiCol_ScrollbarGrab, ImColor(ZX_SEP).Value);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding,  ZX_WIN_RAD);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,   ImVec2(0,0));
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing,     ImVec2(0,0));
-    ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarSize,   4.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,   ImVec2(0, 0));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing,     ImVec2(0, 0));
+    ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarSize,   3.0f);
     ImGui::SetNextWindowSize(ImVec2(ZX_WIN_W, ZX_WIN_H), ImGuiCond_Always);
-    ImGui::Begin("##CheatiOS", nullptr,
+    ImGui::Begin("##DSGaming", nullptr,
         ImGuiWindowFlags_NoTitleBar  | ImGuiWindowFlags_NoResize |
         ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse |
         ImGuiWindowFlags_NoBringToFrontOnFocus);
@@ -1147,124 +1278,144 @@ static void RenderMenu() {
     ImVec2 wp = ImGui::GetWindowPos();
     ImVec2 ws = ImGui::GetWindowSize();
 
-    // ── Title bar ──────────────────────────────────────────────────────────
-    ImVec2 tMin(wp.x, wp.y);
-    ImVec2 tMax(wp.x + ws.x, wp.y + ZX_TITLE_H);
-    dl->AddRectFilled(tMin, tMax, ZX_TITLE_BG, ZX_WIN_RAD, ImDrawFlags_RoundCornersTop);
-    dl->AddLine(ImVec2(tMin.x, tMax.y), ImVec2(tMax.x, tMax.y), ZX_SEP, 1.0f);
+    // ── Header ─────────────────────────────────────────────────────────────
+    // white header background (rounded top)
+    dl->AddRectFilled(ImVec2(wp.x, wp.y),
+                      ImVec2(wp.x + ws.x, wp.y + ZX_TITLE_H),
+                      ZX_TITLE_BG, ZX_WIN_RAD, ImDrawFlags_RoundCornersTop);
 
-    // ชื่อ "CheatiOSVip.Com" กลาง
+    // "DS Gaming" — centered, bold
     {
-        const char* title = "CheatiOSVip.Com";
+        const char* title = "DS Gaming";
         ImVec2 ts = ImGui::CalcTextSize(title);
         dl->AddText(ImVec2(wp.x + (ws.x - ts.x) * 0.5f,
-                           tMin.y + (ZX_TITLE_H - ts.y) * 0.5f),
+                           wp.y + (ZX_TITLE_H - ts.y) * 0.5f),
                     ZX_TAB_TEXT, title);
     }
 
-    // ── Body: sidebar (left) + content (right) ──────────────────────────────
-    float bodyY0 = tMax.y;
-    float bodyH  = ws.y - ZX_TITLE_H - ZX_BOT_H;
-    float bodyY1 = bodyY0 + bodyH;
-
-    // เส้นแบ่ง sidebar
-    dl->AddLine(ImVec2(wp.x + ZX_SIDE_W, bodyY0),
-                ImVec2(wp.x + ZX_SIDE_W, bodyY1), ZX_SEP, 1.0f);
-
-    // ── Left sidebar tabs: AIMBOT / AIMKILL / BUTTON / OTHER ───────────────
-    const int   kTabs    = 4;
-    const char* tabNames[kTabs] = { "AIMBOT", "AIMKILL", "BUTTON", "OTHER" };
-    float tabH = bodyH / (float)kTabs;
-
-    for (int i = 0; i < kTabs; ++i) {
-        float ty0 = bodyY0 + (float)i * tabH;
-        float ty1 = ty0 + tabH;
-        bool  active = (ZX_Tab == i);
-
-        // พื้นปุ่ม
-        ImU32 btnCol = active ? ZX_SIDE_BTN_ACT : ZX_SIDE_BTN_BG;
-        dl->AddRectFilled(ImVec2(wp.x + 5, ty0 + 5),
-                          ImVec2(wp.x + ZX_SIDE_W - 5, ty1 - 5),
-                          btnCol, 8.0f);
-
-        // ชื่อ tab กลาง — ฟอนต์เล็กลง (scale 0.72 × 0.78 ≈ เล็กลง 22%)
-        ImFont* font = ImGui::GetFont();
-        float   smallSz = ImGui::GetFontSize() * 0.78f;
-        ImVec2  ts = font->CalcTextSizeA(smallSz, FLT_MAX, 0.0f, tabNames[i]);
-        ImU32   tc = active ? ZX_TAB_TEXT : ZX_TAB_TEXT_DIM;
-        dl->AddText(font, smallSz,
-                    ImVec2(wp.x + (ZX_SIDE_W - ts.x) * 0.5f,
-                           ty0 + (tabH - ts.y) * 0.5f),
-                    tc, tabNames[i]);
-
-        // invisible button
-        ImGui::SetCursorScreenPos(ImVec2(wp.x + 5, ty0 + 5));
-        char uid[16]; snprintf(uid, sizeof uid, "##stab%d", i);
-        if (ImGui::InvisibleButton(uid, ImVec2(ZX_SIDE_W - 10, tabH - 10)))
-            ZX_Tab = i;
-
-        // เส้นแบ่งระหว่าง tab
-        if (i < kTabs - 1)
-            dl->AddLine(ImVec2(wp.x, ty1), ImVec2(wp.x + ZX_SIDE_W, ty1),
-                        ZX_SEP, 0.5f);
+    // X close button — top-right corner
+    {
+        const float btnR = 14.0f;
+        float bX = wp.x + ws.x - ZX_PAD_LEFT - btnR;
+        float bY = wp.y + ZX_TITLE_H * 0.5f;
+        ImGui::SetCursorScreenPos(ImVec2(bX - btnR, wp.y + ZX_TITLE_H * 0.5f - btnR));
+        if (ImGui::InvisibleButton("##xclose", ImVec2(btnR * 2.0f, btnR * 2.0f)))
+            MenDeal = false;
+        // draw X symbol
+        float arm = 6.0f;
+        dl->AddLine(ImVec2(bX - arm, bY - arm), ImVec2(bX + arm, bY + arm),
+                    ZX_TAB_TEXT, 2.0f);
+        dl->AddLine(ImVec2(bX + arm, bY - arm), ImVec2(bX - arm, bY + arm),
+                    ZX_TAB_TEXT, 2.0f);
     }
 
-    // ── Content area ────────────────────────────────────────────────────────
-    float cX0 = wp.x + ZX_SIDE_W + 1.0f;
-    float cX1 = wp.x + ws.x;
+    // ── Tab bar ────────────────────────────────────────────────────────────
+    float tabBarY0 = wp.y + ZX_TITLE_H;
+    float tabBarH  = ZX_TAB_H;
+    float tabBarY1 = tabBarY0 + tabBarH;
 
-    ImGui::SetCursorScreenPos(ImVec2(cX0, bodyY0));
-    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0,0,0,0));
-    ImGui::BeginChild("##sm_content",
-                      ImVec2(cX1 - cX0, bodyH), false,
+    // tab bar background (gray pill)
+    const float tbPad = 10.0f, tbVPad = 5.0f;
+    dl->AddRectFilled(ImVec2(wp.x + tbPad, tabBarY0 + tbVPad),
+                      ImVec2(wp.x + ws.x - tbPad, tabBarY1 - tbVPad),
+                      ZX_SIDE_BTN_BG, 10.0f);
+
+    const int   kTabs    = 3;
+    const char* tabNames[kTabs] = { "Esp", "Aimbot", "Other" };
+    float tabW = (ws.x - tbPad * 2.0f) / (float)kTabs;
+
+    for (int i = 0; i < kTabs; ++i) {
+        float tx0 = wp.x + tbPad + (float)i * tabW;
+        float tx1 = tx0 + tabW;
+        bool  active = (ZX_Tab == i);
+
+        // active tab: white pill with shadow
+        if (active) {
+            dl->AddRectFilled(ImVec2(tx0 + 2, tabBarY0 + tbVPad + 2),
+                              ImVec2(tx1 - 2, tabBarY1 - tbVPad - 2),
+                              ZX_SIDE_BTN_ACT, 8.0f);
+            // subtle shadow strip at bottom
+            dl->AddLine(ImVec2(tx0 + 4, tabBarY1 - tbVPad - 2),
+                        ImVec2(tx1 - 4, tabBarY1 - tbVPad - 2),
+                        IM_COL32(0, 0, 0, 18), 1.0f);
+        }
+
+        // tab label
+        ImFont* font   = ImGui::GetFont();
+        float   fSz    = ImGui::GetFontSize() * 0.90f;
+        ImVec2  ts     = font->CalcTextSizeA(fSz, FLT_MAX, 0.0f, tabNames[i]);
+        ImU32   tc     = active ? ZX_TAB_TEXT : ZX_TAB_TEXT_DIM;
+        dl->AddText(font, fSz,
+                    ImVec2(tx0 + (tabW - ts.x) * 0.5f,
+                           tabBarY0 + tbVPad + (tabBarH - tbVPad * 2.0f - ts.y) * 0.5f),
+                    tc, tabNames[i]);
+
+        // invisible button to switch tab
+        ImGui::SetCursorScreenPos(ImVec2(tx0, tabBarY0));
+        char uid[16]; snprintf(uid, sizeof uid, "##tab%d", i);
+        if (ImGui::InvisibleButton(uid, ImVec2(tabW, tabBarH)))
+            ZX_Tab = i;
+    }
+
+    // ── Content child ───────────────────────────────────────────────────────
+    float contentY0 = tabBarY1;
+    float contentH  = ws.y - ZX_TITLE_H - ZX_TAB_H - ZX_BOT_H;
+    float contentW  = ws.x;
+
+    // thin separator below tab bar
+    dl->AddLine(ImVec2(wp.x, contentY0),
+                ImVec2(wp.x + ws.x, contentY0), ZX_SEP, 1.0f);
+
+    ImGui::SetCursorScreenPos(ImVec2(wp.x, contentY0));
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImColor(ZX_WIN_BG).Value);
+    ImGui::BeginChild("##ds_content", ImVec2(contentW, contentH), false,
                       ImGuiWindowFlags_AlwaysVerticalScrollbar);
 
+    float cw = ImGui::GetContentRegionAvail().x;
+    ImVec2 cp;
+
     switch (ZX_Tab) {
-        case 0: { // AIMBOT
-            ZX_SonicCheckRow("Aimbot AI",         &Vars.Aimbot);
-            ZX_SonicCheckRow("Enable Aimbot",     &ZX_AimKill);
-            ZX_SonicCheckRow("Aim Silent v2",     &SilentAim);
-            ZX_SonicCheckRow("Visible Check",     &Vars.VisibleCheck);
-            ZX_SonicCheckRow("Skip Knocked",      &Vars.IgnoreKnocked);
-            ZX_SonicCheckRow("AI Player Aim",     &ZX_AIPlayerAim);
-            ZX_PillSlider("Fov",                  &Vars.AimFov, 0.0f, 500.0f);
+        // ── ESP ─────────────────────────────────────────────────────────────
+        case 0: {
+            cp = ImGui::GetCursorScreenPos();
+            ZX_DSSection(ImGui::GetWindowDrawList(), cp, cw, "Switch");
+            ZX_DSToggleRow("Info Esp",     &Vars.lines);
+            ZX_DSToggleRow("Bone Esp",     &Vars.skeleton);
+            ZX_DSToggleRow("Alert 360",    &Vars.circlepos);
+            ZX_DSToggleRow("Alert Number", &Vars.ESPCount, true);
+            cp = ImGui::GetCursorScreenPos();
+            ZX_DSSection(ImGui::GetWindowDrawList(), cp, cw, "Slider");
+            ZX_DSSliderRow("Distance Esp", &Vars.AimFov, 0.0f, 1000.0f);
             break;
         }
-        case 1: { // AIMKILL
-            ZX_SonicCheckRow("Telekill",          &ZX_Telekill);
-            ZX_SonicCheckRow("Mark Teleport",     &ZX_MarkTeleport);
-            ZX_SonicCheckRow("Auto Teleport",     &ZX_AutoTeleport);
-            ZX_SonicCheckRow("Ammo Speed Fast",   &ZX_AmmoSpeedFast);
-            ZX_SonicCheckRow("Bullet Thru Wall",  &ZX_BulletThru);
-            ZX_SonicCheckRow("Chain Damage",      &ZX_ChainDamage);
-            ZX_PillSlider("Damage",               &ZX_ChainDmgValue, 100.0f, 9999.0f);
+        // ── AIMBOT ──────────────────────────────────────────────────────────
+        case 1: {
+            cp = ImGui::GetCursorScreenPos();
+            ZX_DSSection(ImGui::GetWindowDrawList(), cp, cw, "Switch");
+            ZX_DSToggleRow("Enable Aimbot", &Vars.Aimbot);
+            ZX_DSToggleRow("Ignore Knock",  &Vars.IgnoreKnocked);
+            ZX_DSToggleRow("Ignore Bot",    &ZX_AIPlayerAim);
+            ZX_DSToggleRow("Aim Wukong",    &ZX_AimKill, true);
+            cp = ImGui::GetCursorScreenPos();
+            ZX_DSSection(ImGui::GetWindowDrawList(), cp, cw, "Slider");
+            ZX_DSSliderRow("Aim Speed", &Vars.AimSpeed, 1.0f, 50.0f);
             break;
         }
-        case 2: { // BUTTON
-            ZX_SonicCheckRow("Fast Fire",         &ZX_FastFire);
-            ZX_SonicCheckRow("No Reload",         &ZX_NoReload);
-            ZX_SonicCheckRow("Fast Switch Auto",  &ZX_FastSwitchAuto);
-            ZX_SonicCheckRow("Long Range",        &ZX_LongRange);
-            ZX_SonicCheckRow("Fly Alt",           &ZX_FlyAlt);
-            ZX_SonicCheckRow("Free Fly",          &ZX_FreeFly);
-            ZX_SonicCheckRow("Blue Map",          &ZX_BlueMap);
-            ZX_SonicCheckRow("Camera Left",       &ZX_CameraLeft);
-            ZX_PillSlider("Fly Spd",              &ZX_FlySpeed, 1.0f, 20.0f);
-            ZX_Slider("Cam Height",               &ZX_CameraHeight, 1.0f, 25.0f);
-            // ── Dash Forward ──────────────────────────────────────────────
-            ZX_PillSlider("Dash",                 &ZX_DashDistance, 10.0f, 200.0f);
-            ZX_SonicCheckRow("Dash Forward",      &ZX_DashForward);
-            break;
-        }
-        case 3: { // OTHER
-            ZX_SonicCheckRow("Enable ESP",        &Vars.Enable);
-            ZX_SonicCheckRow("Esp LINE",          &Vars.lines);
-            ZX_SonicCheckRow("Esp BOX",           &Vars.Box);
-            ZX_SonicCheckRow("Esp2D CORNER",      &ZX_Esp2DCorner);
-            ZX_SonicCheckRow("Esp3D BOX",         &ZX_Esp3DBox);
-            ZX_SonicCheckRow("Enemies Counter",   &Vars.ESPCount);  // แสดง ENEMIES: X บนจอ
-            ZX_SonicCheckRow("Hide ModMenu",      &ZX_HideModMenu);
-            ZX_SonicCheckRow("Reset Guest",       &ZX_ResetAcc);   // กดเปิด → ทำงาน 1 ครั้ง แล้วปิดเอง
+        // ── OTHER ───────────────────────────────────────────────────────────
+        case 2: {
+            cp = ImGui::GetCursorScreenPos();
+            ZX_DSSection(ImGui::GetWindowDrawList(), cp, cw, "Switch");
+            ZX_DSToggleRow("Fly Alt",          &ZX_FlyAlt);
+            ZX_DSToggleRow("Telekill",         &ZX_Telekill);
+            ZX_DSToggleRow("Fast Fire",        &ZX_FastFire);
+            ZX_DSToggleRow("No Reload",        &ZX_NoReload);
+            ZX_DSToggleRow("Bullet Thru Wall", &ZX_BulletThru);
+            ZX_DSToggleRow("Chain Damage",     &ZX_ChainDamage);
+            ZX_DSToggleRow("Mark Teleport",    &ZX_MarkTeleport);
+            ZX_DSToggleRow("Auto Teleport",    &ZX_AutoTeleport, true);
+            cp = ImGui::GetCursorScreenPos();
+            ZX_DSSection(ImGui::GetWindowDrawList(), cp, cw, "Slider");
+            ZX_DSSliderRow("Fly Speed", &ZX_FlySpeed, 1.0f, 20.0f);
             break;
         }
     }
@@ -1272,54 +1423,35 @@ static void RenderMenu() {
     ImGui::EndChild();
     ImGui::PopStyleColor();  // ChildBg
 
-    // ── Bottom bar: Close | HIDE ─────────────────────────────────────────────
-    float botY0 = bodyY1;
+    // ── Footer ─────────────────────────────────────────────────────────────
+    float botY0 = wp.y + ws.y - ZX_BOT_H;
     float botY1 = wp.y + ws.y;
-    float bW    = (ws.x - 3.0f) * 0.5f;
 
+    // footer background (gray, rounded bottom)
+    dl->AddRectFilled(ImVec2(wp.x, botY0),
+                      ImVec2(wp.x + ws.x, botY1),
+                      ZX_PANEL_BG, ZX_WIN_RAD, ImDrawFlags_RoundCornersBottom);
     dl->AddLine(ImVec2(wp.x, botY0), ImVec2(wp.x + ws.x, botY0), ZX_SEP, 1.0f);
 
-    // Close
-    dl->AddRectFilled(ImVec2(wp.x + 8, botY0 + 8),
-                      ImVec2(wp.x + bW, botY1 - 8),
-                      ZX_SIDE_BTN_BG, 8.0f);
-    {
-        const char* lbl = "Close";
-        ImVec2 ts = ImGui::CalcTextSize(lbl);
-        float btnH = (botY1 - 8) - (botY0 + 8);
-        dl->AddText(ImVec2(wp.x + 8 + (bW - 8 - ts.x) * 0.5f,
-                           botY0 + 8 + (btnH - ts.y) * 0.5f),
-                    ZX_TAB_TEXT, lbl);
-    }
-    ImGui::SetCursorScreenPos(ImVec2(wp.x + 8, botY0 + 8));
-    if (ImGui::InvisibleButton("##close", ImVec2(bW - 8, botY1 - botY0 - 16)))
-        MenDeal = false;
+    // "FF: External" left
+    ImFont* fnt  = ImGui::GetFont();
+    float   fSm  = ImGui::GetFontSize() * 0.78f;
+    float   ftY  = botY0 + (ZX_BOT_H - fnt->CalcTextSizeA(fSm, FLT_MAX, 0, "X").y) * 0.5f;
+    dl->AddText(fnt, fSm, ImVec2(wp.x + ZX_PAD_LEFT, ftY),
+                ZX_TEXT_DIM, "FF: External");
 
-    // เส้นกลาง
-    dl->AddLine(ImVec2(wp.x + bW + 1, botY0 + 10),
-                ImVec2(wp.x + bW + 1, botY1 - 10), ZX_SEP, 1.0f);
-
-    // HIDE
-    float hX0 = wp.x + bW + 3;
-    float hW  = (wp.x + ws.x - 8) - hX0;
-    dl->AddRectFilled(ImVec2(hX0, botY0 + 8),
-                      ImVec2(wp.x + ws.x - 8, botY1 - 8),
-                      ZX_SIDE_BTN_BG, 8.0f);
+    // "Author: Mr D" right
     {
-        const char* lbl = "HIDE";
-        ImVec2 ts = ImGui::CalcTextSize(lbl);
-        float btnH = (botY1 - 8) - (botY0 + 8);
-        dl->AddText(ImVec2(hX0 + (hW - ts.x) * 0.5f,
-                           botY0 + 8 + (btnH - ts.y) * 0.5f),
-                    ZX_TAB_TEXT, lbl);
+        const char* auth = "Author: Mr D";
+        ImVec2 ts = fnt->CalcTextSizeA(fSm, FLT_MAX, 0.0f, auth);
+        dl->AddText(fnt, fSm,
+                    ImVec2(wp.x + ws.x - ZX_PAD_LEFT - ts.x, ftY),
+                    ZX_TEXT_DIM, auth);
     }
-    ImGui::SetCursorScreenPos(ImVec2(hX0, botY0 + 8));
-    if (ImGui::InvisibleButton("##hide", ImVec2(hW, botY1 - botY0 - 16)))
-        MenDeal = false;
 
     ImGui::End();
     ImGui::PopStyleVar(5);
-    ImGui::PopStyleColor(2);
+    ImGui::PopStyleColor(4);
 }
 
 // Hooks / touch handlers (คงเดิม)
