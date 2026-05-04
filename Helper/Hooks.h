@@ -1258,11 +1258,14 @@ static void RunNoReload() {
     if (!weapon) return;
 
     typedef void (*set_int_t)(void*, int);
-    set_int_t _set_AmmoInClip = (set_int_t)getRealOffset(0x61C8308);
-    set_int_t _set_OnceAmmo   = (set_int_t)getRealOffset(0x61C82E8);
+    typedef void (*set_float_t)(void*, float);
+    set_float_t _set_ReloadSpeed = (set_float_t)getRealOffset(0x61C82F8);
+    set_int_t   _set_AmmoInClip  = (set_int_t)  getRealOffset(0x61C8308);
+    set_int_t   _set_OnceAmmo    = (set_int_t)  getRealOffset(0x61C82E8);
 
-    if (_set_AmmoInClip) _set_AmmoInClip(weapon, 999);   // clip เต็มตลอด
-    if (_set_OnceAmmo)   _set_OnceAmmo  (weapon, 999);   // ammo ต่อนัดเยอะ
+    if (_set_ReloadSpeed) _set_ReloadSpeed(weapon, 100.0f); // reload จบทันที
+    if (_set_AmmoInClip)  _set_AmmoInClip (weapon, 999);    // clip เต็มตลอด
+    if (_set_OnceAmmo)    _set_OnceAmmo   (weapon, 999);    // ammo ต่อนัดเยอะ
 }
 
 // ── Blue Map — tint ambient + fog เป็นสีน้ำเงิน
