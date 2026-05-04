@@ -408,8 +408,8 @@ static const ImU32 ZX_PURPLE        = IM_COL32(175,  82, 222, 255);
 static const ImU32 ZX_YELLOW        = IM_COL32(255, 204,   0, 255);
 
 // ── Layout — Dark Gaming sidebar style 
-static const float ZX_WIN_W      = 370.0f;
-static const float ZX_WIN_H      = 310.0f;
+static const float ZX_WIN_W      = 345.0f;
+static const float ZX_WIN_H      = 480.0f;
 static const float ZX_WIN_RAD    = 16.0f;
 static const float ZX_SIDEBAR_W  = 54.0f;   // left sidebar width
 static const float ZX_HEADER_H   = 54.0f;   // header area height
@@ -1523,17 +1523,43 @@ static bool ZX_BatMonInit  = false;
 static void RenderMenu() {
     if (!MenDeal) return;
 
-    ImGui::PushStyleColor(ImGuiCol_WindowBg,      ImColor(ZX_WIN_BG).Value);
+    // ── Colors matching screenshots exactly ──────────────────────────────
+    const ImU32 M_WIN_BG       = IM_COL32( 30,  30,  32, 255);   // near-black window
+    const ImU32 M_TAB_INACTIVE = IM_COL32( 52,  52,  55, 255);   // inactive tab button
+    const ImU32 M_TAB_ACTIVE   = IM_COL32( 47,  72,  87, 255);   // active tab: dark teal
+    const ImU32 M_TGL_ON       = IM_COL32( 90, 200, 250, 255);   // iOS sky-blue toggle ON
+    const ImU32 M_TGL_OFF      = IM_COL32( 62,  62,  66, 255);   // gray toggle OFF
+    const ImU32 M_KNOB         = IM_COL32(255, 255, 255, 255);   // white knob
+    const ImU32 M_TEXT         = IM_COL32(255, 255, 255, 255);   // white text
+    const ImU32 M_BTN_BG       = IM_COL32( 62,  62,  66, 255);   // close/hide button bg
+    const ImU32 M_SEP          = IM_COL32( 50,  50,  54, 255);   // row separator
+    const ImU32 M_HOVER        = IM_COL32(255, 255, 255,  14);   // hover tint
+
+    // ── Layout ──────────────────────────────────────────────────────────
+    const float WIN_W     = ZX_WIN_W;    // 345
+    const float WIN_H     = ZX_WIN_H;    // 480
+    const float WIN_RAD   = 18.0f;
+    const float SB_W      = 110.0f;      // sidebar width
+    const float HDR_H     =  54.0f;      // header (title) height
+    const float BOT_H     =  58.0f;      // bottom buttons bar height
+    const float ROW_H     =  50.0f;      // toggle row height
+    const float TAB_H     =  48.0f;      // each tab button height
+    const float TAB_GAP   =   6.0f;      // gap between tab buttons
+    const float TAB_PAD_X =   8.0f;      // horizontal padding inside sidebar
+    const float PAD       =  14.0f;      // general horizontal pad
+
+    ImGui::PushStyleColor(ImGuiCol_WindowBg,      ImVec4(30.0f/255,30.0f/255,32.0f/255,1.0f));
     ImGui::PushStyleColor(ImGuiCol_Border,        ImVec4(0,0,0,0));
     ImGui::PushStyleColor(ImGuiCol_ScrollbarBg,   ImVec4(0,0,0,0));
-    ImGui::PushStyleColor(ImGuiCol_ScrollbarGrab, ImColor(ZX_SEP).Value);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding,   ZX_WIN_RAD);
+    ImGui::PushStyleColor(ImGuiCol_ScrollbarGrab, ImVec4(0.22f,0.22f,0.24f,1.0f));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding,   WIN_RAD);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,    ImVec2(0,0));
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing,      ImVec2(0,0));
     ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarSize,    3.0f);
-    ImGui::SetNextWindowSize(ImVec2(ZX_WIN_W, ZX_WIN_H), ImGuiCond_Always);
-    ImGui::Begin("##DarkGaming", nullptr,
+
+    ImGui::SetNextWindowSize(ImVec2(WIN_W, WIN_H), ImGuiCond_Always);
+    ImGui::Begin("##IpaFF", nullptr,
         ImGuiWindowFlags_NoTitleBar  | ImGuiWindowFlags_NoResize |
         ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse |
         ImGuiWindowFlags_NoBringToFrontOnFocus);
@@ -1543,258 +1569,187 @@ static void RenderMenu() {
     ImVec2 wp = ImGui::GetWindowPos();
     ImVec2 ws = ImGui::GetWindowSize();
 
-    // ── Window background 
-    dl->AddRectFilled(wp, ImVec2(wp.x + ws.x, wp.y + ws.y), ZX_WIN_BG, ZX_WIN_RAD);
+    // ── Window background (rounded) ──────────────────────────────────────
+    dl->AddRectFilled(wp, ImVec2(wp.x + ws.x, wp.y + ws.y), M_WIN_BG, WIN_RAD);
 
-    // ── LEFT SIDEBAR
-    float sbX0 = wp.x;
-    float sbX1 = wp.x + ZX_SIDEBAR_W;
-    dl->AddRectFilled(ImVec2(sbX0, wp.y), ImVec2(sbX1, wp.y + ws.y),
-                      ZX_PANEL_BG, ZX_WIN_RAD, ImDrawFlags_RoundCornersLeft);
-    // divider line
-    dl->AddLine(ImVec2(sbX1, wp.y + 10.0f), ImVec2(sbX1, wp.y + ws.y - 10.0f),
-                ZX_SEP, 1.0f);
-
-    // sidebar icon buttons — 4 interactive (ESP/Aimbot/Other/Player) + 2 decorative
-    struct SbItem { int iconType; bool interactive; };
-    // iconType: 0=person,1=eye,2=crosshair,3=sword,4=gear,5=list,6=gamepad
-    SbItem sbItems[] = { {1,true},{2,true},{3,true},{0,true},{6,false},{4,false} };
-    const int kSbItems = 6;
-    const float sbBtnH = ws.y / (float)kSbItems;
-
-    for (int i = 0; i < kSbItems; ++i) {
-        bool active = sbItems[i].interactive && (ZX_Tab == i);
-        float btnY0 = wp.y + (float)i * sbBtnH;
-        float btnY1 = btnY0 + sbBtnH;
-        ImVec2 bc(sbX0 + ZX_SIDEBAR_W * 0.5f, (btnY0 + btnY1) * 0.5f);
-
-        // active highlight circle
-        if (active) {
-            dl->AddCircleFilled(bc, 18.0f, ZX_SIDE_BTN_ACT, 24);
-        }
-
-        ImU32 icol = active ? ZX_ORANGE : ZX_TAB_TEXT_DIM;
-        float s    = 11.0f;
-
-        switch (sbItems[i].iconType) {
-            case 0: ZX_DrawSidebarIcon(dl, 0, bc, s, icol); break;  // person
-            case 1: ZX_DrawSidebarIcon(dl, 1, bc, s, icol); break;  // eye
-            case 2: ZX_DrawCrosshair(dl, bc, s, icol);       break;  // crosshair
-            case 3: ZX_DrawSword(dl, bc, s, icol);            break;  // sword
-            case 4: ZX_DrawSidebarIcon(dl, 4, bc, s, icol); break;  // gear
-            case 5: ZX_DrawSidebarIcon(dl, 5, bc, s, icol); break;  // list
-            case 6: ZX_DrawSidebarIcon(dl, 3, bc, s, icol); break;  // gamepad
-        }
-
-        // click handler for interactive tabs
-        if (sbItems[i].interactive) {
-            ImGui::SetCursorScreenPos(ImVec2(sbX0, btnY0));
-            char btnId[16]; snprintf(btnId, sizeof(btnId), "##sb%d", i);
-            if (ImGui::InvisibleButton(btnId, ImVec2(ZX_SIDEBAR_W, sbBtnH)))
-                ZX_Tab = i;
-        }
-    }
-
-    // ── CONTENT AREA ──────────────────────────────────────────────────────
-    float contentX = sbX1;
-    float contentW = ws.x - ZX_SIDEBAR_W;
-
-    // ── HEADER ────────────────────────────────────────────────────────────
+    // ── HEADER: centered title ───────────────────────────────────────────
     {
-        float hY0 = wp.y + 10.0f;
-        float hY1 = hY0 + ZX_HEADER_H - 10.0f;
-        float hCY = (hY0 + hY1) * 0.5f;
-
-        // tab name pill (left side of header)
-        const char* tabNames[] = { "ESP", "AIMBOT", "OTHER", "PLAYER", "", "" };
-        const char* tname = (ZX_Tab < 6) ? tabNames[ZX_Tab] : "MENU";
-        ImVec2 tts = ImGui::CalcTextSize(tname);
-        float pillX0 = contentX + 10.0f;
-        float pillX1 = pillX0 + tts.x + 36.0f + ZX_PAD_LEFT;
-        float pillY0 = hY0 + 4.0f, pillY1 = hY1 - 4.0f;
-        dl->AddRectFilled(ImVec2(pillX0, pillY0), ImVec2(pillX1, pillY1),
-                          ZX_SIDE_BTN_BG, 10.0f);
-
-        // icon in pill
-        ImVec2 pillIconC(pillX0 + 18.0f, hCY);
-        float s = 9.0f;
-        switch (ZX_Tab) {
-            case 0: ZX_DrawSidebarIcon(dl, 1, pillIconC, s, ZX_ORANGE); break;
-            case 1: ZX_DrawCrosshair(dl, pillIconC, s, ZX_ORANGE);       break;
-            case 2: ZX_DrawSword(dl, pillIconC, s, ZX_ORANGE);           break;
-            case 3: ZX_DrawSidebarIcon(dl, 0, pillIconC, s, ZX_ORANGE); break;
-        }
-
-        // tab name text
-        dl->AddText(ImVec2(pillX0 + 32.0f, hCY - tts.y * 0.5f), ZX_ORANGE, tname);
-
-        // header buttons: moon + X (right side)
-        float bR = 14.0f;
-        float bX_close = contentX + contentW - 10.0f - bR;
-        float bX_moon  = bX_close - bR * 2.0f - 6.0f;
-
-        // moon button
-        dl->AddCircleFilled(ImVec2(bX_moon, hCY), bR, ZX_SIDE_BTN_BG, 24);
-        ZX_DrawMoon(dl, ImVec2(bX_moon, hCY), bR * 0.75f, ZX_ORANGE);
-
-        // X close button
-        dl->AddCircleFilled(ImVec2(bX_close, hCY), bR, ZX_SIDE_BTN_BG, 24);
-        ImGui::SetCursorScreenPos(ImVec2(bX_close - bR, hCY - bR));
-        if (ImGui::InvisibleButton("##xclose", ImVec2(bR * 2.0f, bR * 2.0f)))
-            MenDeal = false;
-        float arm = 5.0f;
-        dl->AddLine(ImVec2(bX_close - arm, hCY - arm), ImVec2(bX_close + arm, hCY + arm), ZX_ORANGE, 2.0f);
-        dl->AddLine(ImVec2(bX_close + arm, hCY - arm), ImVec2(bX_close - arm, hCY + arm), ZX_ORANGE, 2.0f);
-
-        // divider below header
-        dl->AddLine(ImVec2(contentX + 6.0f, wp.y + ZX_HEADER_H),
-                    ImVec2(wp.x + ws.x - 6.0f, wp.y + ZX_HEADER_H), ZX_SEP, 1.0f);
+        const char* title = "shopx2tl.site - IPA FF";
+        float hCY = wp.y + HDR_H * 0.5f;
+        ImVec2 tts = ImGui::CalcTextSize(title);
+        dl->AddText(ImVec2(wp.x + (ws.x - tts.x) * 0.5f, hCY - tts.y * 0.5f),
+                    M_TEXT, title);
+        // thin separator below header
+        dl->AddLine(ImVec2(wp.x, wp.y + HDR_H),
+                    ImVec2(wp.x + ws.x, wp.y + HDR_H), M_SEP, 1.0f);
     }
 
-    // ── SCROLLABLE CONTENT─
-    float contentY0 = wp.y + ZX_HEADER_H + 6.0f;
-    float contentH  = ws.y - ZX_HEADER_H - 6.0f;
+    // ── Zone boundaries ──────────────────────────────────────────────────
+    float zoneY0 = wp.y + HDR_H;          // top of sidebar+content zone
+    float zoneY1 = wp.y + WIN_H - BOT_H;  // bottom of sidebar+content zone
+    float zoneH  = zoneY1 - zoneY0;
 
-    ImGui::SetCursorScreenPos(ImVec2(contentX + ZX_ROW_PAD, contentY0));
-    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImColor(ZX_WIN_BG).Value);
-    ImGui::BeginChild("##dark_content",
-                      ImVec2(contentW - ZX_ROW_PAD * 2.0f, contentH),
+    // thin separator above bottom buttons
+    dl->AddLine(ImVec2(wp.x, zoneY1), ImVec2(wp.x + ws.x, zoneY1), M_SEP, 1.0f);
+
+    // ── LEFT SIDEBAR: text tab buttons ───────────────────────────────────
+    const char* kTabNames[] = { "ESP", "AIMBOT", "AIMKILL", "BUTTON" };
+    const int   kTabCount   = 4;
+
+    float totalTabH = (float)kTabCount * TAB_H + (float)(kTabCount - 1) * TAB_GAP;
+    float tabsY0    = zoneY0 + (zoneH - totalTabH) * 0.5f;  // vertically centered
+
+    for (int i = 0; i < kTabCount; ++i) {
+        float bY0 = tabsY0 + (float)i * (TAB_H + TAB_GAP);
+        float bY1 = bY0 + TAB_H;
+        float bX0 = wp.x + TAB_PAD_X;
+        float bX1 = wp.x + SB_W - TAB_PAD_X;
+
+        bool active = (ZX_Tab == i);
+        dl->AddRectFilled(ImVec2(bX0, bY0), ImVec2(bX1, bY1),
+                          active ? M_TAB_ACTIVE : M_TAB_INACTIVE, 10.0f);
+
+        ImVec2 lts = ImGui::CalcTextSize(kTabNames[i]);
+        dl->AddText(ImVec2((bX0 + bX1) * 0.5f - lts.x * 0.5f,
+                           (bY0 + bY1) * 0.5f - lts.y * 0.5f),
+                    M_TEXT, kTabNames[i]);
+
+        ImGui::SetCursorScreenPos(ImVec2(bX0, bY0));
+        char bid[16]; snprintf(bid, sizeof(bid), "##tab%d", i);
+        if (ImGui::InvisibleButton(bid, ImVec2(bX1 - bX0, TAB_H)))
+            ZX_Tab = i;
+    }
+
+    // ── RIGHT CONTENT: scrollable toggle rows ────────────────────────────
+    float rcX = wp.x + SB_W;
+    float rcW = ws.x - SB_W;
+
+    ImGui::SetCursorScreenPos(ImVec2(rcX, zoneY0));
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(30.0f/255,30.0f/255,32.0f/255,1.0f));
+    ImGui::BeginChild("##ipa_content", ImVec2(rcW, zoneH),
                       false, ImGuiWindowFlags_AlwaysVerticalScrollbar);
     ImGui::SetWindowFontScale(ZX_FONT_SIZE / 18.0f);
 
+    // ── Helper: draw one iOS-style toggle row ─────────────────────────────
+    // We use a local struct to avoid lambda captures in ObjC++ static context
+    struct RowHelper {
+        static void Draw(const char* label, bool* v, bool lastRow,
+                         ImU32 tglOn, ImU32 tglOff, ImU32 knob,
+                         ImU32 text, ImU32 sep, ImU32 hover,
+                         float rowH, float pad) {
+            ImGuiWindow* cw = ImGui::GetCurrentWindow();
+            if (cw->SkipItems) return;
+            ImVec2 pos = cw->DC.CursorPos;
+            float  aw  = ImGui::GetContentRegionAvail().x;
+            const ImGuiID id = cw->GetID(label);
+            ImRect bb(pos, ImVec2(pos.x + aw, pos.y + rowH));
+            ImGui::ItemSize(ImVec2(aw, rowH), 0.0f);
+            if (!ImGui::ItemAdd(bb, id)) return;
+            bool hov, hld;
+            bool pressed = ImGui::ButtonBehavior(bb, id, &hov, &hld);
+            if (pressed) *v = !*v;
+            ImDrawList* cdl = cw->DrawList;
+            if (hov) cdl->AddRectFilled(bb.Min, bb.Max, hover, 0.0f);
+            if (!lastRow)
+                cdl->AddLine(ImVec2(bb.Min.x + pad, bb.Max.y - 1.0f),
+                             ImVec2(bb.Max.x - pad, bb.Max.y - 1.0f), sep, 1.0f);
+            float cy = (bb.Min.y + bb.Max.y) * 0.5f;
+            // label
+            cdl->AddText(ImVec2(bb.Min.x + pad, cy - ImGui::GetFontSize() * 0.5f),
+                         text, label);
+            // iOS toggle
+            const float TW = 51.0f, TH = 31.0f, TR = TH * 0.5f;
+            float tX = bb.Max.x - TW - pad;
+            float tY = cy - TH * 0.5f;
+            ImU32 track = *v ? tglOn : tglOff;
+            cdl->AddRectFilled(ImVec2(tX, tY), ImVec2(tX + TW, tY + TH), track, TR);
+            float kX = *v ? (tX + TW - TR) : (tX + TR);
+            cdl->AddCircleFilled(ImVec2(kX, cy), TR - 1.5f, IM_COL32(0,0,0,20), 28);
+            cdl->AddCircleFilled(ImVec2(kX, cy), TR - 2.5f, knob, 28);
+        }
+    };
+
+// Convenience macro so call sites stay readable
+#define TOGGLE_ROW(lbl, ptr, last) \
+    RowHelper::Draw(lbl, ptr, last, M_TGL_ON, M_TGL_OFF, M_KNOB, M_TEXT, M_SEP, M_HOVER, ROW_H, PAD)
+
     switch (ZX_Tab) {
-        // ── ESP
+        // ── ESP ──────────────────────────────────────────────────────────
         case 0: {
-            ZX_DarkItemRow("Enable ESP",     &Vars.Enable);
-            ZX_DarkItemRow("Info Esp",       &Vars.lines);
-            ZX_DarkItemRow("Bone Esp",       &Vars.skeleton);
-            ZX_DarkItemRow("Box Esp",        &Vars.Box);
-            ZX_DarkItemRow("Name Esp",       &Vars.Name);
-            ZX_DarkItemRow("Health Bar",     &Vars.Health);
-            ZX_DarkItemRow("Distance Show",  &Vars.Distance);
-            ZX_DarkItemRow("Outline",        &Vars.Outline);
-            ZX_DarkItemRow("OOF Arrow",      &Vars.OOF);
-            ZX_DarkItemRow("Alert 360",      &Vars.circlepos);
-            ZX_DarkItemRow("Alert Number",   &Vars.ESPCount);
-            ZX_DarkItemRow("FOV Aim Glow",   &Vars.fovaimglow);
-            ZX_DarkSection("Slider");
-            ZX_DarkSliderRow("Distance Esp", &Vars.AimFov, 0.0f, 1000.0f);
+            TOGGLE_ROW("Enable ESP",  &Vars.Enable,  false);
+            TOGGLE_ROW("Line ESP",    &Vars.lines,   false);
+            TOGGLE_ROW("Box ESP",     &Vars.Box,     false);
+            TOGGLE_ROW("3D Box ESP",  &ZX_Esp3DBox,  true);
             break;
         }
-        // ── AIMBOT
+        // ── AIMBOT ───────────────────────────────────────────────────────
         case 1: {
-            ZX_DarkItemRow("Enable Aimbot",  &Vars.Enable);
-            ZX_DarkItemRow("Aimbot",         &Vars.Aimbot);
-            ZX_DarkItemRow("Visible Check",  &Vars.VisibleCheck);
-            ZX_DarkItemRow("Ignore Knocked", &Vars.IgnoreKnocked);
-            ZX_DarkItemRow("Ignore Bots",    &ZX_AIPlayerAim);
-            ZX_DarkItemRow("Auto Fire",      &Vars.AutoFire);
-            ZX_DarkItemRow("Show Fov Circle",&Vars.ShowFovCircle);
-            ZX_DarkItemRow("Silent Aim",     &SilentAim);
-            ZX_DarkWarningRow("Aim Kill",
-                "AimKill should only be used in CS/CS Ranked mode.\n"
-                "If you use it in Battle Royale, the game\n"
-                "may apply sanctions to your account.",
-                &ZX_AimKill);
-            ZX_DarkSection("Slider");
-            ZX_DarkSliderRow("Aim Speed",    &Vars.AimSpeed,        1.0f,  50.0f);
-            ZX_DarkSliderRow("Aim Fov",      &Vars.AimFov,          1.0f, 500.0f);
+            TOGGLE_ROW("Enable Aimbot",   &Vars.Enable,        false);
+            TOGGLE_ROW("Aimbot",          &Vars.Aimbot,        false);
+            TOGGLE_ROW("Silent Aim",      &SilentAim,          false);
+            TOGGLE_ROW("Auto Fire",       &Vars.AutoFire,      false);
+            TOGGLE_ROW("Aim Kill",        &ZX_AimKill,         false);
+            TOGGLE_ROW("Visible Check",   &Vars.VisibleCheck,  false);
+            TOGGLE_ROW("Ignore Knocked",  &Vars.IgnoreKnocked, true);
             break;
         }
-        // ── OTHER 
+        // ── AIMKILL ──────────────────────────────────────────────────────
         case 2: {
-            ZX_DarkItemRow("Enable",            &Vars.Enable);
-            ZX_DarkItemRow("Fly Alt",           &ZX_FlyAlt);
-            if (ZX_FlyAlt) {
-                ZX_DarkItemRow("Free Fly",      &ZX_FreeFly);
-            }
-            ZX_DarkItemRow("Telekill",          &ZX_Telekill);
-            ZX_DarkItemRow("Fast Fire",         &ZX_FastFire);
-            ZX_DarkItemRow("No Reload",         &ZX_NoReload);
-            ZX_DarkItemRow("Ammo Speed Fast",   &Vars.AmmoSpeedFast);
-            ZX_DarkItemRow("Fast Switch",       &Vars.FastSwitch);
-            ZX_DarkItemRow("Bullet Thru Wall",  &ZX_BulletThru);
-            ZX_DarkItemRow("Long Range",        &Vars.LongRange);
-            ZX_DarkItemRow("Chain Damage",      &ZX_ChainDamage);
-            ZX_DarkItemRow("Bullet Penetration",&Vars.BulletPenetration);
-            ZX_DarkItemRow("Blue Map",          &Vars.BlueMap);
-            ZX_DarkItemRow("Ninja Run",         &Vars.NinjaRun);
-            ZX_DarkItemRow("Mark Teleport",     &ZX_MarkTeleport);
-            ZX_DarkItemRow("Auto Teleport",     &ZX_AutoTeleport);
-            ZX_DarkSection("Slider");
-            ZX_DarkSliderRow("Fly Speed",       &ZX_FlySpeed,   1.0f,  20.0f);
-            ZX_DarkSliderRow("Ninja Speed",     &Vars.NinjaRunSpeed, 0.1f, 20.0f);
+            TOGGLE_ROW("Enable",            &Vars.Enable,           false);
+            TOGGLE_ROW("Fly Alt",           &ZX_FlyAlt,             false);
+            TOGGLE_ROW("Telekill",          &ZX_Telekill,           false);
+            TOGGLE_ROW("Fast Fire",         &ZX_FastFire,           false);
+            TOGGLE_ROW("No Reload",         &ZX_NoReload,           false);
+            TOGGLE_ROW("Chain Damage",      &ZX_ChainDamage,        false);
+            TOGGLE_ROW("Long Range",        &Vars.LongRange,        true);
             break;
         }
-        // ── PLAYER
+        // ── BUTTON ───────────────────────────────────────────────────────
         case 3: {
-            // init battery monitor once
-            if (!ZX_BatMonInit) {
-                [[UIDevice currentDevice] setBatteryMonitoringEnabled:YES];
-                ZX_BatMonInit = true;
-            }
-            // timer
-            static double ZX_SessionStart = 0.0;
-            if (ZX_SessionStart == 0.0) ZX_SessionStart = ImGui::GetTime();
-            double elapsed = ImGui::GetTime() - ZX_SessionStart;
-            int hh = (int)(elapsed / 3600);
-            int mm = (int)(elapsed / 60) % 60;
-            int ss = (int)elapsed % 60;
-            char timeBuf[32]; snprintf(timeBuf, sizeof(timeBuf), "%02d:%02d:%02d", hh, mm, ss);
-
-            // battery
-            float batLevel = [[UIDevice currentDevice] batteryLevel];
-            char batBuf[16];
-            if (batLevel < 0.0f) snprintf(batBuf, sizeof(batBuf), "--%%");
-            else snprintf(batBuf, sizeof(batBuf), "%d%%", (int)(batLevel * 100.0f));
-            ImU32 batColor = (batLevel < 0.2f) ? ZX_RED : (batLevel < 0.5f) ? ZX_YELLOW : ZX_GREEN;
-
-            // kill counter
-            char killBuf[16]; snprintf(killBuf, sizeof(killBuf), "%d", ZX_KillCount);
-
-            ZX_DarkSection("Session Info");
-            ZX_DarkInfoRow("นับเวลา",  timeBuf,  ZX_ORANGE);
-            ZX_DarkInfoRow("นับแบต",   batBuf,   batColor);
-            ZX_DarkInfoRow("นับคีย์",  killBuf,  ZX_ORANGE);
-
-            // +/- buttons for kill counter
-            ImVec2 cp2 = ImGui::GetCursorScreenPos();
-            float  bw2 = (ImGui::GetContentRegionAvail().x - ZX_ROW_PAD) * 0.5f;
-            float  bh2 = ZX_ROW_H - 4.0f;
-            // minus button
-            dl->AddRectFilled(cp2, ImVec2(cp2.x + bw2, cp2.y + bh2), ZX_ITEM_BG, ZX_ROW_RAD);
-            dl->AddRect(cp2,       ImVec2(cp2.x + bw2, cp2.y + bh2), ZX_ITEM_BORDER, ZX_ROW_RAD, 0, 1.0f);
-            ImVec2 mts = ImGui::CalcTextSize("-  KILL");
-            dl->AddText(ImVec2(cp2.x + bw2 * 0.5f - mts.x * 0.5f, cp2.y + bh2 * 0.5f - mts.y * 0.5f), ZX_TEXT, "-  KILL");
-            ImGui::SetCursorScreenPos(cp2);
-            if (ImGui::InvisibleButton("##km", ImVec2(bw2, bh2)) && ZX_KillCount > 0) ZX_KillCount--;
-            // plus button
-            ImVec2 pp2(cp2.x + bw2 + ZX_ROW_PAD, cp2.y);
-            dl->AddRectFilled(pp2, ImVec2(pp2.x + bw2, pp2.y + bh2), ZX_ITEM_BG, ZX_ROW_RAD);
-            dl->AddRect(pp2,       ImVec2(pp2.x + bw2, pp2.y + bh2), ZX_ORANGE, ZX_ROW_RAD, 0, 1.0f);
-            ImVec2 pts = ImGui::CalcTextSize("+  KILL");
-            dl->AddText(ImVec2(pp2.x + bw2 * 0.5f - pts.x * 0.5f, pp2.y + bh2 * 0.5f - pts.y * 0.5f), ZX_ORANGE, "+  KILL");
-            ImGui::SetCursorScreenPos(pp2);
-            if (ImGui::InvisibleButton("##kp", ImVec2(bw2, bh2))) ZX_KillCount++;
-            ImGui::SetCursorScreenPos(ImVec2(cp2.x, cp2.y + bh2 + ZX_ROW_GAP * 2.0f));
-
-            // reset button
-            ImVec2 rp = ImGui::GetCursorScreenPos();
-            float rw = ImGui::GetContentRegionAvail().x;
-            dl->AddRectFilled(rp, ImVec2(rp.x + rw, rp.y + bh2), ZX_ITEM_BG, ZX_ROW_RAD);
-            dl->AddRect(rp,       ImVec2(rp.x + rw, rp.y + bh2), ZX_ITEM_BORDER, ZX_ROW_RAD, 0, 1.0f);
-            ImVec2 rts = ImGui::CalcTextSize("Reset Counter");
-            dl->AddText(ImVec2(rp.x + rw * 0.5f - rts.x * 0.5f, rp.y + bh2 * 0.5f - rts.y * 0.5f), ZX_TEXT_DIM, "Reset Counter");
-            ImGui::SetCursorScreenPos(rp);
-            if (ImGui::InvisibleButton("##kr", ImVec2(rw, bh2))) ZX_KillCount = 0;
-            ImGui::SetCursorScreenPos(ImVec2(rp.x, rp.y + bh2 + ZX_ROW_GAP));
-
+            TOGGLE_ROW("RevealEnemy",    &ZX_FAKE,     false);
+            TOGGLE_ROW("Under Hack",     &ZX_UNDER,    false);
+            TOGGLE_ROW("Ninja Run",      &ZX_RUN,      false);
+            TOGGLE_ROW("Speed NinjaRun", &ZX_GHOSTVIP, true);
             break;
         }
     }
 
+#undef TOGGLE_ROW
+
     ImGui::EndChild();
-    ImGui::PopStyleColor();
+    ImGui::PopStyleColor();  // ChildBg
+
+    // ── BOTTOM BUTTONS: Close  |  HIDE ───────────────────────────────────
+    {
+        float bbCY = zoneY1 + BOT_H * 0.5f;
+        const float BH  = 40.0f;  // button height
+        const float GAP = 12.0f;
+        float bW  = (ws.x - PAD * 2.0f - GAP) * 0.5f;
+        float bY0 = bbCY - BH * 0.5f;
+        float bY1 = bbCY + BH * 0.5f;
+
+        // ── Close
+        float cX0 = wp.x + PAD;
+        float cX1 = cX0 + bW;
+        dl->AddRectFilled(ImVec2(cX0, bY0), ImVec2(cX1, bY1), M_BTN_BG, 12.0f);
+        ImVec2 cts = ImGui::CalcTextSize("Close");
+        dl->AddText(ImVec2((cX0 + cX1) * 0.5f - cts.x * 0.5f, bbCY - cts.y * 0.5f),
+                    M_TEXT, "Close");
+        ImGui::SetCursorScreenPos(ImVec2(cX0, bY0));
+        if (ImGui::InvisibleButton("##close", ImVec2(bW, BH)))
+            MenDeal = false;
+
+        // ── HIDE
+        float hX0 = cX1 + GAP;
+        float hX1 = hX0 + bW;
+        dl->AddRectFilled(ImVec2(hX0, bY0), ImVec2(hX1, bY1), M_BTN_BG, 12.0f);
+        ImVec2 hts = ImGui::CalcTextSize("HIDE");
+        dl->AddText(ImVec2((hX0 + hX1) * 0.5f - hts.x * 0.5f, bbCY - hts.y * 0.5f),
+                    M_TEXT, "HIDE");
+        ImGui::SetCursorScreenPos(ImVec2(hX0, bY0));
+        if (ImGui::InvisibleButton("##hide", ImVec2(bW, BH)))
+            ZX_HideModMenu = !ZX_HideModMenu;
+    }
 
     ImGui::End();
     ImGui::PopStyleVar(5);
