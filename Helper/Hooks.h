@@ -808,7 +808,8 @@ void get_players()
         return;
 
     // ── นับศัตรูที่มองเห็น (ENEMIES counter) ────────────────────────────────
-    static int g_EnemyCount = 0;
+    static int g_EnemyCount  = 0;
+    static int g_KnockedCount = 0;
 
     try
     {
@@ -840,7 +841,8 @@ void get_players()
             return;
 
         // รีเซ็ต counter ทุก frame
-        g_EnemyCount = 0;
+        g_EnemyCount  = 0;
+        g_KnockedCount = 0;
 
         for (int u = 0; u < players->getSize(); u++)
         {
@@ -853,11 +855,13 @@ void get_players()
                 continue;
             if (!game_sdk->get_MaxHP(closestEnemy))
                 continue;
-            if (game_sdk->get_IsDieing(closestEnemy))
-                continue;
-            if (!game_sdk->get_isVisible(closestEnemy))
-                continue;
             if (game_sdk->get_isLocalTeam(closestEnemy))
+                continue;
+            if (game_sdk->get_IsDieing(closestEnemy)) {
+                g_KnockedCount++;
+                continue;
+            }
+            if (!game_sdk->get_isVisible(closestEnemy))
                 continue;
 
             // นับศัตรูที่ผ่านการ filter
@@ -1086,21 +1090,67 @@ void get_players()
             }
         }
 
-        // ── แสดง ENEMIES: X กลางบนจอ ─────────────────────────────────────
+        // ── กล่องสีม่วง: ศัตรูที่ยังไม่โผล่ (not visible) ───────────────────
+        if (Vars.Box) {
+            for (int u = 0; u < players->getSize(); u++) {
+                void *enemy = players->getValues()[u];
+                if (!enemy) continue;
+                if (enemy == local_player) continue;
+                if (!game_sdk->get_MaxHP(enemy)) continue;
+                if (!game_sdk->Component_GetTransform(enemy)) continue;
+                if (game_sdk->get_isLocalTeam(enemy)) continue;
+                if (game_sdk->get_IsDieing(enemy)) continue;
+                if (tanghinh::isVisible(enemy)) continue; // ถ้าเห็นแล้วไม่ต้องวาดอีก
+
+                Vector3 pos  = getPosition(enemy);
+                Vector3 pos2 = getPosition(local_player);
+                float dist   = Vector3::Distance(pos, pos2);
+                if (dist > 200.0f) continue;
+
+                bool w2sc;
+                ImVec2 top_pos = Camera$$WorldToScreen::Regular(pos + Vector3(0, 1.6f, 0));
+                ImVec2 bot_pos = Camera$$WorldToScreen::Regular(pos);
+                Camera$$WorldToScreen::Checker(pos + Vector3(0, 0.75f, 0), w2sc);
+                if (!w2sc) continue;
+
+                auto pmtXtop    = top_pos.x;
+                auto pmtXbottom = bot_pos.x;
+                if (top_pos.x > bot_pos.x) { pmtXtop = bot_pos.x; pmtXbottom = top_pos.x; }
+                float cp = fabs((top_pos.y - bot_pos.y) * (0.0092f / 0.019f) / 2);
+
+                ImRect r(ImVec2(pmtXtop - cp, top_pos.y), ImVec2(pmtXbottom + cp, bot_pos.y));
+                // กล่องสีม่วง + outline ดำ
+                draw_list->AddRect(ImVec2(r.Min.x - 1, r.Min.y - 1), ImVec2(r.Max.x + 1, r.Max.y + 1), ImColor(0, 0, 0, 180));
+                draw_list->AddRect(r.Min, r.Max, ImColor(180, 0, 255, 255));
+            }
+        }
+
+        // ── แสดง ENEMIES: X (Knocked: Y) กลางบนจอ + กล่องแดง ───────────────
         if (Vars.ESPCount) {
-            char ecBuf[32];
-            snprintf(ecBuf, sizeof ecBuf, "ENEMIES: %d", g_EnemyCount);
+            char ecBuf[64];
+            snprintf(ecBuf, sizeof ecBuf, "ENEMIES: %d (Knocked: %d)", g_EnemyCount, g_KnockedCount);
             ImVec2 dispSz = ImGui::GetIO().DisplaySize;
             ImVec2 textSz = ImGui::GetFont()->CalcTextSizeA(16.0f, FLT_MAX, 0, ecBuf);
-            float ex = dispSz.x * 0.5f - textSz.x * 0.5f;
-            float ey = 52.0f;
+            float ex  = dispSz.x * 0.5f - textSz.x * 0.5f;
+            float ey  = 52.0f;
+            float pad = 5.0f;
+            // กล่องแดงพื้นหลัง
+            draw_list->AddRectFilled(
+                ImVec2(ex - pad, ey - pad),
+                ImVec2(ex + textSz.x + pad, ey + 16.0f + pad),
+                ImColor(180, 0, 0, 200), 4.0f);
+            // ขอบขาว
+            draw_list->AddRect(
+                ImVec2(ex - pad, ey - pad),
+                ImVec2(ex + textSz.x + pad, ey + 16.0f + pad),
+                ImColor(255, 255, 255, 220), 4.0f);
             // เงาดำ
             draw_list->AddText(ImGui::GetFont(), 16.0f,
-                               {ex + 1.0f, ey + 1.0f},
+                               ImVec2(ex + 1.0f, ey + 1.0f),
                                IM_COL32(0, 0, 0, 220), ecBuf);
             // ข้อความขาว
             draw_list->AddText(ImGui::GetFont(), 16.0f,
-                               {ex, ey},
+                               ImVec2(ex, ey),
                                IM_COL32(255, 255, 255, 255), ecBuf);
         }
     }
