@@ -359,45 +359,45 @@ ImFont* Urbanist;
 
 // ui — DS Gaming style (white iOS, top tabs)
 
-// ── Colors — Dark Gaming UI (จาก Screenshot) ─────────────────────────────────
-static const ImU32 ZX_WIN_BG        = IM_COL32( 20,  20,  28, 255);   // dark bg
-static const ImU32 ZX_TITLE_BG      = IM_COL32( 20,  20,  28, 255);   // same dark
-static const ImU32 ZX_PANEL_BG      = IM_COL32( 28,  28,  38, 255);   // sidebar bg
-static const ImU32 ZX_PANEL_BORDER  = IM_COL32( 50,  50,  65, 255);
-static const ImU32 ZX_SIDE_BTN_BG   = IM_COL32( 36,  36,  48, 255);   // sidebar btn
-static const ImU32 ZX_SIDE_BTN_ACT  = IM_COL32( 46,  46,  60, 255);   // active btn bg
-static const ImU32 ZX_SIDE_BORDER   = IM_COL32( 50,  50,  65, 255);
-static const ImU32 ZX_SIDE_BORDER_A = IM_COL32( 60,  60,  78, 255);
+// ── Colors — Pure Black Gaming UI ────────────────────────────────────────────
+static const ImU32 ZX_WIN_BG        = IM_COL32(  0,   0,   0, 255);   // pure black
+static const ImU32 ZX_TITLE_BG      = IM_COL32(  0,   0,   0, 255);   // pure black
+static const ImU32 ZX_PANEL_BG      = IM_COL32(  8,   8,   8, 255);   // sidebar bg
+static const ImU32 ZX_PANEL_BORDER  = IM_COL32( 22,  22,  22, 255);
+static const ImU32 ZX_SIDE_BTN_BG   = IM_COL32( 16,  16,  16, 255);   // sidebar btn
+static const ImU32 ZX_SIDE_BTN_ACT  = IM_COL32( 24,  24,  24, 255);   // active btn bg
+static const ImU32 ZX_SIDE_BORDER   = IM_COL32( 22,  22,  22, 255);
+static const ImU32 ZX_SIDE_BORDER_A = IM_COL32( 28,  28,  28, 255);
 static const ImU32 ZX_TAB_TEXT      = IM_COL32(255,  95,  30, 255);   // orange text
-static const ImU32 ZX_TAB_TEXT_DIM  = IM_COL32(140, 140, 155, 200);   // dim gray
+static const ImU32 ZX_TAB_TEXT_DIM  = IM_COL32(120, 120, 120, 200);   // dim gray
 static const ImU32 ZX_TAB_UNDERLINE = IM_COL32(255,  95,  30, 120);
-static const ImU32 ZX_TAB_DIV       = IM_COL32( 50,  50,  65, 255);
-static const ImU32 ZX_SEP           = IM_COL32( 42,  42,  56, 255);   // separator
-static const ImU32 ZX_SECTION       = IM_COL32(140, 140, 155, 255);   // section label
-static const ImU32 ZX_SUB           = IM_COL32(110, 110, 125, 255);
-static const ImU32 ZX_TEXT          = IM_COL32(225, 225, 235, 255);   // white text
-static const ImU32 ZX_TEXT_DIM      = IM_COL32(130, 130, 145, 255);   // gray dim
+static const ImU32 ZX_TAB_DIV       = IM_COL32( 22,  22,  22, 255);
+static const ImU32 ZX_SEP           = IM_COL32( 20,  20,  20, 255);   // separator
+static const ImU32 ZX_SECTION       = IM_COL32(120, 120, 120, 255);   // section label
+static const ImU32 ZX_SUB           = IM_COL32( 90,  90,  90, 255);
+static const ImU32 ZX_TEXT          = IM_COL32(225, 225, 225, 255);   // white text
+static const ImU32 ZX_TEXT_DIM      = IM_COL32(110, 110, 110, 255);   // gray dim
 // checkmark circle toggle (replaces iOS toggle)
 static const ImU32 ZX_TGL_ON        = IM_COL32(255,  95,  30, 255);   // orange ON
-static const ImU32 ZX_TGL_OFF       = IM_COL32( 52,  52,  68, 255);   // gray OFF
+static const ImU32 ZX_TGL_OFF       = IM_COL32( 28,  28,  28, 255);   // near-black OFF
 static const ImU32 ZX_TGL_KNOB      = IM_COL32(255, 255, 255, 255);
-static const ImU32 ZX_HOVER         = IM_COL32(255, 255, 255,  10);
+static const ImU32 ZX_HOVER         = IM_COL32(255, 255, 255,   8);
 // checkmark
-static const ImU32 ZX_CHK_BG        = IM_COL32( 52,  52,  68, 255);
+static const ImU32 ZX_CHK_BG        = IM_COL32( 28,  28,  28, 255);
 static const ImU32 ZX_CHK_BG_ON     = IM_COL32(255,  95,  30, 255);
-static const ImU32 ZX_CHK_BORDER    = IM_COL32( 70,  70,  88, 255);
+static const ImU32 ZX_CHK_BORDER    = IM_COL32( 38,  38,  38, 255);
 static const ImU32 ZX_CHK_BORDER_ON = IM_COL32(255,  95,  30, 255);
-static const ImU32 ZX_CORNER_YELLOW = IM_COL32(255,  95,  30, 120);
+static const ImU32 ZX_CORNER_YELLOW = IM_COL32(255,  95,  30, 100);
 // slider
-static const ImU32 ZX_SLIDER_BG     = IM_COL32( 52,  52,  68, 255);   // dark track
+static const ImU32 ZX_SLIDER_BG     = IM_COL32( 28,  28,  28, 255);   // near-black track
 static const ImU32 ZX_SLIDER_FILL   = IM_COL32(255,  95,  30, 255);   // orange fill
 static const ImU32 ZX_KNOB_OUTLINE  = IM_COL32(255,  95,  30, 200);
 // warning row
-static const ImU32 ZX_WARN_BG       = IM_COL32(255,  95,  30,  38);   // orange tint
+static const ImU32 ZX_WARN_BG       = IM_COL32(255,  95,  30,  30);   // orange tint
 static const ImU32 ZX_WARN_BORDER   = IM_COL32(255,  95,  30, 110);
 // item bg
-static const ImU32 ZX_ITEM_BG       = IM_COL32( 36,  36,  48, 255);   // dark item
-static const ImU32 ZX_ITEM_BORDER   = IM_COL32( 50,  50,  65, 255);
+static const ImU32 ZX_ITEM_BG       = IM_COL32( 14,  14,  14, 255);   // very dark item
+static const ImU32 ZX_ITEM_BORDER   = IM_COL32( 22,  22,  22, 255);
 static const ImU32 ZX_DROP_BORDER   = IM_COL32(255,  95,  30, 200);
 // accents
 static const ImU32 ZX_ORANGE        = IM_COL32(255,  95,  30, 255);
@@ -1490,6 +1490,36 @@ static bool ZX_DSSliderRow(const char* label, float* v, float vmin, float vmax) 
     return pressed;
 }
 
+// ── Info display row (no toggle — แสดงค่าอย่างเดียว) ─────────────────────────
+static void ZX_DarkInfoRow(const char* label, const char* value, ImU32 valueColor = 0) {
+    ImGuiWindow* window = ImGui::GetCurrentWindow();
+    if (window->SkipItems) return;
+    ImVec2 pos = window->DC.CursorPos;
+    float  aw  = ImGui::GetContentRegionAvail().x;
+    ImVec2 size(aw, ZX_ROW_H);
+    ImGui::ItemSize(size, 0.0f);
+
+    ImDrawList* dl = window->DrawList;
+    ImVec2 bMax(pos.x + aw, pos.y + ZX_ROW_H);
+    dl->AddRectFilled(pos, bMax, ZX_ITEM_BG, ZX_ROW_RAD);
+    dl->AddRect(pos, bMax, ZX_ITEM_BORDER, ZX_ROW_RAD, 0, 1.0f);
+
+    float cy = pos.y + ZX_ROW_H * 0.5f;
+    dl->AddText(ImVec2(pos.x + ZX_PAD_LEFT + 4.0f, cy - ImGui::GetFontSize() * 0.5f),
+                ZX_TEXT, label);
+
+    ImU32 vc = (valueColor != 0) ? valueColor : ZX_ORANGE;
+    ImVec2 vts = ImGui::CalcTextSize(value);
+    dl->AddText(ImVec2(bMax.x - ZX_PAD_LEFT - vts.x - 4.0f,
+                       cy - ImGui::GetFontSize() * 0.5f), vc, value);
+
+    ImGui::SetCursorScreenPos(ImVec2(pos.x, pos.y + ZX_ROW_H + ZX_ROW_GAP));
+}
+
+// ── Kill counter (static, increments each session) ────────────────────────────
+static int  ZX_KillCount   = 0;
+static bool ZX_BatMonInit  = false;
+
 static void RenderMenu() {
     if (!MenDeal) return;
 
@@ -1525,10 +1555,10 @@ static void RenderMenu() {
     dl->AddLine(ImVec2(sbX1, wp.y + 10.0f), ImVec2(sbX1, wp.y + ws.y - 10.0f),
                 ZX_SEP, 1.0f);
 
-    // sidebar icon buttons — 3 interactive (ESP/Aimbot/Other) + 3 decorative
+    // sidebar icon buttons — 4 interactive (ESP/Aimbot/Other/Player) + 2 decorative
     struct SbItem { int iconType; bool interactive; };
     // iconType: 0=person,1=eye,2=crosshair,3=sword,4=gear,5=list,6=gamepad
-    SbItem sbItems[] = { {1,true},{2,true},{3,true},{6,false},{4,false},{0,false} };
+    SbItem sbItems[] = { {1,true},{2,true},{3,true},{0,true},{6,false},{4,false} };
     const int kSbItems = 6;
     const float sbBtnH = ws.y / (float)kSbItems;
 
@@ -1576,8 +1606,8 @@ static void RenderMenu() {
         float hCY = (hY0 + hY1) * 0.5f;
 
         // tab name pill (left side of header)
-        const char* tabNames[] = { "ESP", "AIMBOT", "OTHER" };
-        const char* tname = (ZX_Tab < 3) ? tabNames[ZX_Tab] : "MENU";
+        const char* tabNames[] = { "ESP", "AIMBOT", "OTHER", "PLAYER", "", "" };
+        const char* tname = (ZX_Tab < 6) ? tabNames[ZX_Tab] : "MENU";
         ImVec2 tts = ImGui::CalcTextSize(tname);
         float pillX0 = contentX + 10.0f;
         float pillX1 = pillX0 + tts.x + 36.0f + ZX_PAD_LEFT;
@@ -1591,7 +1621,8 @@ static void RenderMenu() {
         switch (ZX_Tab) {
             case 0: ZX_DrawSidebarIcon(dl, 1, pillIconC, s, ZX_ORANGE); break;
             case 1: ZX_DrawCrosshair(dl, pillIconC, s, ZX_ORANGE);       break;
-            case 2: ZX_DrawSword(dl, pillIconC, s, ZX_ORANGE);            break;
+            case 2: ZX_DrawSword(dl, pillIconC, s, ZX_ORANGE);           break;
+            case 3: ZX_DrawSidebarIcon(dl, 0, pillIconC, s, ZX_ORANGE); break;
         }
 
         // tab name text
@@ -1634,46 +1665,130 @@ static void RenderMenu() {
     switch (ZX_Tab) {
         // ── ESP ─────────────────────────────────────────────────────────────
         case 0: {
-            ZX_DarkItemRow("Enable ESP",   &Vars.Enable);
-            ZX_DarkItemRow("Info Esp",     &Vars.lines);
-            ZX_DarkItemRow("Bone Esp",     &Vars.skeleton);
-            ZX_DarkItemRow("Alert 360",    &Vars.circlepos);
-            ZX_DarkItemRow("Alert Number", &Vars.ESPCount);
+            ZX_DarkItemRow("Enable ESP",     &Vars.Enable);
+            ZX_DarkItemRow("Info Esp",       &Vars.lines);
+            ZX_DarkItemRow("Bone Esp",       &Vars.skeleton);
+            ZX_DarkItemRow("Box Esp",        &Vars.Box);
+            ZX_DarkItemRow("Name Esp",       &Vars.Name);
+            ZX_DarkItemRow("Health Bar",     &Vars.Health);
+            ZX_DarkItemRow("Distance Show",  &Vars.Distance);
+            ZX_DarkItemRow("Outline",        &Vars.Outline);
+            ZX_DarkItemRow("OOF Arrow",      &Vars.OOF);
+            ZX_DarkItemRow("Alert 360",      &Vars.circlepos);
+            ZX_DarkItemRow("Alert Number",   &Vars.ESPCount);
+            ZX_DarkItemRow("FOV Aim Glow",   &Vars.fovaimglow);
             ZX_DarkSection("Slider");
             ZX_DarkSliderRow("Distance Esp", &Vars.AimFov, 0.0f, 1000.0f);
             break;
         }
         // ── AIMBOT ──────────────────────────────────────────────────────────
         case 1: {
-            ZX_DarkItemRow("Enable Aimbot", &Vars.Enable);
+            ZX_DarkItemRow("Enable Aimbot",  &Vars.Enable);
             ZX_DarkItemRow("Aimbot",         &Vars.Aimbot);
+            ZX_DarkItemRow("Visible Check",  &Vars.VisibleCheck);
             ZX_DarkItemRow("Ignore Knocked", &Vars.IgnoreKnocked);
             ZX_DarkItemRow("Ignore Bots",    &ZX_AIPlayerAim);
+            ZX_DarkItemRow("Auto Fire",      &Vars.AutoFire);
+            ZX_DarkItemRow("Show Fov Circle",&Vars.ShowFovCircle);
+            ZX_DarkItemRow("Silent Aim",     &SilentAim);
             ZX_DarkWarningRow("Aim Kill",
                 "AimKill should only be used in CS/CS Ranked mode.\n"
                 "If you use it in Battle Royale, the game\n"
                 "may apply sanctions to your account.",
                 &ZX_AimKill);
             ZX_DarkSection("Slider");
-            ZX_DarkSliderRow("Aim Speed", &Vars.AimSpeed, 1.0f, 50.0f);
+            ZX_DarkSliderRow("Aim Speed",    &Vars.AimSpeed,        1.0f,  50.0f);
+            ZX_DarkSliderRow("Aim Fov",      &Vars.AimFov,          1.0f, 500.0f);
             break;
         }
         // ── OTHER ───────────────────────────────────────────────────────────
         case 2: {
-            ZX_DarkItemRow("Enable",           &Vars.Enable);
-            ZX_DarkItemRow("Fly Alt",          &ZX_FlyAlt);
+            ZX_DarkItemRow("Enable",            &Vars.Enable);
+            ZX_DarkItemRow("Fly Alt",           &ZX_FlyAlt);
             if (ZX_FlyAlt) {
-                ZX_DarkItemRow("Free Fly",     &ZX_FreeFly);
+                ZX_DarkItemRow("Free Fly",      &ZX_FreeFly);
             }
-            ZX_DarkItemRow("Telekill",         &ZX_Telekill);
-            ZX_DarkItemRow("Fast Fire",        &ZX_FastFire);
-            ZX_DarkItemRow("No Reload",        &ZX_NoReload);
-            ZX_DarkItemRow("Bullet Thru Wall", &ZX_BulletThru);
-            ZX_DarkItemRow("Chain Damage",     &ZX_ChainDamage);
-            ZX_DarkItemRow("Mark Teleport",    &ZX_MarkTeleport);
-            ZX_DarkItemRow("Auto Teleport",    &ZX_AutoTeleport);
+            ZX_DarkItemRow("Telekill",          &ZX_Telekill);
+            ZX_DarkItemRow("Fast Fire",         &ZX_FastFire);
+            ZX_DarkItemRow("No Reload",         &ZX_NoReload);
+            ZX_DarkItemRow("Ammo Speed Fast",   &Vars.AmmoSpeedFast);
+            ZX_DarkItemRow("Fast Switch",       &Vars.FastSwitch);
+            ZX_DarkItemRow("Bullet Thru Wall",  &ZX_BulletThru);
+            ZX_DarkItemRow("Long Range",        &Vars.LongRange);
+            ZX_DarkItemRow("Chain Damage",      &ZX_ChainDamage);
+            ZX_DarkItemRow("Bullet Penetration",&Vars.BulletPenetration);
+            ZX_DarkItemRow("Blue Map",          &Vars.BlueMap);
+            ZX_DarkItemRow("Ninja Run",         &Vars.NinjaRun);
+            ZX_DarkItemRow("Mark Teleport",     &ZX_MarkTeleport);
+            ZX_DarkItemRow("Auto Teleport",     &ZX_AutoTeleport);
             ZX_DarkSection("Slider");
-            ZX_DarkSliderRow("Fly Speed", &ZX_FlySpeed, 1.0f, 20.0f);
+            ZX_DarkSliderRow("Fly Speed",       &ZX_FlySpeed,   1.0f,  20.0f);
+            ZX_DarkSliderRow("Ninja Speed",     &Vars.NinjaRunSpeed, 0.1f, 20.0f);
+            break;
+        }
+        // ── PLAYER ──────────────────────────────────────────────────────────
+        case 3: {
+            // init battery monitor once
+            if (!ZX_BatMonInit) {
+                [[UIDevice currentDevice] setBatteryMonitoringEnabled:YES];
+                ZX_BatMonInit = true;
+            }
+            // timer
+            static double ZX_SessionStart = 0.0;
+            if (ZX_SessionStart == 0.0) ZX_SessionStart = ImGui::GetTime();
+            double elapsed = ImGui::GetTime() - ZX_SessionStart;
+            int hh = (int)(elapsed / 3600);
+            int mm = (int)(elapsed / 60) % 60;
+            int ss = (int)elapsed % 60;
+            char timeBuf[32]; snprintf(timeBuf, sizeof(timeBuf), "%02d:%02d:%02d", hh, mm, ss);
+
+            // battery
+            float batLevel = [[UIDevice currentDevice] batteryLevel];
+            char batBuf[16];
+            if (batLevel < 0.0f) snprintf(batBuf, sizeof(batBuf), "--%%");
+            else snprintf(batBuf, sizeof(batBuf), "%d%%", (int)(batLevel * 100.0f));
+            ImU32 batColor = (batLevel < 0.2f) ? ZX_RED : (batLevel < 0.5f) ? ZX_YELLOW : ZX_GREEN;
+
+            // kill counter
+            char killBuf[16]; snprintf(killBuf, sizeof(killBuf), "%d", ZX_KillCount);
+
+            ZX_DarkSection("Session Info");
+            ZX_DarkInfoRow("นับเวลา",  timeBuf,  ZX_ORANGE);
+            ZX_DarkInfoRow("นับแบต",   batBuf,   batColor);
+            ZX_DarkInfoRow("นับคีย์",  killBuf,  ZX_ORANGE);
+
+            // +/- buttons for kill counter
+            ImVec2 cp2 = ImGui::GetCursorScreenPos();
+            float  bw2 = (ImGui::GetContentRegionAvail().x - ZX_ROW_PAD) * 0.5f;
+            float  bh2 = ZX_ROW_H - 4.0f;
+            // minus button
+            dl->AddRectFilled(cp2, ImVec2(cp2.x + bw2, cp2.y + bh2), ZX_ITEM_BG, ZX_ROW_RAD);
+            dl->AddRect(cp2,       ImVec2(cp2.x + bw2, cp2.y + bh2), ZX_ITEM_BORDER, ZX_ROW_RAD, 0, 1.0f);
+            ImVec2 mts = ImGui::CalcTextSize("-  KILL");
+            dl->AddText(ImVec2(cp2.x + bw2 * 0.5f - mts.x * 0.5f, cp2.y + bh2 * 0.5f - mts.y * 0.5f), ZX_TEXT, "-  KILL");
+            ImGui::SetCursorScreenPos(cp2);
+            if (ImGui::InvisibleButton("##km", ImVec2(bw2, bh2)) && ZX_KillCount > 0) ZX_KillCount--;
+            // plus button
+            ImVec2 pp2(cp2.x + bw2 + ZX_ROW_PAD, cp2.y);
+            dl->AddRectFilled(pp2, ImVec2(pp2.x + bw2, pp2.y + bh2), ZX_ITEM_BG, ZX_ROW_RAD);
+            dl->AddRect(pp2,       ImVec2(pp2.x + bw2, pp2.y + bh2), ZX_ORANGE, ZX_ROW_RAD, 0, 1.0f);
+            ImVec2 pts = ImGui::CalcTextSize("+  KILL");
+            dl->AddText(ImVec2(pp2.x + bw2 * 0.5f - pts.x * 0.5f, pp2.y + bh2 * 0.5f - pts.y * 0.5f), ZX_ORANGE, "+  KILL");
+            ImGui::SetCursorScreenPos(pp2);
+            if (ImGui::InvisibleButton("##kp", ImVec2(bw2, bh2))) ZX_KillCount++;
+            ImGui::SetCursorScreenPos(ImVec2(cp2.x, cp2.y + bh2 + ZX_ROW_GAP * 2.0f));
+
+            // reset button
+            ImVec2 rp = ImGui::GetCursorScreenPos();
+            float rw = ImGui::GetContentRegionAvail().x;
+            dl->AddRectFilled(rp, ImVec2(rp.x + rw, rp.y + bh2), ZX_ITEM_BG, ZX_ROW_RAD);
+            dl->AddRect(rp,       ImVec2(rp.x + rw, rp.y + bh2), ZX_ITEM_BORDER, ZX_ROW_RAD, 0, 1.0f);
+            ImVec2 rts = ImGui::CalcTextSize("Reset Counter");
+            dl->AddText(ImVec2(rp.x + rw * 0.5f - rts.x * 0.5f, rp.y + bh2 * 0.5f - rts.y * 0.5f), ZX_TEXT_DIM, "Reset Counter");
+            ImGui::SetCursorScreenPos(rp);
+            if (ImGui::InvisibleButton("##kr", ImVec2(rw, bh2))) ZX_KillCount = 0;
+            ImGui::SetCursorScreenPos(ImVec2(rp.x, rp.y + bh2 + ZX_ROW_GAP));
+
             break;
         }
     }
