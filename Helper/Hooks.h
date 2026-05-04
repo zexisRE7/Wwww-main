@@ -1090,7 +1090,7 @@ void get_players()
             }
         }
 
-        // ── กล่องสีม่วง: ศัตรูที่ยังไม่โผล่ (not visible) ───────────────────
+        // ── กล่องสีม่วง: ศัตรูที่ยังไม่โผล่ (not visible)
         if (Vars.Box) {
             for (int u = 0; u < players->getSize(); u++) {
                 void *enemy = players->getValues()[u];
@@ -1161,7 +1161,7 @@ void get_players()
 }
 
 
-// Offsets ทั้งหมด ob53
+// Offsets 
 //   set_AmmoInClip                 = 0x61C8308
 //   set_ReloadSpeed                = 0x61C82F8
 //   set_OnceAmmo                   = 0x61C82E8
@@ -1369,7 +1369,7 @@ void old_AutoFire(void *_this, int32_t pFireStatus, int32_t pFireMode)
             auto now = steady_clock::now();
             double elapsed = duration<double>(now - lastTime).count();
 
-            // ✅ toggle ทุก FireDelay/2 → 1 นัดเต็มใช้เวลา = FireDelay
+            // toggle ทุก FireDelay/2 → 1 นัดเต็มใช้เวลา = FireDelay
             // เดิม toggle ทุก FireDelay → 1 นัดเต็มใช้ 2*FireDelay (ช้าครึ่งนึง)
             // ถ้า FireDelay = 0 (FastFire) → toggle ทุกเฟรม
             // → semi-auto (DEagle/Sniper) ได้ pulse FIRING→NONE→FIRING ทุก ~16ms
@@ -1386,7 +1386,7 @@ void old_AutoFire(void *_this, int32_t pFireStatus, int32_t pFireMode)
         }
         else
         {
-            // ❌ ไม่เห็นศัตรู → ไม่ยิง + reset เพื่อพร้อมยิงทันทีเมื่อเจอเป้าใหม่
+            // ไม่เห็นศัตรู → ไม่ยิง + reset เพื่อพร้อมยิงทันทีเมื่อเจอเป้าใหม่
             pFireStatus = FireStatus::NONE;
             fireState = false;
         }
