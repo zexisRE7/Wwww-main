@@ -26,7 +26,7 @@ struct Vars_t
     bool Enable = {};
     bool AimbotEnable = {};
     bool Aimbot = {};
-    bool ShowFovCircle = true;
+    bool ShowFovCircle = false;
    
     float AimFov = 500.0f;
     int AimCheck = {};
@@ -39,7 +39,7 @@ struct Vars_t
     const char* aimHitboxes[3] = {"Head", "Neck", "Body"};
     const char *dir[4] = {"None", "Fire", "Scope", "Fire + Scope"};
     const char *aimModes[3] = {"Aim 360°", "Aim 180°", "Aim Fov"};
-    bool VisibleCheck = true;
+    bool VisibleCheck = false;
     bool lines = {};
     bool Box = {};
     bool Outline = {};
@@ -59,7 +59,7 @@ struct Vars_t
     float fovLineColor[4] = {1.0f, 1.0f, 1.0f, 1.0f};
     ImVec4 boxColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
     float AimSpeed = 10.0f;
-    bool IgnoreKnocked = true;
+    bool IgnoreKnocked = false;
     bool AutoFire = false;
 
     // ── Senic Mode: Fast Fire / Fly Alt ──
