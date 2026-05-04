@@ -181,7 +181,7 @@ ImFont* Urbanist;
     self.mtkView.clipsToBounds = YES;
     Hook(0x4EB3E88, BLAGCMCGEJG1, old_BLAGCMCGEJG1);
     
-    // ✅ สร้างปุ่มลอย (ซ่อนไว้ก่อน — ต้องเปิดจากเมนูถึงจะโผล่)
+    // สร้างปุ่มลอย 
     [self createFlyButton];
     [self createTelekillButton];
     [self createAimkillButton];
@@ -191,7 +191,7 @@ ImFont* Urbanist;
     [self updateFloatButtonsVisibility];
 }
 
-// ── Helper: สร้างปุ่มลอยสไตล์เขียวเข้มตามรูป ──────────────────────────────
+// 
 - (UIButton *)makeFloatButton:(NSString *)title centerX:(CGFloat)cx centerY:(CGFloat)cy {
     const CGFloat BW = 68.0f, BH = 58.0f;
     UIWindow *win = [UIApplication sharedApplication].keyWindow
@@ -199,7 +199,7 @@ ImFont* Urbanist;
     UIButton *btn = [[UIButton alloc] initWithFrame:
         CGRectMake(cx - BW * 0.5f, cy - BH * 0.5f, BW, BH)];
 
-    // สีพื้นหลัง: เขียวเข้มตามรูป
+    // สีพื้นหลัง
     btn.backgroundColor = [UIColor colorWithRed:0.07 green:0.22 blue:0.13 alpha:0.95];
     btn.layer.cornerRadius   = 12;
     btn.layer.borderWidth    = 1.5f;
@@ -303,7 +303,7 @@ ImFont* Urbanist;
 }
 
 - (void)updateFloatButtonsVisibility {
-    // ✅ ปุ่มโผล่เมื่อเปิดฟังก์ชันนั้นจากเมนู — ผูกตรงกับ feature flag
+    //  ปุ่มโผล่เมื่อเปิดฟังก์ชันนั้นจากเมนู — ผูกตรงกับ feature flag
     self.flyButton.hidden      = !ZX_FlyAlt;
     self.telekillButton.hidden = !ZX_Telekill;
     self.aimkillButton.hidden  = !ZX_AimKill;
@@ -311,7 +311,7 @@ ImFont* Urbanist;
     self.markTPButton.hidden   = !ZX_MarkTeleport;
     self.autoTPButton.hidden   = !ZX_AutoTeleport;
 
-    // ✅ ซิงก์สถานะสวิตช์บนปุ่มให้ตรงกับ ZX_var
+    //  ซิงก์สถานะสวิตช์บนปุ่มให้ตรงกับ ZX_var
     if (self.flySwitch.on      != ZX_FlyAlt)       self.flySwitch.on      = ZX_FlyAlt;
     if (self.telekillSwitch.on != ZX_Telekill)     self.telekillSwitch.on = ZX_Telekill;
     if (self.aimkillSwitch.on  != ZX_AimKill)      self.aimkillSwitch.on  = ZX_AimKill;
@@ -359,7 +359,7 @@ ImFont* Urbanist;
 
 // ui — DS Gaming style (white iOS, top tabs)
 
-// ── Colors — Pure Black Gaming UI ────────────────────────────────────────────
+// ui
 static const ImU32 ZX_WIN_BG        = IM_COL32(  0,   0,   0, 255);   // pure black
 static const ImU32 ZX_TITLE_BG      = IM_COL32(  0,   0,   0, 255);   // pure black
 static const ImU32 ZX_PANEL_BG      = IM_COL32(  8,   8,   8, 255);   // sidebar bg
@@ -407,7 +407,7 @@ static const ImU32 ZX_RED           = IM_COL32(255,  59,  48, 255);
 static const ImU32 ZX_PURPLE        = IM_COL32(175,  82, 222, 255);
 static const ImU32 ZX_YELLOW        = IM_COL32(255, 204,   0, 255);
 
-// ── Layout — Dark Gaming sidebar style ────────────────────────────────────────
+// ── Layout — Dark Gaming sidebar style 
 static const float ZX_WIN_W      = 370.0f;
 static const float ZX_WIN_H      = 310.0f;
 static const float ZX_WIN_RAD    = 16.0f;
@@ -439,7 +439,7 @@ static const float ZX_CHK_RAD    =  4.0f;
 static const float ZX_FRAME_RAD  =  5.0f;
 
 // STATE
-static int   ZX_Tab            = 0;   // ✅ MODDER %7: เริ่มแท็บ AIM
+static int   ZX_Tab            = 0;   // 
 static bool  ZX_Collapsed      = false;
 static bool  ZX_StreamMode     = false;
 static bool  ZX_Count          = false;
@@ -479,14 +479,14 @@ static bool  ZX_Esp3DBox       = false;
 static bool  ZX_CameraLeft     = false;
 static float ZX_CameraHeight   = 5.0f;
 static float ZX_CameraSide     = 0.0f;
-static bool  ZX_FloatBtnEnabled = false;   // ✅ master toggle — เปิดจากเมนูก่อนปุ่มลอยถึงจะโผล่
+static bool  ZX_FloatBtnEnabled = false;   //  master toggle — เปิดจากเมนูก่อนปุ่มลอยถึงจะโผล่
 static bool  ZX_ShowFlyBtn      = false;
 static bool  ZX_ShowTelekillBtn = false;
 static bool  ZX_ShowAimkillBtn  = false;
 static bool  ZX_ShowNorecoilBtn = false;
 static bool  ZX_ShowMarkTPBtn   = false;
 static bool  ZX_ShowAutoTPBtn   = false;
-// ✅ MODDER %7 — ตัวเลือกใหม่ในแท็บ AIM ตามรูป
+// 
 static bool  ZX_AimRadius180   = false;
 static bool  ZX_AimRadius360   = false;
 static int   ZX_WhenShootIdx   = 0;        // 0=When Shoot and Scope
@@ -618,7 +618,7 @@ static void ZX_SonicSection(const char* text, bool withBolt) {
     window->DrawList->AddLine(ImVec2(pos.x + ZX_PAD_LEFT, ly), ImVec2(pos.x + size.x - ZX_PAD_LEFT, ly), ZX_SEP, 1.0f);
 }
 
-// ── iOS-style toggle row: ชื่อซ้าย | toggle ขวา ─────────────────────────────
+// ── iOS-style toggle row: ชื่อซ้าย 
 static bool ZX_SonicCheckCell(ImVec2 cellMin, ImVec2 cellMax, const char* label, bool* v) {
     ImGuiWindow* window = ImGui::GetCurrentWindow();
     const ImGuiID id = window->GetID(label);
@@ -848,7 +848,7 @@ static bool ZX_PillSlider(const char* label, float* v, float vmin, float vmax) {
     return pressed;
 }
 
-// ✅ MODDER %7 — Pill Dropdown: แถบโค้ง + ป้ายซ้าย + ▼ ขวา + ไอคอนเล็กนอกแถบ
+// 
 //    iconType: 0 = crosshair (เป้า), 1 = plus (+), -1 = ไม่มีไอคอน
 static bool ZX_PillDropdown(const char* label, int iconType) {
     ImGuiWindow* window = ImGui::GetCurrentWindow();
@@ -919,7 +919,7 @@ static bool ZX_PillDropdown(const char* label, int iconType) {
     return clicked;
 }
 
-// ✅ ทำงานทุกเฟรม ไม่ต้องเปิดเมนูค้าง
+// ทำงานทุกเฟรม ไม่ต้องเปิดเมนูค้าง
 static void ZX_ApplyAndRun() {
     Vars.AimbotEnable = Vars.Aimbot;
     Vars.isAimFov = (Vars.AimFov > 0);
@@ -1061,7 +1061,7 @@ static void ZX_ApplyAndRun() {
             }
         }
     }
-    // ✅ Camera Left – มุมสูงปรับได้ + ซ้าย/ขวา
+    //  Camera Left – มุมสูงปรับได้ + ซ้าย/ขวา
     if (ZX_CameraLeft && Vars.Enable) {
         void* match = game_sdk->Curent_Match();
         if (match) {
@@ -1373,7 +1373,7 @@ static bool ZX_DSToggleRow(const char* label, bool* v, bool last = false) {
     return pressed;
 }
 
-// ── DS Gaming: Sub-toggle row (โผล่เมื่อ parent ON) ─────────────────────────
+//
 //   ใช้งาน: if (ZX_FlyAlt) { ZX_DSSubToggleRow("Free Fly", &ZX_FreeFly); }
 static bool ZX_DSSubToggleRow(const char* label, bool* v, bool last = false) {
     ImGuiWindow* window = ImGui::GetCurrentWindow();
@@ -1425,7 +1425,7 @@ static bool ZX_DSSubToggleRow(const char* label, bool* v, bool last = false) {
     return pressed;
 }
 
-// ── DS Gaming: iOS blue slider row ───────────────────────────────────────────
+// iOS blue slider row
 static bool ZX_DSSliderRow(const char* label, float* v, float vmin, float vmax) {
     ImGuiWindow* window = ImGui::GetCurrentWindow();
     if (window->SkipItems) return false;
@@ -1543,10 +1543,10 @@ static void RenderMenu() {
     ImVec2 wp = ImGui::GetWindowPos();
     ImVec2 ws = ImGui::GetWindowSize();
 
-    // ── Window background ──────────────────────────────────────────────────
+    // ── Window background 
     dl->AddRectFilled(wp, ImVec2(wp.x + ws.x, wp.y + ws.y), ZX_WIN_BG, ZX_WIN_RAD);
 
-    // ── LEFT SIDEBAR ───────────────────────────────────────────────────────
+    // ── LEFT SIDEBAR
     float sbX0 = wp.x;
     float sbX1 = wp.x + ZX_SIDEBAR_W;
     dl->AddRectFilled(ImVec2(sbX0, wp.y), ImVec2(sbX1, wp.y + ws.y),
@@ -1651,7 +1651,7 @@ static void RenderMenu() {
                     ImVec2(wp.x + ws.x - 6.0f, wp.y + ZX_HEADER_H), ZX_SEP, 1.0f);
     }
 
-    // ── SCROLLABLE CONTENT ─────────────────────────────────────────────────
+    // ── SCROLLABLE CONTENT─
     float contentY0 = wp.y + ZX_HEADER_H + 6.0f;
     float contentH  = ws.y - ZX_HEADER_H - 6.0f;
 
@@ -1663,7 +1663,7 @@ static void RenderMenu() {
     ImGui::SetWindowFontScale(ZX_FONT_SIZE / 18.0f);
 
     switch (ZX_Tab) {
-        // ── ESP ─────────────────────────────────────────────────────────────
+        // ── ESP
         case 0: {
             ZX_DarkItemRow("Enable ESP",     &Vars.Enable);
             ZX_DarkItemRow("Info Esp",       &Vars.lines);
@@ -1681,7 +1681,7 @@ static void RenderMenu() {
             ZX_DarkSliderRow("Distance Esp", &Vars.AimFov, 0.0f, 1000.0f);
             break;
         }
-        // ── AIMBOT ──────────────────────────────────────────────────────────
+        // ── AIMBOT
         case 1: {
             ZX_DarkItemRow("Enable Aimbot",  &Vars.Enable);
             ZX_DarkItemRow("Aimbot",         &Vars.Aimbot);
@@ -1701,7 +1701,7 @@ static void RenderMenu() {
             ZX_DarkSliderRow("Aim Fov",      &Vars.AimFov,          1.0f, 500.0f);
             break;
         }
-        // ── OTHER ───────────────────────────────────────────────────────────
+        // ── OTHER 
         case 2: {
             ZX_DarkItemRow("Enable",            &Vars.Enable);
             ZX_DarkItemRow("Fly Alt",           &ZX_FlyAlt);
@@ -1726,7 +1726,7 @@ static void RenderMenu() {
             ZX_DarkSliderRow("Ninja Speed",     &Vars.NinjaRunSpeed, 0.1f, 20.0f);
             break;
         }
-        // ── PLAYER ──────────────────────────────────────────────────────────
+        // ── PLAYER
         case 3: {
             // init battery monitor once
             if (!ZX_BatMonInit) {
@@ -1899,14 +1899,14 @@ void initAutoFireHook(void) {
                          IM_COL32(255,255,255,255), txt);
 
             if (hovered && ImGui::IsMouseReleased(0) && !killDragging) {
-                // ใส่ kill function ตรงนี้ เช่น:
+                // ใส่ kill function
                 // ZX_AimKill = true;
                 // KillNearestEnemy();
             }
         }
 
-        ZX_ApplyAndRun();   // ✅ ทำงานทุกเฟรม ไม่ต้องเปิดเมนูค้าง
-        [self updateFloatButtonsVisibility];   // ✅ โชว์/ซ่อน + ซิงก์ปุ่มลอย
+        ZX_ApplyAndRun();   //  ทำงานทุกเฟรม ไม่ต้องเปิดเมนูค้าง
+        [self updateFloatButtonsVisibility];   //โชว์/ซ่อน + ซิงก์ปุ่มลอย
         ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
         get_players();
         draw_watermark();
