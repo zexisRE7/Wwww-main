@@ -1008,7 +1008,7 @@ static void ZX_ApplyAndRun() {
         Vars.isAimFov = true;
         if (Vars.AimFov < 200.0f) Vars.AimFov = 200.0f;
     }
-    if (ZX_NoReload && Vars.Enable) {
+    if (ZX_NoReload) {
         RunNoReload();   // set_AmmoInClip(999) + set_OnceAmmo(999) ทุกเฟรม
     }
     if (ZX_AIPlayerAim && Vars.Enable) {
