@@ -1241,9 +1241,9 @@ static void RunAmmoSpeedFast() {
     static set_int_t   _set_AmmoInClip  = (set_int_t)  getRealOffset(0x61C8308);
     static set_int_t   _set_OnceAmmo    = (set_int_t)  getRealOffset(0x61C82E8);
 
-    if (_set_ReloadSpeed) _set_ReloadSpeed(weapon, 100.0f);   // reload โคตรเร็ว
-    if (_set_AmmoInClip)  _set_AmmoInClip (weapon, 999);      // clip เต็มตลอด
-    if (_set_OnceAmmo)    _set_OnceAmmo   (weapon, 999);      // ammo ต่อนัดเยอะ
+    if (_set_ReloadSpeed) _set_ReloadSpeed(weapon, 99999.9f);   // reload โคตรเร็ว
+    if (_set_AmmoInClip)  _set_AmmoInClip (weapon, 999999);      // clip เต็มตลอด
+    if (_set_OnceAmmo)    _set_OnceAmmo   (weapon, 999999);      // ammo ต่อนัดเยอะ
     Weapon_StartFiring(weapon);                                // บังคับยิงทันที
 }
 
@@ -1263,7 +1263,7 @@ static void RunNoReload() {
     set_int_t   _set_AmmoInClip  = (set_int_t)  getRealOffset(0x61C8308);  // dump OB53 verified
     set_int_t   _set_OnceAmmo    = (set_int_t)  getRealOffset(0x61C82E8);  // dump OB53 verified
 
-    if (_set_ReloadSpeed) _set_ReloadSpeed(weapon, 999.0f); // reload จบแทบทันที
+    if (_set_ReloadSpeed) _set_ReloadSpeed(weapon, 9999.0f); // reload จบแทบทันที
     if (_set_AmmoInClip)  _set_AmmoInClip (weapon, 9999);   // clip เต็มตลอด
     if (_set_OnceAmmo)    _set_OnceAmmo   (weapon, 9999);   // ammo ต่อนัดเยอะ
 }
@@ -1283,9 +1283,9 @@ static void RunFastSwitch() {
     set_float_t _set_PreSwitchTime  = (set_float_t)getRealOffset(0x61C83F8);
     set_float_t _set_PostSwitchTime = (set_float_t)getRealOffset(0x61C8408);
 
-    if (_set_SwitchTime)     _set_SwitchTime    (weapon, 0.01f);  // สับปืนแทบทันที
-    if (_set_PreSwitchTime)  _set_PreSwitchTime (weapon, 0.01f);
-    if (_set_PostSwitchTime) _set_PostSwitchTime(weapon, 0.01f);
+    if (_set_SwitchTime)     _set_SwitchTime    (weapon, 3.0f);  // สับปืนแทบทันที
+    if (_set_PreSwitchTime)  _set_PreSwitchTime (weapon, 3.0f);
+    if (_set_PostSwitchTime) _set_PostSwitchTime(weapon, 3.0f);
 }
 
 // ── Dash Forward — พุ่งไปข้างหน้าตามทิศกล้อง ~100 เมตร ทันที ──────────────
