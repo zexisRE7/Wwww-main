@@ -1247,6 +1247,24 @@ static void RunAmmoSpeedFast() {
     Weapon_StartFiring(weapon);                                // บังคับยิงทันที
 }
 
+// ── No Reload — clip เต็มตลอด ไม่ต้องเติมกระสุน ──────────────────────────
+// ต่างจาก AmmoSpeedFast: ไม่บังคับยิง + ไม่เปลี่ยน ReloadSpeed
+static void RunNoReload() {
+    void* match = game_sdk->Curent_Match();
+    if (!match) return;
+    void* local = game_sdk->GetLocalPlayer(match);
+    if (!local) return;
+    void* weapon = GetWeaponOnHand1(local);
+    if (!weapon) return;
+
+    typedef void (*set_int_t)(void*, int);
+    static set_int_t _set_AmmoInClip = (set_int_t)getRealOffset(0x61C8308);
+    static set_int_t _set_OnceAmmo   = (set_int_t)getRealOffset(0x61C82E8);
+
+    if (_set_AmmoInClip) _set_AmmoInClip(weapon, 999);   // clip เต็มตลอด
+    if (_set_OnceAmmo)   _set_OnceAmmo  (weapon, 999);   // ammo ต่อนัดเยอะ
+}
+
 // ── Blue Map — tint ambient + fog เป็นสีน้ำเงิน
 static void RunBlueMap() {
     typedef void (*set_color_t)(UnityColor);
