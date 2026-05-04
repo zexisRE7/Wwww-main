@@ -1,5 +1,4 @@
-//Require standard library
-#import <Metal/Metal.h>
+//Require standard libraryort <Metal/Metal.h>
 #import <MetalKit/MetalKit.h>
 #import <Foundation/Foundation.h>
 #include <iostream>
@@ -408,8 +407,8 @@ static const ImU32 ZX_PURPLE        = IM_COL32(175,  82, 222, 255);
 static const ImU32 ZX_YELLOW        = IM_COL32(255, 204,   0, 255);
 
 // ── Layout — Dark Gaming sidebar style 
-static const float ZX_WIN_W      = 345.0f;
-static const float ZX_WIN_H      = 480.0f;
+static const float ZX_WIN_W      = 320.0f;
+static const float ZX_WIN_H      = 370.0f;
 static const float ZX_WIN_RAD    = 16.0f;
 static const float ZX_SIDEBAR_W  = 54.0f;   // left sidebar width
 static const float ZX_HEADER_H   = 54.0f;   // header area height
@@ -1536,17 +1535,17 @@ static void RenderMenu() {
     const ImU32 M_HOVER        = IM_COL32(255, 255, 255,  14);   // hover tint
 
     // ── Layout ──────────────────────────────────────────────────────────
-    const float WIN_W     = ZX_WIN_W;    // 345
-    const float WIN_H     = ZX_WIN_H;    // 480
-    const float WIN_RAD   = 18.0f;
-    const float SB_W      = 110.0f;      // sidebar width
-    const float HDR_H     =  54.0f;      // header (title) height
-    const float BOT_H     =  58.0f;      // bottom buttons bar height
-    const float ROW_H     =  50.0f;      // toggle row height
-    const float TAB_H     =  48.0f;      // each tab button height
-    const float TAB_GAP   =   6.0f;      // gap between tab buttons
-    const float TAB_PAD_X =   8.0f;      // horizontal padding inside sidebar
-    const float PAD       =  14.0f;      // general horizontal pad
+    const float WIN_W     = ZX_WIN_W;    // 320
+    const float WIN_H     = ZX_WIN_H;    // 370
+    const float WIN_RAD   = 16.0f;
+    const float SB_W      = 100.0f;      // sidebar width
+    const float HDR_H     =  44.0f;      // header (title) height
+    const float BOT_H     =  48.0f;      // bottom buttons bar height
+    const float ROW_H     =  42.0f;      // toggle row height
+    const float TAB_H     =  40.0f;      // each tab button height
+    const float TAB_GAP   =   5.0f;      // gap between tab buttons
+    const float TAB_PAD_X =   7.0f;      // horizontal padding inside sidebar
+    const float PAD       =  12.0f;      // general horizontal pad
 
     ImGui::PushStyleColor(ImGuiCol_WindowBg,      ImVec4(30.0f/255,30.0f/255,32.0f/255,1.0f));
     ImGui::PushStyleColor(ImGuiCol_Border,        ImVec4(0,0,0,0));
@@ -1593,8 +1592,8 @@ static void RenderMenu() {
     dl->AddLine(ImVec2(wp.x, zoneY1), ImVec2(wp.x + ws.x, zoneY1), M_SEP, 1.0f);
 
     // ── LEFT SIDEBAR: text tab buttons ───────────────────────────────────
-    const char* kTabNames[] = { "ESP", "AIMBOT", "AIMKILL", "BUTTON" };
-    const int   kTabCount   = 4;
+    const char* kTabNames[] = { "ESP", "AIMBOT", "AIMKILL", "BUTTON", "INFO" };
+    const int   kTabCount   = 5;
 
     float totalTabH = (float)kTabCount * TAB_H + (float)(kTabCount - 1) * TAB_GAP;
     float tabsY0    = zoneY0 + (zoneH - totalTabH) * 0.5f;  // vertically centered
@@ -1710,6 +1709,102 @@ static void RenderMenu() {
             TOGGLE_ROW("Under Hack",     &ZX_UNDER,    false);
             TOGGLE_ROW("Ninja Run",      &ZX_RUN,      false);
             TOGGLE_ROW("Speed NinjaRun", &ZX_GHOSTVIP, true);
+            break;
+        }
+        // ── INFO ─────────────────────────────────────────────────────────
+        case 4: {
+            // Init battery monitor once
+            if (!ZX_BatMonInit) {
+                [[UIDevice currentDevice] setBatteryMonitoringEnabled:YES];
+                ZX_BatMonInit = true;
+            }
+            // Session timer
+            static double ZX_InfoSessionStart = 0.0;
+            if (ZX_InfoSessionStart == 0.0) ZX_InfoSessionStart = ImGui::GetTime();
+            double elapsed = ImGui::GetTime() - ZX_InfoSessionStart;
+            int hh = (int)(elapsed / 3600);
+            int mm = (int)(elapsed / 60) % 60;
+            int ss = (int)elapsed % 60;
+            char timeBuf[32];
+            snprintf(timeBuf, sizeof(timeBuf), "%02d:%02d:%02d", hh, mm, ss);
+
+            // Battery
+            float batLevel = [[UIDevice currentDevice] batteryLevel];
+            char batBuf[16];
+            if (batLevel < 0.0f) snprintf(batBuf, sizeof(batBuf), "--%% ");
+            else snprintf(batBuf, sizeof(batBuf), "%d%%", (int)(batLevel * 100.0f));
+
+            // Kill counter buf
+            char killBuf[16];
+            snprintf(killBuf, sizeof(killBuf), "%d", ZX_KillCount);
+
+            // Info row helper (label left, value right — no toggle)
+            struct InfoRow {
+                static void Draw(const char* label, const char* value,
+                                 ImU32 textCol, ImU32 valCol,
+                                 ImU32 sep, ImU32 hover,
+                                 float rowH, float pad, bool lastRow) {
+                    ImGuiWindow* cw = ImGui::GetCurrentWindow();
+                    if (cw->SkipItems) return;
+                    ImVec2 pos = cw->DC.CursorPos;
+                    float  aw  = ImGui::GetContentRegionAvail().x;
+                    const ImGuiID id = cw->GetID(label);
+                    ImRect bb(pos, ImVec2(pos.x + aw, pos.y + rowH));
+                    ImGui::ItemSize(ImVec2(aw, rowH), 0.0f);
+                    ImGui::ItemAdd(bb, id);
+                    ImDrawList* cdl = cw->DrawList;
+                    if (!lastRow)
+                        cdl->AddLine(ImVec2(bb.Min.x + pad, bb.Max.y - 1.0f),
+                                     ImVec2(bb.Max.x - pad, bb.Max.y - 1.0f), sep, 1.0f);
+                    float cy = (bb.Min.y + bb.Max.y) * 0.5f;
+                    float fs = ImGui::GetFontSize();
+                    // label left
+                    cdl->AddText(ImVec2(bb.Min.x + pad, cy - fs * 0.5f), textCol, label);
+                    // value right
+                    ImVec2 vts = ImGui::CalcTextSize(value);
+                    cdl->AddText(ImVec2(bb.Max.x - pad - vts.x, cy - fs * 0.5f), valCol, value);
+                }
+            };
+
+            const ImU32 VAL_COL = IM_COL32(90, 200, 250, 255);  // same sky-blue as toggle ON
+
+            InfoRow::Draw("KEY",     killBuf, M_TEXT, VAL_COL, M_SEP, M_HOVER, ROW_H, PAD, false);
+            InfoRow::Draw("Battery", batBuf,  M_TEXT, VAL_COL, M_SEP, M_HOVER, ROW_H, PAD, false);
+            InfoRow::Draw("Time",    timeBuf, M_TEXT, VAL_COL, M_SEP, M_HOVER, ROW_H, PAD, true);
+
+            // +/- Kill counter buttons
+            ImGuiWindow* cw2 = ImGui::GetCurrentWindow();
+            ImVec2 cp = cw2->DC.CursorPos;
+            float  aw2 = ImGui::GetContentRegionAvail().x;
+            const float BTN_H = 40.0f, GAP2 = 10.0f;
+            float btnW = (aw2 - PAD * 2.0f - GAP2) * 0.5f;
+            ImDrawList* cdl2 = cw2->DrawList;
+
+            const ImU32 BTN_BG2 = IM_COL32(52, 52, 55, 255);
+            const ImU32 BTN_ACT = IM_COL32(47, 72, 87, 255);
+
+            // — KILL button
+            float mX0 = cp.x + PAD, mX1 = mX0 + btnW;
+            float mY0 = cp.y + 8.0f, mY1 = mY0 + BTN_H;
+            cdl2->AddRectFilled(ImVec2(mX0, mY0), ImVec2(mX1, mY1), BTN_BG2, 10.0f);
+            ImVec2 mts = ImGui::CalcTextSize("- KILL");
+            cdl2->AddText(ImVec2((mX0+mX1)*0.5f - mts.x*0.5f, (mY0+mY1)*0.5f - mts.y*0.5f),
+                          M_TEXT, "- KILL");
+            ImGui::SetCursorScreenPos(ImVec2(mX0, mY0));
+            if (ImGui::InvisibleButton("##km", ImVec2(btnW, BTN_H)) && ZX_KillCount > 0)
+                ZX_KillCount--;
+
+            // + KILL button
+            float pX0 = mX1 + GAP2, pX1 = pX0 + btnW;
+            cdl2->AddRectFilled(ImVec2(pX0, mY0), ImVec2(pX1, mY1), BTN_ACT, 10.0f);
+            ImVec2 pts2 = ImGui::CalcTextSize("+ KILL");
+            cdl2->AddText(ImVec2((pX0+pX1)*0.5f - pts2.x*0.5f, (mY0+mY1)*0.5f - pts2.y*0.5f),
+                          M_TEXT, "+ KILL");
+            ImGui::SetCursorScreenPos(ImVec2(pX0, mY0));
+            if (ImGui::InvisibleButton("##kp", ImVec2(btnW, BTN_H)))
+                ZX_KillCount++;
+
+            ImGui::SetCursorScreenPos(ImVec2(cp.x, mY1 + 8.0f));
             break;
         }
     }
