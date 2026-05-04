@@ -1259,13 +1259,59 @@ static void RunNoReload() {
 
     typedef void (*set_int_t)(void*, int);
     typedef void (*set_float_t)(void*, float);
-    set_float_t _set_ReloadSpeed = (set_float_t)getRealOffset(0x61C82F8);
-    set_int_t   _set_AmmoInClip  = (set_int_t)  getRealOffset(0x61C8308);
-    set_int_t   _set_OnceAmmo    = (set_int_t)  getRealOffset(0x61C82E8);
+    set_float_t _set_ReloadSpeed = (set_float_t)getRealOffset(0x61C82F8);  // dump OB53 verified
+    set_int_t   _set_AmmoInClip  = (set_int_t)  getRealOffset(0x61C8308);  // dump OB53 verified
+    set_int_t   _set_OnceAmmo    = (set_int_t)  getRealOffset(0x61C82E8);  // dump OB53 verified
 
-    if (_set_ReloadSpeed) _set_ReloadSpeed(weapon, 100.0f); // reload จบทันที
-    if (_set_AmmoInClip)  _set_AmmoInClip (weapon, 999);    // clip เต็มตลอด
-    if (_set_OnceAmmo)    _set_OnceAmmo   (weapon, 999);    // ammo ต่อนัดเยอะ
+    if (_set_ReloadSpeed) _set_ReloadSpeed(weapon, 999.0f); // reload จบแทบทันที
+    if (_set_AmmoInClip)  _set_AmmoInClip (weapon, 9999);   // clip เต็มตลอด
+    if (_set_OnceAmmo)    _set_OnceAmmo   (weapon, 9999);   // ammo ต่อนัดเยอะ
+}
+
+// ── Fast Switch — สับปืนเร็วมาก (SwitchTime → 0) ─────────────────────────
+// dump OB53: set_SwitchWeaponTime=0x61C83E8 / set_PreSwitchWeaponTime=0x61C83F8 / set_PostSwitchWeaponTime=0x61C8408
+static void RunFastSwitch() {
+    void* match = game_sdk->Curent_Match();
+    if (!match) return;
+    void* local = game_sdk->GetLocalPlayer(match);
+    if (!local) return;
+    void* weapon = GetWeaponOnHand1(local);
+    if (!weapon) return;
+
+    typedef void (*set_float_t)(void*, float);
+    set_float_t _set_SwitchTime     = (set_float_t)getRealOffset(0x61C83E8);
+    set_float_t _set_PreSwitchTime  = (set_float_t)getRealOffset(0x61C83F8);
+    set_float_t _set_PostSwitchTime = (set_float_t)getRealOffset(0x61C8408);
+
+    if (_set_SwitchTime)     _set_SwitchTime    (weapon, 0.01f);  // สับปืนแทบทันที
+    if (_set_PreSwitchTime)  _set_PreSwitchTime (weapon, 0.01f);
+    if (_set_PostSwitchTime) _set_PostSwitchTime(weapon, 0.01f);
+}
+
+// ── Dash Forward — พุ่งไปข้างหน้าตามทิศกล้อง ~100 เมตร ทันที ──────────────
+static void RunDashForward(float distance = 100.0f) {
+    void* match = game_sdk->Curent_Match();
+    if (!match) return;
+    void* local = game_sdk->GetLocalPlayer(match);
+    if (!local) return;
+    void* cam = game_sdk->get_camera();
+    if (!cam) return;
+    void* pTF = game_sdk->Component_GetTransform(local);
+    void* cTF = game_sdk->Component_GetTransform(cam);
+    if (!pTF || !cTF) return;
+
+    Vector3 cur = game_sdk->get_position(pTF);
+    Vector3 fwd = game_sdk->GetForward(cTF);
+
+    // normalize แนวราบ (ไม่พุ่งขึ้น/ลงตามมุมกล้อง)
+    float len = sqrtf(fwd.x * fwd.x + fwd.z * fwd.z);
+    if (len < 0.001f) return;
+    float nx = fwd.x / len;
+    float nz = fwd.z / len;
+
+    cur.x += nx * distance;
+    cur.z += nz * distance;
+    Transform_INTERNAL_SetPosition(pTF, Vvector3(cur.x, cur.y, cur.z));
 }
 
 // ── Blue Map — tint ambient + fog เป็นสีน้ำเงิน
