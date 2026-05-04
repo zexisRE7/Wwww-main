@@ -432,6 +432,7 @@ static bool  ZX_FastFire       = false;
 static bool  ZX_LongRange      = false;
 static bool  ZX_BulletThru     = false;
 static bool  ZX_FastSwitch     = false;
+static bool  ZX_FastSwitchAuto = false;   // สับปืนเร็วอัตโนมัติ (ทุกเฟรม)
 static bool  ZX_ChainDamage    = false;
 static float ZX_ChainDmgValue  = 1000.0f;
 static bool  ZX_Telekill       = false;
@@ -453,6 +454,8 @@ static bool  ZX_AmmoSpeedFast  = false;
 static bool  ZX_BlueMap        = false;
 static bool  ZX_SetMark        = false;
 static bool  ZX_ResetAcc       = false;
+static bool  ZX_DashForward    = false;   // กดปุ่ม → พุ่งไปข้างหน้า 100m ทันที
+static float ZX_DashDistance   = 100.0f;  // ระยะ dash (เมตร)
 static bool  ZX_HideModMenu    = false;
 static bool  ZX_Esp2DCorner    = true;
 static bool  ZX_Esp3DBox       = true;
@@ -942,6 +945,7 @@ static void ZX_ApplyAndRun() {
     Vars.BlueMap = ZX_BlueMap;
     if (ZX_SetMark) { SetMarkAtCurrentPos(); ZX_SetMark = false; }
     if (ZX_ResetAcc) { DoResetAccount(); ZX_ResetAcc = false; }
+    if (ZX_DashForward) { RunDashForward(ZX_DashDistance); ZX_DashForward = false; }
     if (ZX_BlueMap && Vars.Enable) RunBlueMap();
     if (ZX_AmmoSpeedFast && Vars.Enable) RunAmmoSpeedFast();
     if (ZX_MarkTeleport && Vars.Enable) RunMarkTeleport();
@@ -1009,7 +1013,10 @@ static void ZX_ApplyAndRun() {
         if (Vars.AimFov < 200.0f) Vars.AimFov = 200.0f;
     }
     if (ZX_NoReload) {
-        RunNoReload();   // set_AmmoInClip(999) + set_OnceAmmo(999) ทุกเฟรม
+        RunNoReload();
+    }
+    if (ZX_FastSwitchAuto) {
+        RunFastSwitch();
     }
     if (ZX_AIPlayerAim && Vars.Enable) {
         Vars.Aimbot = true;
@@ -1236,6 +1243,7 @@ static void RenderMenu() {
         case 2: { // BUTTON
             ZX_SonicCheckRow("Fast Fire",         &ZX_FastFire);
             ZX_SonicCheckRow("No Reload",         &ZX_NoReload);
+            ZX_SonicCheckRow("Fast Switch Auto",  &ZX_FastSwitchAuto);
             ZX_SonicCheckRow("Long Range",        &ZX_LongRange);
             ZX_SonicCheckRow("Fly Alt",           &ZX_FlyAlt);
             ZX_SonicCheckRow("Free Fly",          &ZX_FreeFly);
@@ -1243,6 +1251,9 @@ static void RenderMenu() {
             ZX_SonicCheckRow("Camera Left",       &ZX_CameraLeft);
             ZX_PillSlider("Fly Spd",              &ZX_FlySpeed, 1.0f, 20.0f);
             ZX_Slider("Cam Height",               &ZX_CameraHeight, 1.0f, 25.0f);
+            // ── Dash Forward ──────────────────────────────────────────────
+            ZX_PillSlider("Dash",                 &ZX_DashDistance, 10.0f, 200.0f);
+            ZX_SonicCheckRow("Dash Forward",      &ZX_DashForward);
             break;
         }
         case 3: { // OTHER
