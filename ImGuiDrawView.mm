@@ -477,6 +477,8 @@ static bool  ZX_KeyVerified    = false;    // ผ่าน key แล้ว → 
 static bool  ZX_ShowSuccess    = false;    // กำลังแสดงหน้าสำเร็จ
 static float ZX_SuccessTimer   = 5.0f;    // countdown (วินาที)
 static char  ZX_KeyBuf[128]    = "";      // input buffer
+static bool  ZX_ShowKeyboard   = false;   // ขอแสดง keyboard (UIAlertController)
+static bool  ZX_KeyboardPending = false;  // กำลังแสดง alert อยู่ (กัน present ซ้ำ)
 
 static void ZX_DrawSidebarIcon(ImDrawList* dl, int idx, ImVec2 c, float s, ImU32 col) {
     switch (idx) {
@@ -1194,40 +1196,35 @@ static void RenderKeyScreen() {
         dl->AddText(ImVec2(wp.x + (W - ts2.x)*0.5f, wp.y + 52),
                     KS_SUBTITLE, t2);
 
-        // ── กล่อง input ──────────────────────────────────────────────────────
+        // ── กล่อง input (tap → เปิด keyboard จริง ผ่าน UIAlertController) ────
         const float FX0 = wp.x + 20;
         const float FY0 = wp.y + 82;
         const float FX1 = wp.x + W - 20;
         const float FY1 = FY0 + 44;
+
+        // ไฮไลต์ขอบฟ้าสว่างขึ้นถ้ากำลังรอ keyboard
+        ImU32 fieldBorder = ZX_KeyboardPending ? KS_TITLE : KS_FIELD_BOR;
         dl->AddRectFilled(ImVec2(FX0, FY0), ImVec2(FX1, FY1), KS_FIELD_BG, 12.0f);
-        dl->AddRect(ImVec2(FX0, FY0), ImVec2(FX1, FY1), KS_FIELD_BOR, 12.0f, 0, 1.5f);
+        dl->AddRect(ImVec2(FX0, FY0), ImVec2(FX1, FY1), fieldBorder, 12.0f, 0, 1.5f);
 
-        // InputText widget (invisible bg, ใช้แค่ text input)
-        ImGui::PushStyleColor(ImGuiCol_FrameBg,        ImVec4(0,0,0,0));
-        ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0,0,0,0));
-        ImGui::PushStyleColor(ImGuiCol_FrameBgActive,  ImVec4(0,0,0,0));
-        ImGui::PushStyleColor(ImGuiCol_Text,           ImVec4(1,1,1,0.9f));
-        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 12.0f);
-        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(14, 12));
-        ImGui::SetCursorScreenPos(ImVec2(FX0, FY0));
-        ImGui::SetNextItemWidth(FX1 - FX0);
-
-        // placeholder "金鑰" เมื่อว่าง
+        // แสดงข้อความที่พิมพ์แล้ว หรือ placeholder
+        ImVec2 textPos(FX0 + 14, FY0 + (44 - ImGui::GetFontSize()) * 0.5f);
         if (ZX_KeyBuf[0] == '\0') {
-            ImVec2 plp(FX0 + 14, FY0 + (44 - ImGui::GetFontSize()) * 0.5f);
-            dl->AddText(plp, IM_COL32(255,255,255, 90), "Key");
-        }
-        ImGui::InputText("##keyinput", ZX_KeyBuf, sizeof(ZX_KeyBuf),
-                         ImGuiInputTextFlags_Password);
-        // แสดง key แบบ plain text ทับ (เอา password mask ออก — วาดทับ)
-        if (ZX_KeyBuf[0] != '\0') {
-            // วาด text จริงทับ widget
-            ImVec2 tp(FX0 + 14, FY0 + (44 - ImGui::GetFontSize()) * 0.5f);
-            dl->AddText(tp, KS_TEXT, ZX_KeyBuf);
+            dl->AddText(textPos, IM_COL32(255,255,255, 80), "Tap to enter key...");
+        } else {
+            // แสดง key จริง (masking ด้วย *)
+            char masked[128];
+            size_t len = strlen(ZX_KeyBuf);
+            for (size_t i = 0; i < len && i < 127; ++i) masked[i] = '*';
+            masked[len < 127 ? len : 127] = '\0';
+            dl->AddText(textPos, KS_TEXT, masked);
         }
 
-        ImGui::PopStyleVar(2);
-        ImGui::PopStyleColor(4);
+        // invisible button คลุมกล่อง — tap เพื่อเปิด keyboard
+        ImGui::SetCursorScreenPos(ImVec2(FX0, FY0));
+        if (ImGui::InvisibleButton("##ksfield", ImVec2(FX1 - FX0, 44))) {
+            if (!ZX_KeyboardPending) ZX_ShowKeyboard = true;
+        }
 
         // ── 2 ปุ่ม ──────────────────────────────────────────────────────────
         const float BH = 48.0f;
@@ -1236,7 +1233,7 @@ static void RenderKeyScreen() {
         const float BMid = wp.x + W * 0.5f - 6;
         const float BX1  = wp.x + W - 20;
 
-        // ปุ่ม 網站
+        // ปุ่ม Website
         dl->AddRectFilled(ImVec2(BX0, BY), ImVec2(BMid, BY + BH), KS_BTN_WEB, 24.0f);
         {
             const char* lw = "Website";
@@ -1246,8 +1243,11 @@ static void RenderKeyScreen() {
         ImGui::SetCursorScreenPos(ImVec2(BX0, BY));
         ImGui::InvisibleButton("##ksweb", ImVec2(BMid - BX0, BH));
 
-        // ปุ่ม 登入
-        dl->AddRectFilled(ImVec2(BMid + 12, BY), ImVec2(BX1, BY + BH), KS_BTN_LOGIN, 24.0f);
+        // ปุ่ม Login — tap เปิด keyboard เพื่อใส่ key แล้ว login ทันที
+        ImU32 loginColor = ZX_KeyboardPending
+            ? IM_COL32(60, 160, 200, 180)   // หรี่ลงเมื่อรอ
+            : KS_BTN_LOGIN;
+        dl->AddRectFilled(ImVec2(BMid + 12, BY), ImVec2(BX1, BY + BH), loginColor, 24.0f);
         {
             const char* ll = "Login";
             ImVec2 ts = ImGui::CalcTextSize(ll);
@@ -1256,9 +1256,14 @@ static void RenderKeyScreen() {
         }
         ImGui::SetCursorScreenPos(ImVec2(BMid + 12, BY));
         if (ImGui::InvisibleButton("##kslogin", ImVec2(BX1 - BMid - 12, BH))) {
-            // ยอมรับ key อะไรก็ได้ → ไปหน้าสำเร็จ
-            ZX_ShowSuccess  = true;
-            ZX_SuccessTimer = 5.0f;
+            // ถ้ามี key แล้ว → ไปหน้าสำเร็จทันที
+            // ถ้ายังไม่มี → เปิด keyboard ก่อน
+            if (ZX_KeyBuf[0] != '\0') {
+                ZX_ShowSuccess  = true;
+                ZX_SuccessTimer = 5.0f;
+            } else if (!ZX_KeyboardPending) {
+                ZX_ShowKeyboard = true;
+            }
         }
 
     // ── หน้า 2: สำเร็จ (5 วินาที) ───────────────────────────────────────────
@@ -1301,7 +1306,7 @@ static void RenderKeyScreen() {
         addSection("Package Info");
         addRow("App",      "FreeFire",  false);
         addRow("Version",  "2.1.0",     false);
-        addRow("Author",   "Fluck",     false);
+        addRow("Author",   "monalisa",     false);
 
         y += 6;
 
@@ -1372,7 +1377,7 @@ static void RenderMenu() {
 
     // ชื่อ "CheatiOSVip.Com" กลาง
     {
-        const char* title = "CheatiOSVip.Com";
+        const char* title = "MONA IS BEST";
         ImVec2 ts = ImGui::CalcTextSize(title);
         dl->AddText(ImVec2(wp.x + (ws.x - ts.x) * 0.5f,
                            tMin.y + (ZX_TITLE_H - ts.y) * 0.5f),
@@ -1610,6 +1615,56 @@ void initAutoFireHook(void) {
         [commandBuffer presentDrawable:view.currentDrawable];
     }
     [commandBuffer commit];
+
+    // ── UIAlertController keyboard สำหรับ Key System ─────────────────────
+    if (ZX_ShowKeyboard && !ZX_KeyboardPending) {
+        ZX_ShowKeyboard  = false;
+        ZX_KeyboardPending = true;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            UIAlertController* alert =
+                [UIAlertController alertControllerWithTitle:@"Free Fire MAX"
+                                                    message:@"Please enter your key"
+                                             preferredStyle:UIAlertControllerStyleAlert];
+            [alert addTextFieldWithConfigurationHandler:^(UITextField* tf) {
+                tf.placeholder            = @"Key";
+                tf.keyboardAppearance     = UIKeyboardAppearanceDark;
+                tf.autocorrectionType     = UITextAutocorrectionTypeNo;
+                tf.autocapitalizationType = UITextAutocapitalizationTypeNone;
+                tf.spellCheckingType      = UITextSpellCheckingTypeNo;
+                // ถ้ามี key เดิมให้แสดงด้วย
+                if (ZX_KeyBuf[0] != '\0')
+                    tf.text = [NSString stringWithUTF8String:ZX_KeyBuf];
+            }];
+
+            UIAlertAction* loginAct =
+                [UIAlertAction actionWithTitle:@"Login"
+                                         style:UIAlertActionStyleDefault
+                                       handler:^(UIAlertAction* a) {
+                    NSString* text = alert.textFields.firstObject.text ?: @"";
+                    strncpy(ZX_KeyBuf, text.UTF8String ?: "", sizeof(ZX_KeyBuf) - 1);
+                    ZX_KeyBuf[sizeof(ZX_KeyBuf) - 1] = '\0';
+                    // ไปหน้าสำเร็จ 5 วินาที → เมนูหลัก
+                    ZX_ShowSuccess    = true;
+                    ZX_SuccessTimer   = 5.0f;
+                    ZX_KeyboardPending = false;
+                }];
+
+            UIAlertAction* cancelAct =
+                [UIAlertAction actionWithTitle:@"Cancel"
+                                         style:UIAlertActionStyleCancel
+                                       handler:^(UIAlertAction* a) {
+                    ZX_KeyboardPending = false;
+                }];
+
+            [alert addAction:cancelAct];
+            [alert addAction:loginAct];
+
+            // หา top-most ViewController
+            UIViewController* root = [UIApplication sharedApplication].keyWindow.rootViewController;
+            while (root.presentedViewController) root = root.presentedViewController;
+            [root presentViewController:alert animated:YES completion:nil];
+        });
+    }
 }
 
 - (void)mtkView:(MTKView*)view drawableSizeWillChange:(CGSize)size {}
