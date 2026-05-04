@@ -1286,7 +1286,7 @@ static void RenderMenu() {
 
     // "DS Gaming" — centered, bold
     {
-        const char* title = "MONALISA W9";
+        const char* title = "DS Gaming";
         ImVec2 ts = ImGui::CalcTextSize(title);
         dl->AddText(ImVec2(wp.x + (ws.x - ts.x) * 0.5f,
                            wp.y + (ZX_TITLE_H - ts.y) * 0.5f),
@@ -1379,6 +1379,7 @@ static void RenderMenu() {
         case 0: {
             cp = ImGui::GetCursorScreenPos();
             ZX_DSSection(ImGui::GetWindowDrawList(), cp, cw, "Switch");
+            ZX_DSToggleRow("Enable ESP",   &Vars.Enable);   // master gate — ต้องเปิดก่อน
             ZX_DSToggleRow("Info Esp",     &Vars.lines);
             ZX_DSToggleRow("Bone Esp",     &Vars.skeleton);
             ZX_DSToggleRow("Alert 360",    &Vars.circlepos);
@@ -1392,7 +1393,8 @@ static void RenderMenu() {
         case 1: {
             cp = ImGui::GetCursorScreenPos();
             ZX_DSSection(ImGui::GetWindowDrawList(), cp, cw, "Switch");
-            ZX_DSToggleRow("Enable Aimbot", &Vars.Aimbot);
+            ZX_DSToggleRow("Enable Aimbot", &Vars.Enable);  // master gate — ต้องเปิดก่อน
+            ZX_DSToggleRow("Aimbot",        &Vars.Aimbot);
             ZX_DSToggleRow("Ignore Knock",  &Vars.IgnoreKnocked);
             ZX_DSToggleRow("Ignore Bot",    &ZX_AIPlayerAim);
             ZX_DSToggleRow("Aim Wukong",    &ZX_AimKill, true);
@@ -1405,6 +1407,7 @@ static void RenderMenu() {
         case 2: {
             cp = ImGui::GetCursorScreenPos();
             ZX_DSSection(ImGui::GetWindowDrawList(), cp, cw, "Switch");
+            ZX_DSToggleRow("Enable",           &Vars.Enable);  // master gate
             ZX_DSToggleRow("Fly Alt",          &ZX_FlyAlt);
             ZX_DSToggleRow("Telekill",         &ZX_Telekill);
             ZX_DSToggleRow("Fast Fire",        &ZX_FastFire);
@@ -1438,11 +1441,11 @@ static void RenderMenu() {
     float   fSm  = ImGui::GetFontSize() * 0.78f;
     float   ftY  = botY0 + (ZX_BOT_H - fnt->CalcTextSizeA(fSm, FLT_MAX, 0, "X").y) * 0.5f;
     dl->AddText(fnt, fSm, ImVec2(wp.x + ZX_PAD_LEFT, ftY),
-                ZX_TEXT_DIM, "FF: antiban");
+                ZX_TEXT_DIM, "FF: External");
 
     // "Author: Mr D" right
     {
-        const char* auth = "Author: mona w9";
+        const char* auth = "Author: Mr D";
         ImVec2 ts = fnt->CalcTextSizeA(fSm, FLT_MAX, 0.0f, auth);
         dl->AddText(fnt, fSm,
                     ImVec2(wp.x + ws.x - ZX_PAD_LEFT - ts.x, ftY),
