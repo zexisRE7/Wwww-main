@@ -581,6 +581,77 @@ static void initSpeedMultHook() {
     if (orig) *(void**)(&old_setMoveSpeed) = orig;
 }
 
+// ── AimKill Real — hook TakeDamage (OB53) ─────────────────────────────────────
+// RVA 0x4F63DE0 = human player entity TakeDamage (override, near TakeDamageByVehicle)
+// RVA 0x4B91BE4 = secondary entity TakeDamage (fallback)
+//
+// ELMGJKHIIAA (DamageInfo) layout (OB53 dump line 1114422):
+//   +0x10 = DBLBLKADCNP  int   — damage value
+//   +0x20 = NNNADMOFPIE  bool  — headshot / critical flag
+//   +0x70 = ACAKHEABPEJ  short — hitbox bone index
+//
+// Flow: Client calls TakeDamage on enemy entity (client-sim) →
+//       hit data is packed into RUDP C2S → server validates → applies damage.
+//       We modify damage in-struct before the original function packs it.
+
+static bool ZX_AimKillReal = false;  // AimKill Real Damage
+
+// ── trampoline pointers ───────────────────────────────────────────────────────
+static void (*old_TakeDamageA)(void*, void*, void*, void*, uint32_t) = nullptr;  // 0x4F63DE0
+static void (*old_TakeDamageB)(void*, void*, void*, void*, uint32_t) = nullptr;  // 0x4B91BE4
+
+static void applyRealDamage(void* _this, void* dmgInfo) {
+    if (!ZX_AimKillReal || !dmgInfo) return;
+    // ตรวจ: อย่าบูสต์ damage ที่กระทำกับตัวเอง (local player)
+    void* match = game_sdk ? game_sdk->Curent_Match() : nullptr;
+    void* local = (match && game_sdk) ? game_sdk->GetLocalPlayer(match) : nullptr;
+    if (_this == local) return;
+    // แก้ damage value → 999 (สูงพอฆ่าทันที แต่ไม่บ้าจน server flag)
+    *(int*)((uintptr_t)dmgInfo + 0x10)  = 999;
+    // เซ็ต headshot flag → damage multiplier
+    *(bool*)((uintptr_t)dmgInfo + 0x20) = true;
+    // เซ็ต bone → head (0)
+    *(short*)((uintptr_t)dmgInfo + 0x70) = 0;
+}
+
+static void hook_TakeDamageA(void* _this, void* dmgInfo, void* wpnInfo, void* chkParams, uint32_t vehID) {
+    applyRealDamage(_this, dmgInfo);
+    if (old_TakeDamageA) old_TakeDamageA(_this, dmgInfo, wpnInfo, chkParams, vehID);
+}
+
+static void hook_TakeDamageB(void* _this, void* dmgInfo, void* wpnInfo, void* chkParams, uint32_t vehID) {
+    applyRealDamage(_this, dmgInfo);
+    if (old_TakeDamageB) old_TakeDamageB(_this, dmgInfo, wpnInfo, chkParams, vehID);
+}
+
+static void initAimKillRealHook() {
+    static bool done = false;
+    if (done) return;
+    done = true;
+    // Primary hook — 0x4F63DE0 (human player entity TakeDamage)
+    {
+        NSString* p = StaticInlineHookPatch(
+            ("Frameworks/UnityFramework.framework/UnityFramework"),
+            0x4F63DE0, nullptr);
+        NSLog(@"[AimKillReal-A] patch: %@", p ?: @"<nil>");
+        void* o = StaticInlineHookFunction(
+            ("Frameworks/UnityFramework.framework/UnityFramework"),
+            0x4F63DE0, (void*)hook_TakeDamageA);
+        if (o) *(void**)(&old_TakeDamageA) = o;
+    }
+    // Secondary hook — 0x4B91BE4 (fallback entity TakeDamage)
+    {
+        NSString* p = StaticInlineHookPatch(
+            ("Frameworks/UnityFramework.framework/UnityFramework"),
+            0x4B91BE4, nullptr);
+        NSLog(@"[AimKillReal-B] patch: %@", p ?: @"<nil>");
+        void* o = StaticInlineHookFunction(
+            ("Frameworks/UnityFramework.framework/UnityFramework"),
+            0x4B91BE4, (void*)hook_TakeDamageB);
+        if (o) *(void**)(&old_TakeDamageB) = o;
+    }
+}
+
 static void ZX_DrawSidebarIcon(ImDrawList* dl, int idx, ImVec2 c, float s, ImU32 col) {
     switch (idx) {
         case 0: {
@@ -1010,7 +1081,8 @@ static bool ZX_PillDropdown(const char* label, int iconType) {
 
 // ทำงานทุกเฟรม ไม่ต้องเปิดเมนูค้าง
 static void ZX_ApplyAndRun() {
-    initSpeedMultHook();   // hook set_MoveSpeed once (0x61BCB4C)
+    initSpeedMultHook();      // hook set_MoveSpeed once (0x61BCB4C)
+    initAimKillRealHook();    // hook TakeDamage once (0x4F63DE0 + 0x4B91BE4)
     Vars.AimbotEnable = Vars.Aimbot;
     Vars.isAimFov = (Vars.AimFov > 0);
     Vars.fovLineColor[0] = 0.90f;
@@ -1083,6 +1155,9 @@ static void ZX_ApplyAndRun() {
         Vars.AimHitbox    = 0;
         if (Vars.AimFov < 500.0f) Vars.AimFov = 500.0f;
     }
+    // AimKill Real — hook TakeDamage damage value = 999 + headshot flag
+    // (ทำงานเงียบๆ ผ่าน hook ไม่ต้อง enable อะไรเพิ่ม)
+
     // AimKill Cover — Aimbot ทะลุกำแพง (SilentAim + BulletPenetration, ไม่เช็ค VisibleCheck)
     if (ZX_AimKillCover && Vars.Enable) {
         Vars.Aimbot           = true;
@@ -1966,7 +2041,12 @@ static void RenderMenu() {
         float cx = wp.x + COL_W*2.0f, cy = contY0;
         drawColHeader(cx, cy, "Ghost", M_TEXT);
         CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_AimKill,     "Aimkill",       M_TEXT_DIM, CBSZ, fs);
-        // AimKill Cover — สีเหลือง (feature พิเศษ)
+        // AimKill Real — hook TakeDamage → damage=999 + headshot (สีแดง = อันตราย)
+        {
+            ImU32 rkCol = ZX_AimKillReal ? M_RED : M_TEXT_DIM;
+            CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_AimKillReal,  "AimKill Real",  rkCol, CBSZ, fs);
+        }
+        // AimKill Cover — Aimbot ทะลุกำแพง (สีเหลือง)
         {
             ImU32 cvCol = ZX_AimKillCover ? ZX_YELLOW : M_TEXT_DIM;
             CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_AimKillCover, "AimKill Cover", cvCol, CBSZ, fs);
