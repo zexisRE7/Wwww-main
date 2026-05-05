@@ -408,8 +408,8 @@ static const ImU32 ZX_PURPLE        = IM_COL32(175,  82, 222, 255);
 static const ImU32 ZX_YELLOW        = IM_COL32(255, 204,   0, 255);
 
 // ── Layout — Dark Gaming sidebar style 
-static const float ZX_WIN_W      = 520.0f;
-static const float ZX_WIN_H      = 480.0f;
+static const float ZX_WIN_W      = 460.0f;
+static const float ZX_WIN_H      = 320.0f;
 static const float ZX_WIN_RAD    = 16.0f;
 static const float ZX_SIDEBAR_W  = 54.0f;   // left sidebar width
 static const float ZX_HEADER_H   = 48.0f;   // header area height
