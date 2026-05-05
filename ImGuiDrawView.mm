@@ -47,6 +47,7 @@ ImFont* pixel_smol = {};
 #include <OpenGLES/ES2/glext.h>
 #include <unistd.h>
 #include <string.h>
+#include <mach/mach.h>
 #include "Other/dobby_defines.h"
 #import "Other/H5hook.h"
 #include "Other/Paste.h"
@@ -513,19 +514,40 @@ static std::vector<uintptr_t> ZX_SpeedAddrs;
 static const int64_t kSpeedOriginal = 4397530849764387586LL;
 static const int64_t kSpeed215Val   = 4397530849698750000LL;
 
-// ใช้ MemoryScanner + Memory::Write จาก vinhtran.hpp (Hooks framework)
+// scan + write ด้วย mach API (iOS jailbreak tweak standard)
+static std::vector<uintptr_t> ZX_ScanI64(int64_t target, uintptr_t start, uintptr_t end) {
+    std::vector<uintptr_t> result;
+    const vm_size_t PAGE = 0x1000;
+    uint8_t buf[PAGE];
+    for (uintptr_t addr = start & ~(uintptr_t)(PAGE - 1); addr < end; addr += PAGE) {
+        vm_size_t readSz = 0;
+        if (vm_read_overwrite(mach_task_self(),
+                              (vm_address_t)addr, PAGE,
+                              (vm_address_t)buf, &readSz) != KERN_SUCCESS) continue;
+        for (vm_size_t i = 0; i + 8 <= readSz; i += 4) {
+            int64_t val; memcpy(&val, buf + i, 8);
+            if (val == target) result.push_back(addr + i);
+        }
+    }
+    return result;
+}
+
+static void ZX_WriteI64(uintptr_t addr, int64_t value) {
+    vm_protect(mach_task_self(), addr & ~(uintptr_t)0xFFF, 0x1000,
+               false, VM_PROT_READ | VM_PROT_WRITE | VM_PROT_COPY);
+    memcpy((void*)addr, &value, 8);
+}
+
 static void searchSpeed215() {
-    ZX_SpeedAddrs = MemoryScanner::ScanI64(kSpeedOriginal, 0x100000000, 0x160000000);
+    ZX_SpeedAddrs = ZX_ScanI64(kSpeedOriginal, 0x100000000ULL, 0x160000000ULL);
 }
 
 static void setSpeed215() {
-    for (uintptr_t a : ZX_SpeedAddrs)
-        Memory::Write<int64_t>(a, kSpeed215Val);
+    for (uintptr_t a : ZX_SpeedAddrs) ZX_WriteI64(a, kSpeed215Val);
 }
 
 static void disableSpeed215() {
-    for (uintptr_t a : ZX_SpeedAddrs)
-        Memory::Write<int64_t>(a, kSpeedOriginal);
+    for (uintptr_t a : ZX_SpeedAddrs) ZX_WriteI64(a, kSpeedOriginal);
     ZX_SpeedAddrs.clear();
 }
 
