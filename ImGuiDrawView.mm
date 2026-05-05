@@ -409,7 +409,7 @@ static const ImU32 ZX_YELLOW        = IM_COL32(255, 204,   0, 255);
 
 // ── Layout — Dark Gaming sidebar style 
 static const float ZX_WIN_W      = 680.0f;
-static const float ZX_WIN_H      = 400.0f;
+static const float ZX_WIN_H      = 310.0f;
 static const float ZX_WIN_RAD    = 16.0f;
 static const float ZX_SIDEBAR_W  = 54.0f;   // left sidebar width
 static const float ZX_HEADER_H   = 54.0f;   // header area height
@@ -549,6 +549,36 @@ static void setSpeed215() {
 static void disableSpeed215() {
     for (uintptr_t a : ZX_SpeedAddrs) ZX_WriteI64(a, kSpeedOriginal);
     ZX_SpeedAddrs.clear();
+}
+
+// ── Speed Multiplier Hook — x5 / x50 / x70 ───────────────────────────────────
+// RVA 0x61BCB4C = set_MoveSpeed (OB53 dump)
+static bool ZX_SpeedX5      = false;
+static bool ZX_SpeedX50     = false;
+static bool ZX_SpeedX70     = false;
+static bool ZX_AimKillCover = false;
+
+static void (*old_setMoveSpeed)(void*, float) = nullptr;
+
+static void hook_setMoveSpeed(void* _this, float value) {
+    if      (ZX_SpeedX5)  value *= 5.0f;
+    else if (ZX_SpeedX50) value *= 50.0f;
+    else if (ZX_SpeedX70) value *= 70.0f;
+    if (old_setMoveSpeed) old_setMoveSpeed(_this, value);
+}
+
+static void initSpeedMultHook() {
+    static bool done = false;
+    if (done) return;
+    done = true;
+    NSString* patch = StaticInlineHookPatch(
+        ("Frameworks/UnityFramework.framework/UnityFramework"),
+        0x61BCB4C, nullptr);
+    NSLog(@"[SpeedMult] patch: %@", patch ?: @"<nil>");
+    void* orig = StaticInlineHookFunction(
+        ("Frameworks/UnityFramework.framework/UnityFramework"),
+        0x61BCB4C, (void*)hook_setMoveSpeed);
+    if (orig) *(void**)(&old_setMoveSpeed) = orig;
 }
 
 static void ZX_DrawSidebarIcon(ImDrawList* dl, int idx, ImVec2 c, float s, ImU32 col) {
@@ -980,6 +1010,7 @@ static bool ZX_PillDropdown(const char* label, int iconType) {
 
 // ทำงานทุกเฟรม ไม่ต้องเปิดเมนูค้าง
 static void ZX_ApplyAndRun() {
+    initSpeedMultHook();   // hook set_MoveSpeed once (0x61BCB4C)
     Vars.AimbotEnable = Vars.Aimbot;
     Vars.isAimFov = (Vars.AimFov > 0);
     Vars.fovLineColor[0] = 0.90f;
@@ -989,13 +1020,13 @@ static void ZX_ApplyAndRun() {
     Vars.FastFire = ZX_FastFire;
     FireDelay = ZX_FastFire ? 0.0f : 0.001f;
     if (ZX_FastFire && Vars.Enable) {
-        Vars.AutoFire = true;   // บังคับ AutoFire hook ทำงาน
+        // FastFire ทำแค่ยิงเร็ว ไม่บังคับ AutoFire (เปิดแยกได้เอง)
         void* _ff_match = game_sdk->Curent_Match();
         if (_ff_match) {
             void* _ff_local = game_sdk->GetLocalPlayer(_ff_match);
             if (_ff_local) {
                 void* _ff_wpn = GetWeaponOnHand1(_ff_local);
-                if (_ff_wpn) Weapon_StartFiring(_ff_wpn);  // บังคับยิงทันที (0x4EA8A54)
+                if (_ff_wpn) Weapon_StartFiring(_ff_wpn);
             }
         }
     }
@@ -1004,7 +1035,7 @@ static void ZX_ApplyAndRun() {
     Vars.ChainDamage = ZX_ChainDamage;
     Vars.ChainDamageValue = (int)ZX_ChainDmgValue;
     Vars.FastSwitch = ZX_FastSwitch;
-    if (ZX_BulletThru) { SilentAim = true; CheckWall1 = false; }
+    // BulletThru — ยิงทะลุ ไม่บังคับ SilentAim (เปิดแยกได้เองใน Col 4)
     Vars.FlyUp = ZX_FlyAlt;
     Vars.FlySpeed = ZX_FlySpeed;
     Vars.Telekill = ZX_Telekill;
@@ -1042,26 +1073,28 @@ static void ZX_ApplyAndRun() {
             }
         }
     }
-    if ((ZX_AimKill || Vars.AutoFire) && Vars.Enable) {
-        Vars.Aimbot = true;
+    // AimKill — เปิดแค่ Aimbot เท่านั้น ไม่บังคับ function อื่น (แยกออกมาแล้ว)
+    if (ZX_AimKill && Vars.Enable) {
+        Vars.Aimbot       = true;
         Vars.AimbotEnable = true;
-        Vars.AimMode = 0;
-        Vars.isAimFov = true;
-        Vars.AimWhen = 0;
-        Vars.AimHitbox = 0;
-        Vars.AutoFire = true;
-        Vars.FastFire = true;
-        FireDelay = 0.0f;
-        Vars.LongRange = true;
+        Vars.AimMode      = 0;
+        Vars.isAimFov     = true;
+        Vars.AimWhen      = 0;
+        Vars.AimHitbox    = 0;
+        if (Vars.AimFov < 500.0f) Vars.AimFov = 500.0f;
+    }
+    // AimKill Cover — Aimbot ทะลุกำแพง (SilentAim + BulletPenetration, ไม่เช็ค VisibleCheck)
+    if (ZX_AimKillCover && Vars.Enable) {
+        Vars.Aimbot           = true;
+        Vars.AimbotEnable     = true;
+        Vars.AimMode          = 0;
+        Vars.isAimFov         = true;
+        Vars.AimWhen          = 0;
+        Vars.AimHitbox        = 0;
+        Vars.VisibleCheck     = false;
         Vars.BulletPenetration = true;
-        Vars.ChainDamage = true;
-        Vars.ChainDamageValue = 9999;
-        Vars.VisibleCheck = false;
-        Vars.IgnoreKnocked = true;
-        Vars.UpPlayerOne = true;
-        SilentAim = true;
-        CheckWall1 = false;
-        SetDamage = 1;
+        SilentAim             = true;
+        CheckWall1            = false;
         if (Vars.AimFov < 500.0f) Vars.AimFov = 500.0f;
     }
     if (ZX_FreeFly && Vars.Enable) {
@@ -1817,12 +1850,24 @@ static void RenderMenu() {
     // ─────────────────────────────────────────────────────────────────────────
     // CONTENT: 4 COLUMNS
     // ─────────────────────────────────────────────────────────────────────────
-    float contY0 = wp.y + CONT_Y;
+    // ── Content area: scrollable (swipe up/down for more items) ──────────────
+    const float totalColH = HDR_H + 12.0f * ITEM_H;   // virtual height ≥ all items
 
-    // Column separator lines
+    ImGui::SetCursorScreenPos(ImVec2(wp.x, wp.y + CONT_Y));
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(0,0,0,0));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0,0));
+    ImGui::BeginChild("##cols_scroll", ImVec2(WIN_W, CONT_H), false,
+        ImGuiWindowFlags_NoScrollbar);
+
+    float  scY    = ImGui::GetScrollY();
+    ImVec2 cwp    = ImGui::GetWindowPos();
+    float  contY0 = cwp.y - scY;
+    dl            = ImGui::GetWindowDrawList();   // child's clipped draw list
+
+    // Column separator lines (full virtual height)
     for (int ci = 1; ci < 4; ++ci)
-        dl->AddLine(ImVec2(wp.x + COL_W*(float)ci, contY0),
-                    ImVec2(wp.x + COL_W*(float)ci, wp.y + WIN_H),
+        dl->AddLine(ImVec2(cwp.x + COL_W*(float)ci, contY0),
+                    ImVec2(cwp.x + COL_W*(float)ci, contY0 + totalColH),
                     M_COL_SEP, 1.0f);
 
     // ── Shared checkbox item helper ───────────────────────────────────────────
@@ -1920,12 +1965,21 @@ static void RenderMenu() {
     {
         float cx = wp.x + COL_W*2.0f, cy = contY0;
         drawColHeader(cx, cy, "Ghost", M_TEXT);
-        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_AimKill,     "Aimkill",    M_TEXT_DIM,                   CBSZ, fs);
-        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_Telekill,    "TeleKill",   M_TEXT_DIM,                   CBSZ, fs);
-        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_Tatsuyaa,    "Tatsuyaa",   M_TEXT_DIM,                   CBSZ, fs);
-        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_AIPlayerAim, "AI Player",  M_TEXT_DIM,                   CBSZ, fs);
-        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_RUN,         "NinjaRun",   M_TEXT_DIM,                   CBSZ, fs);
-        // Speed x215 — แสดงจำนวน addr ที่ scan เจอ (hint สีเขียวเมื่อ active)
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_AimKill,     "Aimkill",       M_TEXT_DIM, CBSZ, fs);
+        // AimKill Cover — สีเหลือง (feature พิเศษ)
+        {
+            ImU32 cvCol = ZX_AimKillCover ? M_YELLOW : M_TEXT_DIM;
+            CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_AimKillCover, "AimKill Cover", cvCol, CBSZ, fs);
+        }
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_Telekill,    "TeleKill",      M_TEXT_DIM, CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_Tatsuyaa,    "Tatsuyaa",      M_TEXT_DIM, CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_AIPlayerAim, "AI Player",     M_TEXT_DIM, CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_RUN,         "NinjaRun",      M_TEXT_DIM, CBSZ, fs);
+        // ── Speed hacks (hook set_MoveSpeed 0x61BCB4C) ────────────────────
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_SpeedX5,     "Speed x5",      M_TEXT_DIM, CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_SpeedX50,    "Speed x50",     M_TEXT_DIM, CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_SpeedX70,    "Speed x70",     M_TEXT_DIM, CBSZ, fs);
+        // Speed x215 (memory scan) — แสดง addr ที่ scan เจอ
         {
             char spdLbl[32];
             if (ZX_Speed215 && !ZX_SpeedAddrs.empty())
@@ -1941,13 +1995,27 @@ static void RenderMenu() {
     {
         float cx = wp.x + COL_W*3.0f, cy = contY0;
         drawColHeader(cx, cy, "AimKill Fast (0.5s)", M_GREEN);
-        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_AimKillFast, "AimKill Fast", M_TEXT_DIM, CBSZ, fs);
-        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &Vars.AutoFire,  "Auto Fire",    M_TEXT_DIM, CBSZ, fs);
-        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_FlyAlt,      "Fly enemy",    M_TEXT_DIM, CBSZ, fs);
-        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &SilentAim,      "SilentAim",    M_TEXT_DIM, CBSZ, fs);
-        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_Vong,        "Vong",         M_TEXT_DIM, CBSZ, fs);
-        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_UNDER,       "UnderKill V4", M_RED,      CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_AimKillFast,     "AimKill Fast",  M_TEXT_DIM, CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &Vars.AutoFire,       "Auto Fire",     M_TEXT_DIM, CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_FlyAlt,           "Fly enemy",     M_TEXT_DIM, CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &SilentAim,           "SilentAim",     M_TEXT_DIM, CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_Vong,             "Vong",          M_TEXT_DIM, CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_UNDER,            "UnderKill V4",  M_RED,      CBSZ, fs);
+        // ── แยกจาก AimKill combo: เปิดทีละอันได้เลย ──────────────────────
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_FastFire,         "Fast Fire",     M_TEXT_DIM, CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_LongRange,        "Long Range",    M_TEXT_DIM, CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_BulletThru,       "Bullet Thru",   M_TEXT_DIM, CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_ChainDamage,      "Chain Damage",  M_TEXT_DIM, CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &Vars.UpPlayerOne,    "Up Enemy",      M_TEXT_DIM, CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &Vars.IgnoreKnocked,  "Ignore Knocked",M_TEXT_DIM, CBSZ, fs);
     }
+
+    // Define virtual scroll area so touch-scroll works
+    ImGui::SetCursorScreenPos(ImVec2(cwp.x, cwp.y + totalColH - scY));
+    ImGui::Dummy(ImVec2(WIN_W, 1.0f));
+    ImGui::EndChild();
+    ImGui::PopStyleVar();   // WindowPadding
+    ImGui::PopStyleColor(); // ChildBg
 
     ImGui::End();
     ImGui::PopStyleVar(4);
