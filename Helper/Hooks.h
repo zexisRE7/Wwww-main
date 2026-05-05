@@ -1279,9 +1279,9 @@ static void RunFastSwitch() {
     set_float_t _set_PreSwitchTime  = (set_float_t)getRealOffset(0x61C83F8);
     set_float_t _set_PostSwitchTime = (set_float_t)getRealOffset(0x61C8408);
 
-    if (_set_SwitchTime)     _set_SwitchTime    (weapon, 3.0f);  // สับปืนแทบทันที
-    if (_set_PreSwitchTime)  _set_PreSwitchTime (weapon, 3.0f);
-    if (_set_PostSwitchTime) _set_PostSwitchTime(weapon, 3.0f);
+    if (_set_SwitchTime)     _set_SwitchTime    (weapon, 0.01f);  // สับปืนแทบทันที (ต้องใกล้ 0 ไม่ใช่ 3)
+    if (_set_PreSwitchTime)  _set_PreSwitchTime (weapon, 0.01f);
+    if (_set_PostSwitchTime) _set_PostSwitchTime(weapon, 0.01f);
 }
 
 // ── Dash Forward — พุ่งไปข้างหน้าตามทิศกล้อง ~100 เมตร ทันที ──────────────
@@ -1370,7 +1370,7 @@ void old_AutoFire(void *_this, int32_t pFireStatus, int32_t pFireMode)
             // ถ้า FireDelay = 0 (FastFire) → toggle ทุกเฟรม
             // → semi-auto (DEagle/Sniper) ได้ pulse FIRING→NONE→FIRING ทุก ~16ms
             // → engine ของปืนจะ throttle ตาม RPM ของอาวุธเอง (ไม่โดน hook block)
-            float halfDelay = FireDelay * 0.0001f;
+            float halfDelay = FireDelay * 0.5f;
             if (elapsed >= halfDelay)
             {
                 fireState = !fireState;
