@@ -1250,22 +1250,18 @@ static void RunAmmoSpeedFast() {
 // ── No Reload — clip เต็มตลอด ไม่ต้องเติมกระสุน ──────────────────────────
 // ต่างจาก AmmoSpeedFast: ไม่บังคับยิง + ไม่เปลี่ยน ReloadSpeed
 static void RunNoReload() {
+    if (!Vars.NoReload) return;
+    
     void* match = game_sdk->Curent_Match();
     if (!match) return;
+    
     void* local = game_sdk->GetLocalPlayer(match);
     if (!local) return;
-    void* weapon = GetWeaponOnHand1(local);
-    if (!weapon) return;
-
-    typedef void (*set_int_t)(void*, int);
-    typedef void (*set_float_t)(void*, float);
-    set_float_t _set_ReloadSpeed = (set_float_t)getRealOffset(0x61C82F8);  // dump OB53 verified
-    set_int_t   _set_AmmoInClip  = (set_int_t)  getRealOffset(0x61C8308);  // dump OB53 verified
-    set_int_t   _set_OnceAmmo    = (set_int_t)  getRealOffset(0x61C82E8);  // dump OB53 verified
-
-    if (_set_ReloadSpeed) _set_ReloadSpeed(weapon, 9999.0f); // reload จบแทบทันที
-    if (_set_AmmoInClip)  _set_AmmoInClip (weapon, 9999);   // clip เต็มตลอด
-    if (_set_OnceAmmo)    _set_OnceAmmo   (weapon, 9999);   // ammo ต่อนัดเยอะ
+    
+    void* playerAttr = *(void**)((uint64_t)local + 0x708);
+    if (playerAttr) {
+        *(bool*)((uint64_t)playerAttr + 0xD9) = true;
+    }
 }
 
 // ── Fast Switch — สับปืนเร็วมาก (SwitchTime → 0) ─────────────────────────
