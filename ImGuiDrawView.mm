@@ -302,15 +302,15 @@ ImFont* Urbanist;
 }
 
 - (void)updateFloatButtonsVisibility {
-    //  ปุ่มโผล่เมื่อเปิดฟังก์ชันนั้นจากเมนู — ผูกตรงกับ feature flag
-    self.flyButton.hidden      = !ZX_FlyAlt;
-    self.telekillButton.hidden = !ZX_Telekill;
-    self.aimkillButton.hidden  = !ZX_AimKill;
-    self.norecoilButton.hidden = !ZX_NoRecoil;
-    self.markTPButton.hidden   = !ZX_MarkTeleport;
-    self.autoTPButton.hidden   = !ZX_AutoTeleport;
+    // ปุ่มลอยแสดงตลอดเวลา — ปิดได้จากเมนูเท่านั้น
+    self.flyButton.hidden      = NO;
+    self.telekillButton.hidden = NO;
+    self.aimkillButton.hidden  = NO;
+    self.norecoilButton.hidden = NO;
+    self.markTPButton.hidden   = NO;
+    self.autoTPButton.hidden   = NO;
 
-    //  ซิงก์สถานะสวิตช์บนปุ่มให้ตรงกับ ZX_var
+    // ซิงก์สถานะสวิตช์บนปุ่มให้ตรงกับ ZX_var (menu → button)
     if (self.flySwitch.on      != ZX_FlyAlt)       self.flySwitch.on      = ZX_FlyAlt;
     if (self.telekillSwitch.on != ZX_Telekill)     self.telekillSwitch.on = ZX_Telekill;
     if (self.aimkillSwitch.on  != ZX_AimKill)      self.aimkillSwitch.on  = ZX_AimKill;
@@ -954,6 +954,8 @@ static void ZX_ApplyAndRun() {
     Vars.NoRecoil = ZX_NoRecoil;
     Vars.NoReload = ZX_NoReload;
     Vars.AIPlayerAim = ZX_AIPlayerAim;
+    Vars.NinjaRun = ZX_RUN;
+    if (ZX_GHOSTVIP) Vars.NinjaRunSpeed = 5.0f;
     Vars.CurrentTab = ZX_Tab;
     Vars.MarkTeleport = ZX_MarkTeleport;
     Vars.AutoTeleport = ZX_AutoTeleport;
@@ -1703,12 +1705,14 @@ static void RenderMenu() {
             TOGGLE_ROW("Long Range",        &Vars.LongRange,        true);
             break;
         }
-        // ── BUTTON ───────────────────────────────────────────────────────
+        // ── BUTTON — ควบคุมปุ่มลอยบนหน้าจอ ─────────────────────────────────
         case 3: {
-            TOGGLE_ROW("RevealEnemy",    &ZX_FAKE,     false);
-            TOGGLE_ROW("Under Hack",     &ZX_UNDER,    false);
-            TOGGLE_ROW("Ninja Run",      &ZX_RUN,      false);
-            TOGGLE_ROW("Speed NinjaRun", &ZX_GHOSTVIP, true);
+            TOGGLE_ROW("Fly Alt",    &ZX_FlyAlt,       false);
+            TOGGLE_ROW("Tele Kill",  &ZX_Telekill,     false);
+            TOGGLE_ROW("Aim Kill",   &ZX_AimKill,      false);
+            TOGGLE_ROW("No Recoil",  &ZX_NoRecoil,     false);
+            TOGGLE_ROW("Mark TP",    &ZX_MarkTeleport, false);
+            TOGGLE_ROW("Auto TP",    &ZX_AutoTeleport, true);
             break;
         }
         // ── INFO ─────────────────────────────────────────────────────────
@@ -1805,6 +1809,31 @@ static void RenderMenu() {
                 ZX_KillCount++;
 
             ImGui::SetCursorScreenPos(ImVec2(cp.x, mY1 + 8.0f));
+
+            // ── Reset Guest button ─────────────────────────────────────────
+            ImGuiWindow* cw3 = ImGui::GetCurrentWindow();
+            ImVec2 cp3 = cw3->DC.CursorPos;
+            float  aw3 = ImGui::GetContentRegionAvail().x;
+            const float RBH = 40.0f;
+            float rbX0 = cp3.x + PAD;
+            float rbX1 = cp3.x + aw3 - PAD;
+            float rbY0 = cp3.y + 8.0f;
+            float rbY1 = rbY0 + RBH;
+            const ImU32 RB_BG     = IM_COL32(120, 0, 0, 255);    // แดงเข้ม
+            const ImU32 RB_BG_ACT = IM_COL32(200, 0, 0, 255);    // แดงสว่างเมื่อกด
+            cdl2->AddRectFilled(ImVec2(rbX0, rbY0), ImVec2(rbX1, rbY1), RB_BG, 10.0f);
+            cdl2->AddRect(ImVec2(rbX0, rbY0), ImVec2(rbX1, rbY1),
+                          IM_COL32(255, 80, 80, 200), 10.0f, 0, 1.2f);
+            ImVec2 rbts = ImGui::CalcTextSize("RESET GUEST");
+            cdl2->AddText(
+                ImVec2((rbX0 + rbX1) * 0.5f - rbts.x * 0.5f,
+                       (rbY0 + rbY1) * 0.5f - rbts.y * 0.5f),
+                M_TEXT, "RESET GUEST");
+            ImGui::SetCursorScreenPos(ImVec2(rbX0, rbY0));
+            if (ImGui::InvisibleButton("##rguest", ImVec2(rbX1 - rbX0, RBH)))
+                ZX_ResetAcc = true;   // ZX_ApplyAndRun() จะเรียก DoResetAccount() แล้ว reset เป็น false
+
+            ImGui::SetCursorScreenPos(ImVec2(cp3.x, rbY1 + 8.0f));
             break;
         }
     }
