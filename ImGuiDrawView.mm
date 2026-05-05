@@ -1726,8 +1726,8 @@ static void RenderMenu() {
     const ImU32 M_DROP_BDR   = IM_COL32( 55,  55,  65, 255);   // dropdown border
 
     // ── Layout ────────────────────────────────────────────────────────────────
-    const float WIN_W   = ZX_WIN_W;    // 680
-    const float WIN_H   = ZX_WIN_H;    // 310
+    const float WIN_W   = ZX_WIN_W;    // 520
+    const float WIN_H   = ZX_WIN_H;    // 480
     const float WIN_RAD = 10.0f;
     const float SIDE_W  = 90.0f;
     const float CONT_W  = WIN_W - SIDE_W;
