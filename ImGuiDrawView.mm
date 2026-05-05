@@ -1968,7 +1968,7 @@ static void RenderMenu() {
         CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_AimKill,     "Aimkill",       M_TEXT_DIM, CBSZ, fs);
         // AimKill Cover — สีเหลือง (feature พิเศษ)
         {
-            ImU32 cvCol = ZX_AimKillCover ? M_YELLOW : M_TEXT_DIM;
+            ImU32 cvCol = ZX_AimKillCover ? ZX_YELLOW : M_TEXT_DIM;
             CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_AimKillCover, "AimKill Cover", cvCol, CBSZ, fs);
         }
         CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_Telekill,    "TeleKill",      M_TEXT_DIM, CBSZ, fs);
