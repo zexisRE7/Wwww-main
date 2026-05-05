@@ -407,8 +407,8 @@ static const ImU32 ZX_PURPLE        = IM_COL32(175,  82, 222, 255);
 static const ImU32 ZX_YELLOW        = IM_COL32(255, 204,   0, 255);
 
 // ── Layout — Dark Gaming sidebar style 
-static const float ZX_WIN_W      = 320.0f;
-static const float ZX_WIN_H      = 370.0f;
+static const float ZX_WIN_W      = 760.0f;
+static const float ZX_WIN_H      = 450.0f;
 static const float ZX_WIN_RAD    = 16.0f;
 static const float ZX_SIDEBAR_W  = 54.0f;   // left sidebar width
 static const float ZX_HEADER_H   = 54.0f;   // header area height
@@ -490,6 +490,21 @@ static bool  ZX_AimRadius180   = false;
 static bool  ZX_AimRadius360   = false;
 static int   ZX_WhenShootIdx   = 0;        // 0=When Shoot and Scope
 static int   ZX_HitboxIdx      = 0;        // 0=Head
+
+// ── New UI statics (new menu layout) ─────────────────────────────────────────
+static bool  ZX_EspBone        = false;
+static bool  ZX_EspHP          = false;
+static bool  ZX_EspName        = false;
+static bool  ZX_EspWeapon      = false;
+static bool  ZX_EspWukong      = false;
+static bool  ZX_BanVaNgam      = false;
+static bool  ZX_HeadAim        = false;
+static bool  ZX_Tatsuyaa       = false;
+static bool  ZX_AimKillFast    = false;
+static bool  ZX_Vong           = false;
+static bool  ZX_EnableHack     = false;
+static bool  ZX_EnableHackBtn  = false;
+static float ZX_SpeedMult      = 1.37f;
 
 static void ZX_DrawSidebarIcon(ImDrawList* dl, int idx, ImVec2 c, float s, ImU32 col) {
     switch (idx) {
@@ -1524,360 +1539,350 @@ static bool ZX_BatMonInit  = false;
 static void RenderMenu() {
     if (!MenDeal) return;
 
-    // ── Colors matching screenshots exactly ──────────────────────────────
-    const ImU32 M_WIN_BG       = IM_COL32( 30,  30,  32, 255);   // near-black window
-    const ImU32 M_TAB_INACTIVE = IM_COL32( 52,  52,  55, 255);   // inactive tab button
-    const ImU32 M_TAB_ACTIVE   = IM_COL32( 47,  72,  87, 255);   // active tab: dark teal
-    const ImU32 M_TGL_ON       = IM_COL32( 90, 200, 250, 255);   // iOS sky-blue toggle ON
-    const ImU32 M_TGL_OFF      = IM_COL32( 62,  62,  66, 255);   // gray toggle OFF
-    const ImU32 M_KNOB         = IM_COL32(255, 255, 255, 255);   // white knob
-    const ImU32 M_TEXT         = IM_COL32(255, 255, 255, 255);   // white text
-    const ImU32 M_BTN_BG       = IM_COL32( 62,  62,  66, 255);   // close/hide button bg
-    const ImU32 M_SEP          = IM_COL32( 50,  50,  54, 255);   // row separator
-    const ImU32 M_HOVER        = IM_COL32(255, 255, 255,  14);   // hover tint
+    // ── Colors — matching screenshot UI exactly ───────────────────────────────
+    const ImU32 M_WIN_BG    = IM_COL32( 30,  30,  34, 255);
+    const ImU32 M_TITLE_BG  = IM_COL32( 21, 101, 192, 255);   // #1565C0 blue title
+    const ImU32 M_TEXT      = IM_COL32(255, 255, 255, 255);
+    const ImU32 M_TEXT_DIM  = IM_COL32(200, 200, 200, 255);
+    const ImU32 M_BTN_BG    = IM_COL32( 46,  46,  54, 255);
+    const ImU32 M_BTN_HOV   = IM_COL32( 58,  58,  70, 255);
+    const ImU32 M_GREEN     = IM_COL32( 76, 175,  80, 255);
+    const ImU32 M_RED       = IM_COL32(244,  67,  54, 255);
+    const ImU32 M_BLUE      = IM_COL32( 21, 101, 192, 255);
+    const ImU32 M_BLUE_LT   = IM_COL32( 66, 165, 245, 255);
+    const ImU32 M_CB_ON     = IM_COL32( 21, 101, 192, 255);
+    const ImU32 M_CB_OFF    = IM_COL32( 46,  46,  54, 255);
+    const ImU32 M_COL_SEP   = IM_COL32( 42,  42,  48, 255);
 
-    // ── Layout ──────────────────────────────────────────────────────────
-    const float WIN_W     = ZX_WIN_W;    // 320
-    const float WIN_H     = ZX_WIN_H;    // 370
-    const float WIN_RAD   = 16.0f;
-    const float SB_W      = 100.0f;      // sidebar width
-    const float HDR_H     =  44.0f;      // header (title) height
-    const float BOT_H     =  48.0f;      // bottom buttons bar height
-    const float ROW_H     =  42.0f;      // toggle row height
-    const float TAB_H     =  40.0f;      // each tab button height
-    const float TAB_GAP   =   5.0f;      // gap between tab buttons
-    const float TAB_PAD_X =   7.0f;      // horizontal padding inside sidebar
-    const float PAD       =  12.0f;      // general horizontal pad
+    // Unused legacy names kept to satisfy old code outside RenderMenu
+    const ImU32 M_TAB_INACTIVE = IM_COL32( 52,  52,  55, 255);
+    const ImU32 M_TAB_ACTIVE   = IM_COL32( 47,  72,  87, 255);
+    const ImU32 M_TGL_ON       = M_CB_ON;
+    const ImU32 M_TGL_OFF      = M_CB_OFF;
+    const ImU32 M_KNOB         = M_TEXT;
+    const ImU32 M_SEP          = M_COL_SEP;
+    const ImU32 M_HOVER        = IM_COL32(255, 255, 255, 12);
 
-    ImGui::PushStyleColor(ImGuiCol_WindowBg,      ImVec4(30.0f/255,30.0f/255,32.0f/255,1.0f));
-    ImGui::PushStyleColor(ImGuiCol_Border,        ImVec4(0,0,0,0));
-    ImGui::PushStyleColor(ImGuiCol_ScrollbarBg,   ImVec4(0,0,0,0));
-    ImGui::PushStyleColor(ImGuiCol_ScrollbarGrab, ImVec4(0.22f,0.22f,0.24f,1.0f));
+    // ── Layout constants ──────────────────────────────────────────────────────
+    const float WIN_W    = ZX_WIN_W;   // 760
+    const float WIN_H    = ZX_WIN_H;   // 450
+    const float WIN_RAD  =   8.0f;
+    const float TITLE_H  =  36.0f;
+    const float TOOL_H   =  38.0f;    // height of each toolbar row
+    const float SEP_H    =   2.0f;
+    const float CONT_Y   = TITLE_H + TOOL_H + TOOL_H + SEP_H;
+    const float CONT_H   = WIN_H - CONT_Y;
+    const float COL_W    = WIN_W / 4.0f;
+    const float ITEM_H   =  28.0f;
+    const float HDR_H    =  30.0f;
+    const float CBSZ     =  14.0f;
+    const float PAD      =  10.0f;
+    const float ROW_H    = ITEM_H;     // alias for legacy references
+
+    ImGui::PushStyleColor(ImGuiCol_WindowBg,  ImVec4(30.0f/255,30.0f/255,34.0f/255,1.0f));
+    ImGui::PushStyleColor(ImGuiCol_Border,    ImVec4(0,0,0,0));
+    ImGui::PushStyleColor(ImGuiCol_ScrollbarBg, ImVec4(0,0,0,0));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding,   WIN_RAD);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,    ImVec2(0,0));
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing,      ImVec2(0,0));
-    ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarSize,    3.0f);
 
     ImGui::SetNextWindowSize(ImVec2(WIN_W, WIN_H), ImGuiCond_Always);
     ImGui::Begin("##IpaFF", nullptr,
-        ImGuiWindowFlags_NoTitleBar  | ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoTitleBar  | ImGuiWindowFlags_NoResize  |
         ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse |
         ImGuiWindowFlags_NoBringToFrontOnFocus);
     ImGui::SetWindowFontScale(ZX_FONT_SIZE / 18.0f);
 
     ImDrawList* dl = ImGui::GetWindowDrawList();
     ImVec2 wp = ImGui::GetWindowPos();
-    ImVec2 ws = ImGui::GetWindowSize();
+    float  fs = ImGui::GetFontSize();
 
-    // ── Window background (rounded) ──────────────────────────────────────
-    dl->AddRectFilled(wp, ImVec2(wp.x + ws.x, wp.y + ws.y), M_WIN_BG, WIN_RAD);
+    // ── Window BG ─────────────────────────────────────────────────────────────
+    dl->AddRectFilled(wp, ImVec2(wp.x + WIN_W, wp.y + WIN_H), M_WIN_BG, WIN_RAD);
 
-    // ── HEADER: centered title ───────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
+    // TITLE BAR
+    // ─────────────────────────────────────────────────────────────────────────
+    dl->AddRectFilled(wp, ImVec2(wp.x + WIN_W, wp.y + TITLE_H),
+                      M_TITLE_BG, WIN_RAD, ImDrawFlags_RoundCornersTop);
+    const char* kWinTitle = "CRACK BY @ng_thanhhoa X VAN.THONG";
+    dl->AddText(ImVec2(wp.x + 12.0f, wp.y + (TITLE_H - fs) * 0.5f), M_TEXT, kWinTitle);
+    // X close button
     {
-        const char* title = "shopx2tl.site - IPA FF";
-        float hCY = wp.y + HDR_H * 0.5f;
-        ImVec2 tts = ImGui::CalcTextSize(title);
-        dl->AddText(ImVec2(wp.x + (ws.x - tts.x) * 0.5f, hCY - tts.y * 0.5f),
-                    M_TEXT, title);
-        // thin separator below header
-        dl->AddLine(ImVec2(wp.x, wp.y + HDR_H),
-                    ImVec2(wp.x + ws.x, wp.y + HDR_H), M_SEP, 1.0f);
+        float xX = wp.x + WIN_W - 28.0f;
+        float xY = wp.y + (TITLE_H - 20.0f) * 0.5f;
+        ImGui::SetCursorScreenPos(ImVec2(xX, xY));
+        if (ImGui::InvisibleButton("##close_x", ImVec2(20.0f, 20.0f)))
+            MenDeal = false;
+        if (ImGui::IsItemHovered())
+            dl->AddRectFilled(ImVec2(xX, xY), ImVec2(xX+20,xY+20), IM_COL32(255,255,255,40), 3.0f);
+        ImVec2 xts = ImGui::CalcTextSize("X");
+        dl->AddText(ImVec2(xX + (20.0f - xts.x)*0.5f, xY + (20.0f - fs)*0.5f), M_TEXT, "X");
     }
 
-    // ── Zone boundaries ──────────────────────────────────────────────────
-    float zoneY0 = wp.y + HDR_H;          // top of sidebar+content zone
-    float zoneY1 = wp.y + WIN_H - BOT_H;  // bottom of sidebar+content zone
-    float zoneH  = zoneY1 - zoneY0;
+    // ─────────────────────────────────────────────────────────────────────────
+    // TOOLBAR ROW 1: Bypass | Hide | Reset account | English | Date & Time
+    // ─────────────────────────────────────────────────────────────────────────
+    {
+        float y0  = wp.y + TITLE_H;
+        float by0 = y0 + (TOOL_H - 26.0f) * 0.5f;
+        float by1 = by0 + 26.0f;
+        float cx  = wp.x + 8.0f;
 
-    // thin separator above bottom buttons
-    dl->AddLine(ImVec2(wp.x, zoneY1), ImVec2(wp.x + ws.x, zoneY1), M_SEP, 1.0f);
+        // Inline button helper — advances cx
+        struct TB1 {
+            static bool Draw(ImDrawList* d, float& cx, float by0, float by1,
+                             const char* lbl, ImU32 bg, ImU32 hov, ImU32 tc, float fs) {
+                ImVec2 ts = ImGui::CalcTextSize(lbl);
+                float bx1 = cx + ts.x + 24.0f;
+                bool hover = ImGui::IsMouseHoveringRect(ImVec2(cx,by0), ImVec2(bx1,by1));
+                d->AddRectFilled(ImVec2(cx,by0), ImVec2(bx1,by1), hover ? hov : bg, 4.0f);
+                d->AddText(ImVec2(cx + 12.0f, by0 + (by1-by0-fs)*0.5f), tc, lbl);
+                ImGui::SetCursorScreenPos(ImVec2(cx, by0));
+                char id[64]; snprintf(id,64,"##t1_%s",lbl);
+                bool pressed = ImGui::InvisibleButton(id, ImVec2(bx1-cx, by1-by0));
+                cx = bx1 + 6.0f;
+                return pressed;
+            }
+        };
 
-    // ── LEFT SIDEBAR: text tab buttons ───────────────────────────────────
-    const char* kTabNames[] = { "ESP", "AIMBOT", "AIMKILL", "BUTTON", "INFO" };
-    const int   kTabCount   = 5;
+        TB1::Draw(dl, cx, by0, by1, "Bypass",        M_BTN_BG, M_BTN_HOV, M_TEXT, fs);
+        if (TB1::Draw(dl, cx, by0, by1, "Hide",       M_BTN_BG, M_BTN_HOV, M_TEXT, fs))
+            ZX_HideModMenu = !ZX_HideModMenu;
+        if (TB1::Draw(dl, cx, by0, by1, "Reset account", M_BTN_BG, M_BTN_HOV, M_TEXT, fs))
+            ZX_ResetAcc = true;
+        TB1::Draw(dl, cx, by0, by1, "English",        M_BTN_BG, M_BTN_HOV, M_TEXT, fs);
 
-    float totalTabH = (float)kTabCount * TAB_H + (float)(kTabCount - 1) * TAB_GAP;
-    float tabsY0    = zoneY0 + (zoneH - totalTabH) * 0.5f;  // vertically centered
-
-    for (int i = 0; i < kTabCount; ++i) {
-        float bY0 = tabsY0 + (float)i * (TAB_H + TAB_GAP);
-        float bY1 = bY0 + TAB_H;
-        float bX0 = wp.x + TAB_PAD_X;
-        float bX1 = wp.x + SB_W - TAB_PAD_X;
-
-        bool active = (ZX_Tab == i);
-        dl->AddRectFilled(ImVec2(bX0, bY0), ImVec2(bX1, bY1),
-                          active ? M_TAB_ACTIVE : M_TAB_INACTIVE, 10.0f);
-
-        ImVec2 lts = ImGui::CalcTextSize(kTabNames[i]);
-        dl->AddText(ImVec2((bX0 + bX1) * 0.5f - lts.x * 0.5f,
-                           (bY0 + bY1) * 0.5f - lts.y * 0.5f),
-                    M_TEXT, kTabNames[i]);
-
-        ImGui::SetCursorScreenPos(ImVec2(bX0, bY0));
-        char bid[16]; snprintf(bid, sizeof(bid), "##tab%d", i);
-        if (ImGui::InvisibleButton(bid, ImVec2(bX1 - bX0, TAB_H)))
-            ZX_Tab = i;
+        // Date & Time — right aligned
+        time_t tnow = time(NULL);
+        struct tm* ltm = localtime(&tnow);
+        char dtBuf[32];
+        snprintf(dtBuf, sizeof(dtBuf), "%04d-%02d-%02d | %02d:%02d:%02d",
+                 ltm->tm_year+1900, ltm->tm_mon+1, ltm->tm_mday,
+                 ltm->tm_hour, ltm->tm_min, ltm->tm_sec);
+        const char* dtLbl = "Date & Time:";
+        ImVec2 dtLblSz = ImGui::CalcTextSize(dtLbl);
+        ImVec2 dtSz    = ImGui::CalcTextSize(dtBuf);
+        float  dtX = wp.x + WIN_W - dtSz.x - dtLblSz.x - 16.0f;
+        float  dtCY = y0 + TOOL_H * 0.5f;
+        dl->AddText(ImVec2(dtX, dtCY - fs*0.5f), M_BLUE_LT, dtLbl);
+        dl->AddText(ImVec2(dtX + dtLblSz.x + 6.0f, dtCY - fs*0.5f), M_TEXT, dtBuf);
     }
 
-    // ── RIGHT CONTENT: scrollable toggle rows ────────────────────────────
-    float rcX = wp.x + SB_W;
-    float rcW = ws.x - SB_W;
+    // ─────────────────────────────────────────────────────────────────────────
+    // TOOLBAR ROW 2: Speed | No Reload | Speed Fire | EnableHackCheckbox | EnableHackButun
+    // ─────────────────────────────────────────────────────────────────────────
+    {
+        float y0  = wp.y + TITLE_H + TOOL_H;
+        float by0 = y0 + (TOOL_H - 26.0f) * 0.5f;
+        float by1 = by0 + 26.0f;
+        float cx  = wp.x + 8.0f;
 
-    ImGui::SetCursorScreenPos(ImVec2(rcX, zoneY0));
-    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(30.0f/255,30.0f/255,32.0f/255,1.0f));
-    ImGui::BeginChild("##ipa_content", ImVec2(rcW, zoneH),
-                      false, ImGuiWindowFlags_AlwaysVerticalScrollbar);
-    ImGui::SetWindowFontScale(ZX_FONT_SIZE / 18.0f);
+        // Speed box
+        {
+            char spd[16]; snprintf(spd, sizeof(spd), "%.2f", ZX_SpeedMult);
+            ImVec2 spdSz  = ImGui::CalcTextSize(spd);
+            ImVec2 lblSz  = ImGui::CalcTextSize("Speed");
+            const float SW = lblSz.x + 70.0f + spdSz.x + 20.0f;
+            float bx1 = cx + SW;
+            dl->AddRectFilled(ImVec2(cx,by0), ImVec2(bx1,by1), M_BTN_BG, 4.0f);
+            dl->AddRect(ImVec2(cx,by0), ImVec2(bx1,by1), M_BLUE, 4.0f, 0, 1.5f);
+            float lx = cx + 8.0f;
+            dl->AddText(ImVec2(lx, by0+(by1-by0-fs)*0.5f), M_TEXT, "Speed");
+            // Slider
+            float slX0 = lx + lblSz.x + 6.0f;
+            float slX1 = bx1 - spdSz.x - 12.0f;
+            float slY  = (by0 + by1) * 0.5f;
+            dl->AddRectFilled(ImVec2(slX0, slY-2.0f), ImVec2(slX1, slY+2.0f), IM_COL32(80,80,90,255), 2.0f);
+            float t = (ZX_SpeedMult - 1.0f) / 2.0f;
+            float kX = slX0 + (slX1 - slX0) * t;
+            dl->AddRectFilled(ImVec2(slX0, slY-2.0f), ImVec2(kX, slY+2.0f), M_BLUE_LT, 2.0f);
+            dl->AddCircleFilled(ImVec2(kX, slY), 5.0f, M_TEXT, 12);
+            // Drag
+            ImGui::SetCursorScreenPos(ImVec2(slX0-6.0f, by0));
+            if (ImGui::InvisibleButton("##spdslider", ImVec2(slX1-slX0+12.0f, by1-by0))) {}
+            if (ImGui::IsItemActive()) {
+                float nt = (ImGui::GetIO().MousePos.x - slX0) / (slX1 - slX0);
+                nt = nt < 0.0f ? 0.0f : (nt > 1.0f ? 1.0f : nt);
+                ZX_SpeedMult = 1.0f + nt * 2.0f;
+            }
+            // Value text
+            dl->AddText(ImVec2(bx1-spdSz.x-6.0f, by0+(by1-by0-fs)*0.5f), M_TEXT, spd);
+            cx = bx1 + 6.0f;
+        }
 
-    // ── Helper: draw one iOS-style toggle row ─────────────────────────────
-    // We use a local struct to avoid lambda captures in ObjC++ static context
-    struct RowHelper {
-        static void Draw(const char* label, bool* v, bool lastRow,
-                         ImU32 tglOn, ImU32 tglOff, ImU32 knob,
-                         ImU32 text, ImU32 sep, ImU32 hover,
-                         float rowH, float pad) {
-            ImGuiWindow* cw = ImGui::GetCurrentWindow();
-            if (cw->SkipItems) return;
-            ImVec2 pos = cw->DC.CursorPos;
-            float  aw  = ImGui::GetContentRegionAvail().x;
-            const ImGuiID id = cw->GetID(label);
-            ImRect bb(pos, ImVec2(pos.x + aw, pos.y + rowH));
-            ImGui::ItemSize(ImVec2(aw, rowH), 0.0f);
-            if (!ImGui::ItemAdd(bb, id)) return;
-            bool hov, hld;
-            bool pressed = ImGui::ButtonBehavior(bb, id, &hov, &hld);
-            if (pressed) *v = !*v;
-            ImDrawList* cdl = cw->DrawList;
-            if (hov) cdl->AddRectFilled(bb.Min, bb.Max, hover, 0.0f);
-            if (!lastRow)
-                cdl->AddLine(ImVec2(bb.Min.x + pad, bb.Max.y - 1.0f),
-                             ImVec2(bb.Max.x - pad, bb.Max.y - 1.0f), sep, 1.0f);
-            float cy = (bb.Min.y + bb.Max.y) * 0.5f;
-            // label
-            cdl->AddText(ImVec2(bb.Min.x + pad, cy - ImGui::GetFontSize() * 0.5f),
-                         text, label);
-            // iOS toggle
-            const float TW = 51.0f, TH = 31.0f, TR = TH * 0.5f;
-            float tX = bb.Max.x - TW - pad;
-            float tY = cy - TH * 0.5f;
-            ImU32 track = *v ? tglOn : tglOff;
-            cdl->AddRectFilled(ImVec2(tX, tY), ImVec2(tX + TW, tY + TH), track, TR);
-            float kX = *v ? (tX + TW - TR) : (tX + TR);
-            cdl->AddCircleFilled(ImVec2(kX, cy), TR - 1.5f, IM_COL32(0,0,0,20), 28);
-            cdl->AddCircleFilled(ImVec2(kX, cy), TR - 2.5f, knob, 28);
+        // Plain buttons
+        struct TB2 {
+            static bool Draw(ImDrawList* d, float& cx, float by0, float by1,
+                             const char* lbl, bool greenOutline,
+                             ImU32 btnBg, ImU32 btnHov, ImU32 grn, ImU32 tc, float fs) {
+                ImVec2 ts = ImGui::CalcTextSize(lbl);
+                float bx1 = cx + ts.x + 20.0f;
+                bool hover = ImGui::IsMouseHoveringRect(ImVec2(cx,by0), ImVec2(bx1,by1));
+                ImU32 bg = greenOutline ? (hover ? IM_COL32(76,175,80,25) : IM_COL32(0,0,0,0))
+                                        : (hover ? btnHov : btnBg);
+                d->AddRectFilled(ImVec2(cx,by0), ImVec2(bx1,by1), bg, 4.0f);
+                if (greenOutline)
+                    d->AddRect(ImVec2(cx,by0), ImVec2(bx1,by1), grn, 4.0f, 0, 1.2f);
+                d->AddText(ImVec2(cx+10.0f, by0+(by1-by0-fs)*0.5f),
+                           greenOutline ? grn : tc, lbl);
+                ImGui::SetCursorScreenPos(ImVec2(cx, by0));
+                char id[64]; snprintf(id,64,"##t2_%s",lbl);
+                bool pressed = ImGui::InvisibleButton(id, ImVec2(bx1-cx, by1-by0));
+                cx = bx1 + 6.0f;
+                return pressed;
+            }
+        };
+
+        if (TB2::Draw(dl, cx, by0, by1, "No Reload",          false, M_BTN_BG, M_BTN_HOV, M_GREEN, M_TEXT, fs))
+            ZX_NoReload = !ZX_NoReload;
+        if (TB2::Draw(dl, cx, by0, by1, "Speed Fire",         false, M_BTN_BG, M_BTN_HOV, M_GREEN, M_TEXT, fs))
+            ZX_FastFire = !ZX_FastFire;
+        if (TB2::Draw(dl, cx, by0, by1, "EnableHackCheckbox", true,  M_BTN_BG, M_BTN_HOV, M_GREEN, M_TEXT, fs)) {
+            ZX_EnableHack = !ZX_EnableHack;
+            Vars.Enable   = ZX_EnableHack;
+        }
+        if (TB2::Draw(dl, cx, by0, by1, "EnableHackButun",    true,  M_BTN_BG, M_BTN_HOV, M_GREEN, M_TEXT, fs))
+            ZX_EnableHackBtn = !ZX_EnableHackBtn;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // BLUE SEPARATOR LINE
+    // ─────────────────────────────────────────────────────────────────────────
+    {
+        float sy = wp.y + TITLE_H + TOOL_H + TOOL_H;
+        dl->AddRectFilled(ImVec2(wp.x, sy), ImVec2(wp.x + WIN_W, sy + SEP_H), M_BLUE_LT);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // CONTENT: 4 COLUMNS
+    // ─────────────────────────────────────────────────────────────────────────
+    float contY0 = wp.y + CONT_Y;
+
+    // Column separator lines
+    for (int ci = 1; ci < 4; ++ci)
+        dl->AddLine(ImVec2(wp.x + COL_W*(float)ci, contY0),
+                    ImVec2(wp.x + COL_W*(float)ci, wp.y + WIN_H),
+                    M_COL_SEP, 1.0f);
+
+    // ── Shared checkbox item helper ───────────────────────────────────────────
+    struct CbItem {
+        static void Draw(ImDrawList* d, float colX, float& curY, float colW,
+                         float itemH, bool* val, const char* label, ImU32 labelColor,
+                         float cbSz, float fs) {
+            bool hov = ImGui::IsMouseHoveringRect(
+                           ImVec2(colX, curY), ImVec2(colX+colW-1.0f, curY+itemH));
+            if (hov) d->AddRectFilled(ImVec2(colX,curY), ImVec2(colX+colW-1.0f,curY+itemH),
+                                      IM_COL32(255,255,255,8));
+            float cbX = colX + 6.0f;
+            float cbY = curY + (itemH - cbSz) * 0.5f;
+            d->AddRectFilled(ImVec2(cbX,cbY), ImVec2(cbX+cbSz,cbY+cbSz),
+                             *val ? IM_COL32(21,101,192,255) : IM_COL32(46,46,54,255), 2.0f);
+            d->AddRect(ImVec2(cbX,cbY), ImVec2(cbX+cbSz,cbY+cbSz),
+                       IM_COL32(85,85,85,200), 2.0f, 0, 1.2f);
+            if (*val) {
+                d->AddLine(ImVec2(cbX+2.5f, cbY+cbSz*0.52f),
+                           ImVec2(cbX+cbSz*0.42f, cbY+cbSz-2.5f),
+                           IM_COL32(255,255,255,255), 1.8f);
+                d->AddLine(ImVec2(cbX+cbSz*0.42f, cbY+cbSz-2.5f),
+                           ImVec2(cbX+cbSz-2.0f, cbY+2.5f),
+                           IM_COL32(255,255,255,255), 1.8f);
+            }
+            d->AddText(ImVec2(cbX+cbSz+5.0f, curY+(itemH-fs)*0.5f), labelColor, label);
+            ImGui::SetCursorScreenPos(ImVec2(colX, curY));
+            char id[128]; snprintf(id,sizeof(id),"##cb_%s",label);
+            if (ImGui::InvisibleButton(id, ImVec2(colW-1.0f, itemH))) *val = !*val;
+            curY += itemH;
         }
     };
 
-// Convenience macro so call sites stay readable
-#define TOGGLE_ROW(lbl, ptr, last) \
-    RowHelper::Draw(lbl, ptr, last, M_TGL_ON, M_TGL_OFF, M_KNOB, M_TEXT, M_SEP, M_HOVER, ROW_H, PAD)
-
-    switch (ZX_Tab) {
-        // ── ESP ──────────────────────────────────────────────────────────
-        case 0: {
-            TOGGLE_ROW("Enable ESP",  &Vars.Enable,  false);
-            TOGGLE_ROW("Line ESP",    &Vars.lines,   false);
-            TOGGLE_ROW("Box ESP",     &Vars.Box,     false);
-            TOGGLE_ROW("3D Box ESP",  &ZX_Esp3DBox,  true);
-            break;
-        }
-        // ── AIMBOT ───────────────────────────────────────────────────────
-        case 1: {
-            TOGGLE_ROW("Enable Aimbot",   &Vars.Enable,        false);
-            TOGGLE_ROW("Aimbot",          &Vars.Aimbot,        false);
-            TOGGLE_ROW("Silent Aim",      &SilentAim,          false);
-            TOGGLE_ROW("Auto Fire",       &Vars.AutoFire,      false);
-            TOGGLE_ROW("Aim Kill",        &ZX_AimKill,         false);
-            TOGGLE_ROW("Visible Check",   &Vars.VisibleCheck,  false);
-            TOGGLE_ROW("Ignore Knocked",  &Vars.IgnoreKnocked, true);
-            break;
-        }
-        // ── AIMKILL ──────────────────────────────────────────────────────
-        case 2: {
-            TOGGLE_ROW("Enable",            &Vars.Enable,           false);
-            TOGGLE_ROW("Fly Alt",           &ZX_FlyAlt,             false);
-            TOGGLE_ROW("Telekill",          &ZX_Telekill,           false);
-            TOGGLE_ROW("Fast Fire",         &ZX_FastFire,           false);
-            TOGGLE_ROW("No Reload",         &ZX_NoReload,           false);
-            TOGGLE_ROW("Chain Damage",      &ZX_ChainDamage,        false);
-            TOGGLE_ROW("Long Range",        &Vars.LongRange,        true);
-            break;
-        }
-        // ── BUTTON — ควบคุมปุ่มลอยบนหน้าจอ ─────────────────────────────────
-        case 3: {
-            TOGGLE_ROW("Fly Alt",    &ZX_FlyAlt,       false);
-            TOGGLE_ROW("Tele Kill",  &ZX_Telekill,     false);
-            TOGGLE_ROW("Aim Kill",   &ZX_AimKill,      false);
-            TOGGLE_ROW("No Recoil",  &ZX_NoRecoil,     false);
-            TOGGLE_ROW("Mark TP",    &ZX_MarkTeleport, false);
-            TOGGLE_ROW("Auto TP",    &ZX_AutoTeleport, true);
-            break;
-        }
-        // ── INFO ─────────────────────────────────────────────────────────
-        case 4: {
-            // Init battery monitor once
-            if (!ZX_BatMonInit) {
-                [[UIDevice currentDevice] setBatteryMonitoringEnabled:YES];
-                ZX_BatMonInit = true;
-            }
-            // Session timer
-            static double ZX_InfoSessionStart = 0.0;
-            if (ZX_InfoSessionStart == 0.0) ZX_InfoSessionStart = ImGui::GetTime();
-            double elapsed = ImGui::GetTime() - ZX_InfoSessionStart;
-            int hh = (int)(elapsed / 3600);
-            int mm = (int)(elapsed / 60) % 60;
-            int ss = (int)elapsed % 60;
-            char timeBuf[32];
-            snprintf(timeBuf, sizeof(timeBuf), "%02d:%02d:%02d", hh, mm, ss);
-
-            // Battery
-            float batLevel = [[UIDevice currentDevice] batteryLevel];
-            char batBuf[16];
-            if (batLevel < 0.0f) snprintf(batBuf, sizeof(batBuf), "--%% ");
-            else snprintf(batBuf, sizeof(batBuf), "%d%%", (int)(batLevel * 100.0f));
-
-            // Kill counter buf
-            char killBuf[16];
-            snprintf(killBuf, sizeof(killBuf), "%d", ZX_KillCount);
-
-            // Info row helper (label left, value right — no toggle)
-            struct InfoRow {
-                static void Draw(const char* label, const char* value,
-                                 ImU32 textCol, ImU32 valCol,
-                                 ImU32 sep, ImU32 hover,
-                                 float rowH, float pad, bool lastRow) {
-                    ImGuiWindow* cw = ImGui::GetCurrentWindow();
-                    if (cw->SkipItems) return;
-                    ImVec2 pos = cw->DC.CursorPos;
-                    float  aw  = ImGui::GetContentRegionAvail().x;
-                    const ImGuiID id = cw->GetID(label);
-                    ImRect bb(pos, ImVec2(pos.x + aw, pos.y + rowH));
-                    ImGui::ItemSize(ImVec2(aw, rowH), 0.0f);
-                    ImGui::ItemAdd(bb, id);
-                    ImDrawList* cdl = cw->DrawList;
-                    if (!lastRow)
-                        cdl->AddLine(ImVec2(bb.Min.x + pad, bb.Max.y - 1.0f),
-                                     ImVec2(bb.Max.x - pad, bb.Max.y - 1.0f), sep, 1.0f);
-                    float cy = (bb.Min.y + bb.Max.y) * 0.5f;
-                    float fs = ImGui::GetFontSize();
-                    // label left
-                    cdl->AddText(ImVec2(bb.Min.x + pad, cy - fs * 0.5f), textCol, label);
-                    // value right
-                    ImVec2 vts = ImGui::CalcTextSize(value);
-                    cdl->AddText(ImVec2(bb.Max.x - pad - vts.x, cy - fs * 0.5f), valCol, value);
+    // Shared double checkbox row (two items side by side)
+    struct CbPair {
+        static void Draw(ImDrawList* d, float colX, float& curY, float colW, float itemH,
+                         bool* v0, const char* l0, bool* v1, const char* l1,
+                         ImU32 tc, float cbSz, float fs) {
+            float hw = colW * 0.5f;
+            for (int side = 0; side < 2; ++side) {
+                bool*       v   = side == 0 ? v0 : v1;
+                const char* lbl = side == 0 ? l0 : l1;
+                float ox = colX + hw * (float)side;
+                bool hov = ImGui::IsMouseHoveringRect(ImVec2(ox,curY), ImVec2(ox+hw,curY+itemH));
+                if (hov) d->AddRectFilled(ImVec2(ox,curY),ImVec2(ox+hw,curY+itemH),IM_COL32(255,255,255,8));
+                float cbX = ox + 6.0f;
+                float cbY = curY + (itemH - cbSz) * 0.5f;
+                d->AddRectFilled(ImVec2(cbX,cbY), ImVec2(cbX+cbSz,cbY+cbSz),
+                                 *v ? IM_COL32(21,101,192,255) : IM_COL32(46,46,54,255), 2.0f);
+                d->AddRect(ImVec2(cbX,cbY), ImVec2(cbX+cbSz,cbY+cbSz),
+                           IM_COL32(85,85,85,200), 2.0f, 0, 1.2f);
+                if (*v) {
+                    d->AddLine(ImVec2(cbX+2.5f,cbY+cbSz*0.52f),ImVec2(cbX+cbSz*0.42f,cbY+cbSz-2.5f),IM_COL32(255,255,255,255),1.8f);
+                    d->AddLine(ImVec2(cbX+cbSz*0.42f,cbY+cbSz-2.5f),ImVec2(cbX+cbSz-2.0f,cbY+2.5f),IM_COL32(255,255,255,255),1.8f);
                 }
-            };
-
-            const ImU32 VAL_COL = IM_COL32(90, 200, 250, 255);  // same sky-blue as toggle ON
-
-            InfoRow::Draw("KEY",     killBuf, M_TEXT, VAL_COL, M_SEP, M_HOVER, ROW_H, PAD, false);
-            InfoRow::Draw("Battery", batBuf,  M_TEXT, VAL_COL, M_SEP, M_HOVER, ROW_H, PAD, false);
-            InfoRow::Draw("Time",    timeBuf, M_TEXT, VAL_COL, M_SEP, M_HOVER, ROW_H, PAD, true);
-
-            // +/- Kill counter buttons
-            ImGuiWindow* cw2 = ImGui::GetCurrentWindow();
-            ImVec2 cp = cw2->DC.CursorPos;
-            float  aw2 = ImGui::GetContentRegionAvail().x;
-            const float BTN_H = 40.0f, GAP2 = 10.0f;
-            float btnW = (aw2 - PAD * 2.0f - GAP2) * 0.5f;
-            ImDrawList* cdl2 = cw2->DrawList;
-
-            const ImU32 BTN_BG2 = IM_COL32(52, 52, 55, 255);
-            const ImU32 BTN_ACT = IM_COL32(47, 72, 87, 255);
-
-            // — KILL button
-            float mX0 = cp.x + PAD, mX1 = mX0 + btnW;
-            float mY0 = cp.y + 8.0f, mY1 = mY0 + BTN_H;
-            cdl2->AddRectFilled(ImVec2(mX0, mY0), ImVec2(mX1, mY1), BTN_BG2, 10.0f);
-            ImVec2 mts = ImGui::CalcTextSize("- KILL");
-            cdl2->AddText(ImVec2((mX0+mX1)*0.5f - mts.x*0.5f, (mY0+mY1)*0.5f - mts.y*0.5f),
-                          M_TEXT, "- KILL");
-            ImGui::SetCursorScreenPos(ImVec2(mX0, mY0));
-            if (ImGui::InvisibleButton("##km", ImVec2(btnW, BTN_H)) && ZX_KillCount > 0)
-                ZX_KillCount--;
-
-            // + KILL button
-            float pX0 = mX1 + GAP2, pX1 = pX0 + btnW;
-            cdl2->AddRectFilled(ImVec2(pX0, mY0), ImVec2(pX1, mY1), BTN_ACT, 10.0f);
-            ImVec2 pts2 = ImGui::CalcTextSize("+ KILL");
-            cdl2->AddText(ImVec2((pX0+pX1)*0.5f - pts2.x*0.5f, (mY0+mY1)*0.5f - pts2.y*0.5f),
-                          M_TEXT, "+ KILL");
-            ImGui::SetCursorScreenPos(ImVec2(pX0, mY0));
-            if (ImGui::InvisibleButton("##kp", ImVec2(btnW, BTN_H)))
-                ZX_KillCount++;
-
-            ImGui::SetCursorScreenPos(ImVec2(cp.x, mY1 + 8.0f));
-
-            // ── Reset Guest button ─────────────────────────────────────────
-            ImGuiWindow* cw3 = ImGui::GetCurrentWindow();
-            ImVec2 cp3 = cw3->DC.CursorPos;
-            float  aw3 = ImGui::GetContentRegionAvail().x;
-            const float RBH = 40.0f;
-            float rbX0 = cp3.x + PAD;
-            float rbX1 = cp3.x + aw3 - PAD;
-            float rbY0 = cp3.y + 8.0f;
-            float rbY1 = rbY0 + RBH;
-            const ImU32 RB_BG     = IM_COL32(120, 0, 0, 255);    // แดงเข้ม
-            const ImU32 RB_BG_ACT = IM_COL32(200, 0, 0, 255);    // แดงสว่างเมื่อกด
-            cdl2->AddRectFilled(ImVec2(rbX0, rbY0), ImVec2(rbX1, rbY1), RB_BG, 10.0f);
-            cdl2->AddRect(ImVec2(rbX0, rbY0), ImVec2(rbX1, rbY1),
-                          IM_COL32(255, 80, 80, 200), 10.0f, 0, 1.2f);
-            ImVec2 rbts = ImGui::CalcTextSize("RESET GUEST");
-            cdl2->AddText(
-                ImVec2((rbX0 + rbX1) * 0.5f - rbts.x * 0.5f,
-                       (rbY0 + rbY1) * 0.5f - rbts.y * 0.5f),
-                M_TEXT, "RESET GUEST");
-            ImGui::SetCursorScreenPos(ImVec2(rbX0, rbY0));
-            if (ImGui::InvisibleButton("##rguest", ImVec2(rbX1 - rbX0, RBH)))
-                ZX_ResetAcc = true;   // ZX_ApplyAndRun() จะเรียก DoResetAccount() แล้ว reset เป็น false
-
-            ImGui::SetCursorScreenPos(ImVec2(cp3.x, rbY1 + 8.0f));
-            break;
+                d->AddText(ImVec2(cbX+cbSz+4.0f, curY+(itemH-fs)*0.5f), tc, lbl);
+                ImGui::SetCursorScreenPos(ImVec2(ox, curY));
+                char id[128]; snprintf(id,sizeof(id),"##cbp_%s",lbl);
+                if (ImGui::InvisibleButton(id, ImVec2(hw, itemH))) *v = !*v;
+            }
+            curY += itemH;
         }
+    };
+
+    // Column header helper
+    auto drawColHeader = [&](float colX, float& curY, const char* label, ImU32 color) {
+        dl->AddText(ImVec2(colX+8.0f, curY+(HDR_H-fs)*0.5f), color, label);
+        curY += HDR_H;
+    };
+
+    // ── COL 1: Menu Esp ───────────────────────────────────────────────────────
+    {
+        float cx = wp.x, cy = contY0;
+        drawColHeader(cx, cy, "Menu Esp", M_GREEN);
+        CbPair::Draw(dl, cx, cy, COL_W, ITEM_H, &Vars.lines,  "Line", &ZX_EspBone,  "Bone", M_TEXT_DIM, CBSZ, fs);
+        CbPair::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_EspHP,   "HP",   &ZX_EspName,  "Name", M_TEXT_DIM, CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_Count,    "Count",           M_TEXT_DIM, CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_EspWeapon,"Esp Weapon",      M_TEXT_DIM, CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_EspWukong,"Esp Wukong 300m", M_TEXT_DIM, CBSZ, fs);
     }
 
-#undef TOGGLE_ROW
-
-    ImGui::EndChild();
-    ImGui::PopStyleColor();  // ChildBg
-
-    // ── BOTTOM BUTTONS: Close  |  HIDE ───────────────────────────────────
+    // ── COL 2: Aimbot ─────────────────────────────────────────────────────────
     {
-        float bbCY = zoneY1 + BOT_H * 0.5f;
-        const float BH  = 40.0f;  // button height
-        const float GAP = 12.0f;
-        float bW  = (ws.x - PAD * 2.0f - GAP) * 0.5f;
-        float bY0 = bbCY - BH * 0.5f;
-        float bY1 = bbCY + BH * 0.5f;
+        float cx = wp.x + COL_W, cy = contY0;
+        drawColHeader(cx, cy, "Aimbot", M_GREEN);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &Vars.VisibleCheck,  "VisibleCheck",  M_TEXT_DIM, CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &Vars.IgnoreKnocked, "IgnoreKnocked", M_TEXT_DIM, CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &Vars.isAimFov,      "Show Fov",      M_TEXT_DIM, CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_BanVaNgam,       "Ban va Ngam",   M_TEXT_DIM, CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_HeadAim,         "Head",          M_TEXT_DIM, CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_AimRadius360,    "Aim 360",       M_TEXT_DIM, CBSZ, fs);
+    }
 
-        // ── Close
-        float cX0 = wp.x + PAD;
-        float cX1 = cX0 + bW;
-        dl->AddRectFilled(ImVec2(cX0, bY0), ImVec2(cX1, bY1), M_BTN_BG, 12.0f);
-        ImVec2 cts = ImGui::CalcTextSize("Close");
-        dl->AddText(ImVec2((cX0 + cX1) * 0.5f - cts.x * 0.5f, bbCY - cts.y * 0.5f),
-                    M_TEXT, "Close");
-        ImGui::SetCursorScreenPos(ImVec2(cX0, bY0));
-        if (ImGui::InvisibleButton("##close", ImVec2(bW, BH)))
-            MenDeal = false;
+    // ── COL 3: Ghost ──────────────────────────────────────────────────────────
+    {
+        float cx = wp.x + COL_W*2.0f, cy = contY0;
+        drawColHeader(cx, cy, "Ghost", M_TEXT);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_AimKill,     "Aimkill",   M_TEXT_DIM, CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_Telekill,    "TeleKill",  M_TEXT_DIM, CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_Tatsuyaa,    "Tatsuyaa",  M_TEXT_DIM, CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_AIPlayerAim, "AI Player", M_TEXT_DIM, CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_RUN,         "NinjaRun",  M_TEXT_DIM, CBSZ, fs);
+    }
 
-        // ── HIDE
-        float hX0 = cX1 + GAP;
-        float hX1 = hX0 + bW;
-        dl->AddRectFilled(ImVec2(hX0, bY0), ImVec2(hX1, bY1), M_BTN_BG, 12.0f);
-        ImVec2 hts = ImGui::CalcTextSize("HIDE");
-        dl->AddText(ImVec2((hX0 + hX1) * 0.5f - hts.x * 0.5f, bbCY - hts.y * 0.5f),
-                    M_TEXT, "HIDE");
-        ImGui::SetCursorScreenPos(ImVec2(hX0, bY0));
-        if (ImGui::InvisibleButton("##hide", ImVec2(bW, BH)))
-            ZX_HideModMenu = !ZX_HideModMenu;
+    // ── COL 4: AimKill Fast (0.5s) ───────────────────────────────────────────
+    {
+        float cx = wp.x + COL_W*3.0f, cy = contY0;
+        drawColHeader(cx, cy, "AimKill Fast (0.5s)", M_GREEN);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_AimKillFast, "AimKill Fast", M_TEXT_DIM, CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &Vars.AutoFire,  "Auto Fire",    M_TEXT_DIM, CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_FlyAlt,      "Fly enemy",    M_TEXT_DIM, CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &SilentAim,      "SilentAim",    M_TEXT_DIM, CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_Vong,        "Vong",         M_TEXT_DIM, CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_UNDER,       "UnderKill V4", M_RED,      CBSZ, fs);
     }
 
     ImGui::End();
-    ImGui::PopStyleVar(5);
-    ImGui::PopStyleColor(4);
+    ImGui::PopStyleVar(4);
+    ImGui::PopStyleColor(3);
 }
 
 // Hooks / touch handlers (คงเดิม)
