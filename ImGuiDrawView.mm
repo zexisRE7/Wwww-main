@@ -407,8 +407,8 @@ static const ImU32 ZX_PURPLE        = IM_COL32(175,  82, 222, 255);
 static const ImU32 ZX_YELLOW        = IM_COL32(255, 204,   0, 255);
 
 // ── Layout — Dark Gaming sidebar style 
-static const float ZX_WIN_W      = 760.0f;
-static const float ZX_WIN_H      = 450.0f;
+static const float ZX_WIN_W      = 680.0f;
+static const float ZX_WIN_H      = 400.0f;
 static const float ZX_WIN_RAD    = 16.0f;
 static const float ZX_SIDEBAR_W  = 54.0f;   // left sidebar width
 static const float ZX_HEADER_H   = 54.0f;   // header area height
@@ -505,6 +505,29 @@ static bool  ZX_Vong           = false;
 static bool  ZX_EnableHack     = false;
 static bool  ZX_EnableHackBtn  = false;
 static float ZX_SpeedMult      = 1.37f;
+
+// ── Speed x215 Hack ───────────────────────────────────────────────────────────
+static bool ZX_Speed215          = false;
+static bool ZX_Speed215PrevState = false;
+static std::vector<uintptr_t> ZX_SpeedAddrs;
+static const int64_t kSpeedOriginal = 4397530849764387586LL;
+static const int64_t kSpeed215Val   = 4397530849698750000LL;
+
+// ใช้ MemoryScanner + Memory::Write จาก vinhtran.hpp (Hooks framework)
+static void searchSpeed215() {
+    ZX_SpeedAddrs = MemoryScanner::ScanI64(kSpeedOriginal, 0x100000000, 0x160000000);
+}
+
+static void setSpeed215() {
+    for (uintptr_t a : ZX_SpeedAddrs)
+        Memory::Write<int64_t>(a, kSpeed215Val);
+}
+
+static void disableSpeed215() {
+    for (uintptr_t a : ZX_SpeedAddrs)
+        Memory::Write<int64_t>(a, kSpeedOriginal);
+    ZX_SpeedAddrs.clear();
+}
 
 static void ZX_DrawSidebarIcon(ImDrawList* dl, int idx, ImVec2 c, float s, ImU32 col) {
     switch (idx) {
@@ -1094,6 +1117,20 @@ static void ZX_ApplyAndRun() {
             }
         }
     }
+
+    // ── Speed x215 — scan once on enable, restore on disable ─────────────────
+    if (ZX_Speed215 && !ZX_Speed215PrevState) {
+        // Just toggled ON: scan memory then apply
+        searchSpeed215();
+        setSpeed215();
+    } else if (!ZX_Speed215 && ZX_Speed215PrevState) {
+        // Just toggled OFF: restore original speed
+        disableSpeed215();
+    } else if (ZX_Speed215 && !ZX_SpeedAddrs.empty()) {
+        // Keep writing every frame to sustain the effect
+        setSpeed215();
+    }
+    ZX_Speed215PrevState = ZX_Speed215;
 }
 
 // 🟥 MODDER %7 — ไอคอนแท็บแนวนอน 4 อัน
@@ -1861,11 +1898,21 @@ static void RenderMenu() {
     {
         float cx = wp.x + COL_W*2.0f, cy = contY0;
         drawColHeader(cx, cy, "Ghost", M_TEXT);
-        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_AimKill,     "Aimkill",   M_TEXT_DIM, CBSZ, fs);
-        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_Telekill,    "TeleKill",  M_TEXT_DIM, CBSZ, fs);
-        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_Tatsuyaa,    "Tatsuyaa",  M_TEXT_DIM, CBSZ, fs);
-        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_AIPlayerAim, "AI Player", M_TEXT_DIM, CBSZ, fs);
-        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_RUN,         "NinjaRun",  M_TEXT_DIM, CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_AimKill,     "Aimkill",    M_TEXT_DIM,                   CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_Telekill,    "TeleKill",   M_TEXT_DIM,                   CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_Tatsuyaa,    "Tatsuyaa",   M_TEXT_DIM,                   CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_AIPlayerAim, "AI Player",  M_TEXT_DIM,                   CBSZ, fs);
+        CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_RUN,         "NinjaRun",   M_TEXT_DIM,                   CBSZ, fs);
+        // Speed x215 — แสดงจำนวน addr ที่ scan เจอ (hint สีเขียวเมื่อ active)
+        {
+            char spdLbl[32];
+            if (ZX_Speed215 && !ZX_SpeedAddrs.empty())
+                snprintf(spdLbl, sizeof(spdLbl), "Speed x215 [%d]", (int)ZX_SpeedAddrs.size());
+            else
+                snprintf(spdLbl, sizeof(spdLbl), "Speed x215");
+            ImU32 spdCol = ZX_Speed215 ? M_GREEN : M_TEXT_DIM;
+            CbItem::Draw(dl, cx, cy, COL_W, ITEM_H, &ZX_Speed215, spdLbl, spdCol, CBSZ, fs);
+        }
     }
 
     // ── COL 4: AimKill Fast (0.5s) ───────────────────────────────────────────
