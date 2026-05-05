@@ -1731,11 +1731,11 @@ static void RenderMenu() {
     const float WIN_RAD = 10.0f;
     const float SIDE_W  = 90.0f;
     const float CONT_W  = WIN_W - SIDE_W;
-    const float HDR_H   = 46.0f;
-    const float ROW_H   = 40.0f;
-    const float PAD     = 14.0f;
-    const float CB_SZ   = 16.0f;
-    const float CB_RAD  =  3.0f;
+    const float HDR_H   = 42.0f;
+    const float ROW_H   = 34.0f;   // compact — not stretched
+    const float PAD     = 12.0f;
+    const float CB_SZ   = 14.0f;   // square checkbox
+    const float CB_RAD  =  2.0f;   // nearly square corners
 
     ImGui::PushStyleColor(ImGuiCol_WindowBg,    ImVec4(30/255.0f, 30/255.0f, 34/255.0f, 1.0f));
     ImGui::PushStyleColor(ImGuiCol_Border,       ImVec4(0,0,0,0));
@@ -1934,7 +1934,7 @@ static void RenderMenu() {
                             ImU32 sep, ImU32 hov, ImU32 tc, ImU32 dim,
                             ImU32 dropBg, ImU32 dropBdr,
                             const char* label, const char* value) {
-            const float totalH = rowH + 24.0f;
+            const float totalH = rowH + 20.0f;
             ImVec2 pos = ImGui::GetCursorScreenPos();
             bool   over = ImGui::IsMouseHoveringRect(pos, ImVec2(pos.x + w, pos.y + totalH));
             if (over) d->AddRectFilled(pos, ImVec2(pos.x + w, pos.y + totalH), hov);
@@ -1945,11 +1945,11 @@ static void RenderMenu() {
             // Dropdown box
             float bX0 = pos.x + pad;
             float bX1 = pos.x + w - pad;
-            float bY0 = pos.y + rowH * 0.44f;
-            float bY1 = bY0 + 22.0f;
+            float bY0 = pos.y + rowH * 0.50f;
+            float bY1 = bY0 + 18.0f;
             d->AddRectFilled(ImVec2(bX0, bY0), ImVec2(bX1, bY1), dropBg, 4.0f);
             d->AddRect(ImVec2(bX0, bY0), ImVec2(bX1, bY1), dropBdr, 4.0f, 0, 0.8f);
-            d->AddText(ImVec2(bX0 + 8.0f, bY0 + (22.0f - fSz) * 0.5f), tc, value);
+            d->AddText(ImVec2(bX0 + 8.0f, bY0 + (18.0f - fSz) * 0.5f), tc, value);
 
             // Chevron ▼
             float ax = bX1 - 16.0f, ay = (bY0 + bY1) * 0.5f;
