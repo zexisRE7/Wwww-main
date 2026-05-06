@@ -1284,6 +1284,17 @@ static void RunFastSwitch() {
     if (_set_PostSwitchTime) _set_PostSwitchTime(weapon, 0.01f);
 }
 
+// ── Fast Medkit — ใช้ยาเร็วขึ้น (FSModeUseMedikitFasterRate = true) ──────────
+// get_FSModeUseMedikitFasterRate  RVA: 0x562B9D4
+// set_FSModeUseMedikitFasterRate  RVA: 0x562BA2C
+static void RunFastMedkit() {
+    typedef void (*set_bool_t)(bool);
+    static set_bool_t _set_FSModeUseMedikitFasterRate =
+        (set_bool_t)getRealOffset(0x562BA2C);
+    if (_set_FSModeUseMedikitFasterRate)
+        _set_FSModeUseMedikitFasterRate(true);
+}
+
 // ── Dash Forward — พุ่งไปข้างหน้าตามทิศกล้อง ~100 เมตร ทันที ──────────────
 static void RunDashForward(float distance = 100.0f) {
     void* match = game_sdk->Curent_Match();
@@ -1335,8 +1346,23 @@ static void RunBlueMap() {
 
 // ── Reset Account — เรียก GarenaMSDK_ResetGuest ──
 // RVA: 0x5DFCBF8  GarenaMSDK_ResetGuest (void, no args)
+// get_ResetGuest            RVA: 0x44C752C  (bool property — ตรวจสอบสถานะ)
+// get_ResetGuestBeforeLogin RVA: 0x44C7600  (bool property — ตรวจก่อน login)
 static void DoResetAccount() {
     typedef void (*reset_guest_t)();
+    typedef bool (*get_bool_t)();
+
+    // ตรวจสอบ flag ก่อน reset เพื่อให้แน่ใจว่า guest session ยังมีผล
+    static get_bool_t _get_ResetGuest =
+        (get_bool_t)getRealOffset(0x44C752C);
+    static get_bool_t _get_ResetGuestBeforeLogin =
+        (get_bool_t)getRealOffset(0x44C7600);
+
+    bool isGuest = _get_ResetGuest ? _get_ResetGuest() : true;
+    bool beforeLogin = _get_ResetGuestBeforeLogin ? _get_ResetGuestBeforeLogin() : true;
+
+    if (!isGuest && !beforeLogin) return;   // ไม่ใช่ guest session — ข้ามได้
+
     static reset_guest_t _GarenaMSDK_ResetGuest =
         (reset_guest_t)getRealOffset(0x5DFCBF8);
     if (_GarenaMSDK_ResetGuest) {
