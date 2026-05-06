@@ -998,6 +998,74 @@ static void ZX_ApplyAndRun() {
     Vars.AutoTeleport = ZX_AutoTeleport;
     Vars.AmmoSpeedFast = ZX_AmmoSpeedFast;
     Vars.BlueMap = ZX_BlueMap;
+
+    // ════════════════════════════════════════════════════════════════════════
+    // RESET — คืนค่า combat vars ทุกเฟรม ก่อน feature จะ apply
+    // ทำให้ toggle ปิดแล้ว "ดับจริง" ไม่ค้างข้ามเฟรม
+    // ════════════════════════════════════════════════════════════════════════
+    {
+        // Aimbot base — ตามที่ user ตั้งใน AIMBOT tab
+        Vars.AimbotEnable   = Vars.Aimbot;
+        Vars.AimMode        = 0;
+        Vars.AimHitbox      = ZX_HitboxIdx;
+        Vars.AimWhen        = ZX_WhenShootIdx;
+        Vars.isAimFov       = (Vars.AimFov > 0);
+        Vars.IgnoreKnocked  = true;
+        Vars.VisibleCheck   = true;
+        Vars.UpPlayerOne    = false;
+        Vars.Telekill       = ZX_Telekill;
+        // Weapon base
+        Vars.AutoFire       = ZX_FastFire;
+        Vars.LongRange      = ZX_LongRange;
+        Vars.BulletPenetration = ZX_BulletThru;
+        Vars.ChainDamage    = ZX_ChainDamage;
+        Vars.ChainDamageValue = (int)ZX_ChainDmgValue;
+        SetDamage           = 0;
+        SilentAim           = ZX_BulletThru;
+        CheckWall1          = !ZX_BulletThru;
+        // Speed base
+        Vars.NinjaRun       = ZX_RUN;
+        Vars.NinjaRunSpeed  = ZX_GHOSTVIP ? 2.0f : 0.5f;
+        // Misc
+        Vars.FreeFly        = ZX_FreeFly;
+        Vars.FlyUp          = ZX_FlyAlt;
+    }
+
+    // ── AimKill Variants mutual exclusion ────────────────────────────────
+    // เปิดอันใหม่ → ปิดอันเก่าอัตโนมัติ (เก็บ last active)
+    {
+        static bool _prevUK=false,_prevV1=false,_prevV2=false,
+                    _prevV3=false,_prevV4=false,_prevV5=false,_prevAK=false;
+        // ตรวจว่า toggle ไหนเพิ่งถูกเปิด (rising edge)
+        bool risingUK = ZX_UnderKill && !_prevUK;
+        bool risingV1 = ZX_AimKillV1 && !_prevV1;
+        bool risingV2 = ZX_AimKillV2 && !_prevV2;
+        bool risingV3 = ZX_AimKillV3 && !_prevV3;
+        bool risingV4 = ZX_AimKillV4 && !_prevV4;
+        bool risingV5 = ZX_AimKillV5 && !_prevV5;
+        bool risingAK = ZX_AimKill   && !_prevAK;
+        if (risingUK) { ZX_AimKillV1=ZX_AimKillV2=ZX_AimKillV3=ZX_AimKillV4=ZX_AimKillV5=ZX_AimKill=false; }
+        if (risingV1) { ZX_UnderKill=ZX_AimKillV2=ZX_AimKillV3=ZX_AimKillV4=ZX_AimKillV5=ZX_AimKill=false; }
+        if (risingV2) { ZX_UnderKill=ZX_AimKillV1=ZX_AimKillV3=ZX_AimKillV4=ZX_AimKillV5=ZX_AimKill=false; }
+        if (risingV3) { ZX_UnderKill=ZX_AimKillV1=ZX_AimKillV2=ZX_AimKillV4=ZX_AimKillV5=ZX_AimKill=false; }
+        if (risingV4) { ZX_UnderKill=ZX_AimKillV1=ZX_AimKillV2=ZX_AimKillV3=ZX_AimKillV5=ZX_AimKill=false; }
+        if (risingV5) { ZX_UnderKill=ZX_AimKillV1=ZX_AimKillV2=ZX_AimKillV3=ZX_AimKillV4=ZX_AimKill=false; }
+        if (risingAK) { ZX_UnderKill=ZX_AimKillV1=ZX_AimKillV2=ZX_AimKillV3=ZX_AimKillV4=ZX_AimKillV5=false; }
+        _prevUK=ZX_UnderKill; _prevV1=ZX_AimKillV1; _prevV2=ZX_AimKillV2;
+        _prevV3=ZX_AimKillV3; _prevV4=ZX_AimKillV4; _prevV5=ZX_AimKillV5;
+        _prevAK=ZX_AimKill;
+    }
+
+    // ── Speed preset mutual exclusion (เปิดอันใหม่ปิดอันเก่า) ─────────────
+    {
+        static bool _px10=false,_px20=false,_px50=false;
+        if (ZX_SpeedX10 && !_px10) { ZX_SpeedX20=ZX_SpeedX50=false; }
+        if (ZX_SpeedX20 && !_px20) { ZX_SpeedX10=ZX_SpeedX50=false; }
+        if (ZX_SpeedX50 && !_px50) { ZX_SpeedX10=ZX_SpeedX20=false; }
+        _px10=ZX_SpeedX10; _px20=ZX_SpeedX20; _px50=ZX_SpeedX50;
+    }
+    // ════════════════════════════════════════════════════════════════════════
+
     if (ZX_SetMark) { SetMarkAtCurrentPos(); ZX_SetMark = false; }
     if (ZX_ResetAcc) { DoResetAccount(); ZX_ResetAcc = false; }
     if (ZX_DashForward) { RunDashForward(ZX_DashDistance); ZX_DashForward = false; }
@@ -2161,6 +2229,48 @@ void initAutoFireHook(void) {
         CGFloat screenH = [UIApplication sharedApplication].windows[0].rootViewController.view.frame.size.height;
         ImGui::SetNextWindowPos(ImVec2((screenW - ZX_WIN_W) * 0.5f, (screenH - ZX_WIN_H) * 0.5f), ImGuiCond_FirstUseEver);
         if (MenDeal) { RenderMenu(); }
+
+        // ── Floating MENU Button — โชว์ตลอด กด = เปิด/ปิดเมนู ค้าง = ลาก ──
+        {
+            static ImVec2 menuBtnPos(20.0f, screenH * 0.35f);
+            static bool   menuDragging   = false;
+            static ImVec2 menuDragOffset(0.0f, 0.0f);
+
+            const float MW = 68.0f, MH = 34.0f, MR = 17.0f;
+            ImVec2 mMin = menuBtnPos;
+            ImVec2 mMax = ImVec2(mMin.x + MW, mMin.y + MH);
+
+            ImGuiIO& mio = ImGui::GetIO();
+            bool mHov = mio.MousePos.x >= mMin.x && mio.MousePos.x <= mMax.x &&
+                        mio.MousePos.y >= mMin.y && mio.MousePos.y <= mMax.y;
+
+            if (mHov && ImGui::IsMouseClicked(0))
+                menuDragOffset = ImVec2(mio.MousePos.x - mMin.x, mio.MousePos.y - mMin.y);
+            if (ImGui::IsMouseDown(0) && mHov && mio.MouseDownDuration[0] > 0.3f)
+                menuDragging = true;
+            if (menuDragging)
+                menuBtnPos = ImVec2(mio.MousePos.x - menuDragOffset.x,
+                                    mio.MousePos.y - menuDragOffset.y);
+            if (!ImGui::IsMouseDown(0)) menuDragging = false;
+
+            if (mHov && ImGui::IsMouseReleased(0) && !menuDragging)
+                MenDeal = !MenDeal;
+
+            ImDrawList* mdl = ImGui::GetForegroundDrawList();
+            ImU32 mColor = MenDeal
+                         ? IM_COL32(47, 72, 87, 230)    // เปิดอยู่ — teal
+                         : IM_COL32(52, 52, 55, 230);   // ปิดอยู่ — dark gray
+            if (mHov && !menuDragging)
+                mColor = IM_COL32(90, 200, 250, 230);   // hover — sky blue
+            mdl->AddRectFilled(mMin, mMax, mColor, MR);
+            mdl->AddRect(mMin, mMax, IM_COL32(255,255,255,50), MR, 0, 1.2f);
+
+            const char* mtxt = MenDeal ? "CLOSE" : "MENU";
+            ImVec2 mts = ImGui::CalcTextSize(mtxt);
+            mdl->AddText(ImVec2(mMin.x + (MW - mts.x) * 0.5f,
+                                mMin.y + (MH - mts.y) * 0.5f),
+                         IM_COL32(255,255,255,255), mtxt);
+        }
 
         // ── Floating KILL Button — ลอยบนหน้าจอตลอด (กด = kill, ค้าง+ลาก = ย้าย) ──
         if (Vars.Enable) {
