@@ -475,7 +475,10 @@ void initRealSpeedHook(void) {
 }
 - (void)touchesCancelled:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event { [self updateIOWithTouchEvent:event]; }
 - (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event   { [self updateIOWithTouchEvent:event]; }
-
+// Dummy hook for AutoFire (safe version doesn't need real hook)
+void initAutoFireHook(void) {
+    // does nothing, only to satisfy linker
+}
 #pragma mark - MTKViewDelegate
 
 - (void)drawInMTKView:(MTKView*)view {
