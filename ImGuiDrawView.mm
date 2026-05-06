@@ -509,7 +509,7 @@ static float ZX_FlyV2Speed    = 30.0f;
 
 // ── Rapid Fire & Anti-Ban (ใช้งานได้จริง) ────────────────────────────────
 static bool  ZX_RapidFire     = false;   // ยิงเร็วสุดทุกเฟรม + RunAmmoSpeedFast
-static bool  ZX_AntiBan       = false;   // ลด detection footprint ทุก 3 วิ
+//static bool  ZX_AntiBan       = false;   // ลด detection footprint ทุก 3 วิ
 
 // ── Extra Features (use/not use ไม่เป็นไร) ────────────────────────────────
 static bool  ZX_SuperJump     = false;   // กระโดดสูงพิเศษ
