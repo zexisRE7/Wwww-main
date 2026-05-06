@@ -1284,6 +1284,55 @@ static void RunFastSwitch() {
     if (_set_PostSwitchTime) _set_PostSwitchTime(weapon, 0.01f);
 }
 
+// ── Real Speed Hack ──────────────────────────────────────────────────────────
+// GetMoveSpeedForFPPMode  RVA: 0x4B23770  — คำนวณ speed จริงที่ใช้เคลื่อนที่ใน FPP
+// RunSpeedUpScale         offset 0x260 บน Player object — ตัวคูณ speed (server cap: MaxRunSpeedUpScale)
+// SyncPos                 RVA: 0x1186A50  — ส่ง tick+pos+rot+speed ไป server
+//
+// วิธีทำงาน:
+//   - hook_GetMoveSpeedForFPP คูณ speed ที่ engine คืน → client เคลื่อนที่เร็วขึ้นจริง
+//   - RunRealSpeed() เขียน RunSpeedUpScale โดยตรงทุกเฟรม
+//   - hook_SyncPos clamp vector speed ที่ส่งหา server → server เห็นความเร็วปกติ (anti-ban)
+// ─────────────────────────────────────────────────────────────────────────────
+
+float ZX_SpeedMultiplier = 1.8f;  // ตัวคูณ (1.0 = ปกติ, 1.8 = เร็ว, 3.0 = Max)
+
+// ── hook: GetMoveSpeedForFPPMode ─────────────────────────────────────────────
+static float (*orig_GetMoveSpeedForFPP)(void*) = nullptr;
+static float hook_GetMoveSpeedForFPP(void* self) {
+    float orig = orig_GetMoveSpeedForFPP ? orig_GetMoveSpeedForFPP(self) : 6.0f;
+    return orig * ZX_SpeedMultiplier;
+}
+
+// เขียน RunSpeedUpScale (offset 0x260) โดยตรงบน Player ทุกเฟรม
+static void RunRealSpeed() {
+    void* match = game_sdk->Curent_Match();
+    if (!match) return;
+    void* local = game_sdk->GetLocalPlayer(match);
+    if (!local) return;
+    *(float*)((uintptr_t)local + 0x260) = ZX_SpeedMultiplier;
+}
+
+void initRealSpeedHook(void);
+
+// ── hook: SyncPos — Anti-ban (clamp speed ก่อนส่ง server) ───────────────────
+// ถ้า vector speed > 9.0 m/s (ค่าปกติสูงสุด) → normalize ให้อยู่ในขีดจำกัด
+// server จะมองว่าเคลื่อนที่ปกติ แม้ client จะวิ่งเร็วกว่าจริง
+static void (*orig_SyncPos)(void*, uint32_t, Vector3, Quaternion, Vector3) = nullptr;
+static void hook_SyncPos(void* self, uint32_t tick, Vector3 pos, Quaternion rot, Vector3 speed) {
+    const float kMaxSafeSpeed = 9.0f;
+    float len = sqrtf(speed.x * speed.x + speed.y * speed.y + speed.z * speed.z);
+    if (len > kMaxSafeSpeed) {
+        float s = kMaxSafeSpeed / len;
+        speed.x *= s;
+        speed.y *= s;
+        speed.z *= s;
+    }
+    if (orig_SyncPos) orig_SyncPos(self, tick, pos, rot, speed);
+}
+
+void initAntiBanHook(void);
+
 // ── Fast Medkit — ใช้ยาเร็วขึ้น (FSModeUseMedikitFasterRate = true) ──────────
 // get_FSModeUseMedikitFasterRate  RVA: 0x562B9D4
 // set_FSModeUseMedikitFasterRate  RVA: 0x562BA2C
