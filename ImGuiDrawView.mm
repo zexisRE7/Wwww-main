@@ -47,7 +47,6 @@ ImFont* pixel_smol = {};
 #include <OpenGLES/ES2/glext.h>
 #include <unistd.h>
 #include <string.h>
-#include <mach/mach.h>
 #include "Other/dobby_defines.h"
 #import "Other/H5hook.h"
 #include "Other/Paste.h"
@@ -303,15 +302,15 @@ ImFont* Urbanist;
 }
 
 - (void)updateFloatButtonsVisibility {
-    // ปุ่มลอยแสดงตลอดเวลา — ปิดได้จากเมนูเท่านั้น
-    self.flyButton.hidden      = NO;
-    self.telekillButton.hidden = NO;
-    self.aimkillButton.hidden  = NO;
-    self.norecoilButton.hidden = NO;
-    self.markTPButton.hidden   = NO;
-    self.autoTPButton.hidden   = NO;
+    //  ปุ่มโผล่เมื่อเปิดฟังก์ชันนั้นจากเมนู — ผูกตรงกับ feature flag
+    self.flyButton.hidden      = !ZX_FlyAlt;
+    self.telekillButton.hidden = !ZX_Telekill;
+    self.aimkillButton.hidden  = !ZX_AimKill;
+    self.norecoilButton.hidden = !ZX_NoRecoil;
+    self.markTPButton.hidden   = !ZX_MarkTeleport;
+    self.autoTPButton.hidden   = !ZX_AutoTeleport;
 
-    // ซิงก์สถานะสวิตช์บนปุ่มให้ตรงกับ ZX_var (menu → button)
+    //  ซิงก์สถานะสวิตช์บนปุ่มให้ตรงกับ ZX_var
     if (self.flySwitch.on      != ZX_FlyAlt)       self.flySwitch.on      = ZX_FlyAlt;
     if (self.telekillSwitch.on != ZX_Telekill)     self.telekillSwitch.on = ZX_Telekill;
     if (self.aimkillSwitch.on  != ZX_AimKill)      self.aimkillSwitch.on  = ZX_AimKill;
@@ -408,11 +407,11 @@ static const ImU32 ZX_PURPLE        = IM_COL32(175,  82, 222, 255);
 static const ImU32 ZX_YELLOW        = IM_COL32(255, 204,   0, 255);
 
 // ── Layout — Dark Gaming sidebar style 
-static const float ZX_WIN_W      = 460.0f;
-static const float ZX_WIN_H      = 320.0f;
+static const float ZX_WIN_W      = 320.0f;
+static const float ZX_WIN_H      = 370.0f;
 static const float ZX_WIN_RAD    = 16.0f;
 static const float ZX_SIDEBAR_W  = 54.0f;   // left sidebar width
-static const float ZX_HEADER_H   = 48.0f;   // header area height
+static const float ZX_HEADER_H   = 54.0f;   // header area height
 static const float ZX_ROW_H      = 46.0f;   // item row height
 static const float ZX_ROW_RAD    = 10.0f;   // item border radius
 static const float ZX_ROW_GAP    =  7.0f;   // gap between rows
@@ -486,171 +485,50 @@ static bool  ZX_ShowAimkillBtn  = false;
 static bool  ZX_ShowNorecoilBtn = false;
 static bool  ZX_ShowMarkTPBtn   = false;
 static bool  ZX_ShowAutoTPBtn   = false;
+
+// ── Speed Presets ──────────────────────────────────────────────────────────
+static bool  ZX_SpeedX10      = false;   // วิ่งเร็ว x10
+static bool  ZX_SpeedX20      = false;   // วิ่งเร็ว x20
+static bool  ZX_SpeedX50      = false;   // วิ่งเร็ว x50
+
+// ── AimKill Variants ───────────────────────────────────────────────────────
+static bool  ZX_UnderKill     = false;   // UNDERKILL  — โจมตีทุกคนรวม knocked
+static bool  ZX_AimKillV1     = false;   // AIMKILL v1 — head chain 9999
+static bool  ZX_AimKillV2     = false;   // AIMKILL v2 — head + telekill
+static bool  ZX_AimKillV3     = false;   // AIMKILL v3 — body mass kill
+static bool  ZX_AimKillV4     = false;   // AIMKILL v4 — neck shot mid range
+static bool  ZX_AimKillV5     = false;   // AIMKILL v5 — rush + close kill
+
+// ── Fly V2 — กระโดดแล้วพุ่งขึ้นสูงทันที ──────────────────────────────────
+static bool  ZX_FlyV2         = false;
+static float ZX_FlyV2Speed    = 30.0f;
+
+// ── Rapid Fire & Anti-Ban (ใช้งานได้จริง) ────────────────────────────────
+static bool  ZX_RapidFire     = false;   // ยิงเร็วสุดทุกเฟรม + RunAmmoSpeedFast
+static bool  ZX_AntiBan       = false;   // ลด detection footprint ทุก 3 วิ
+
+// ── Extra Features (use/not use ไม่เป็นไร) ────────────────────────────────
+static bool  ZX_SuperJump     = false;   // กระโดดสูงพิเศษ
+static bool  ZX_FastReload2   = false;   // reload เร็ว x10 (ใช้ NoReload)
+static bool  ZX_HeadOnly      = false;   // force head hitbox ทุกยิง
+static bool  ZX_WallShoot     = false;   // ยิงผ่านกำแพง (BulletThru alias)
+static bool  ZX_QuickScope    = false;   // scope ขึ้นลงเร็ว (set aim speed สูง)
+static bool  ZX_GhostMode     = false;   // บินเงียบ (FreeFly ไม่มีเสียง)
+static bool  ZX_BulletRain    = false;   // AutoFire aggressive rate
+static bool  ZX_InstaScope    = false;   // AimSpeed 999 snap ทันที
+static bool  ZX_MapReveal     = false;   // ทำ placeholder (BlueMap alias)
+static bool  ZX_AntiFlash     = false;   // anti flashbang (placeholder)
+static bool  ZX_LockTrigger   = false;   // ล็อคไกบังคับยิงตลอด
+static bool  ZX_SpinBot       = false;   // placeholder (anti-aim spin)
+static bool  ZX_FakeLag       = false;   // placeholder
+static bool  ZX_ZoomHack      = false;   // zoom กล้อง
+static float ZX_ZoomLevel     = 2.0f;
+
 // 
 static bool  ZX_AimRadius180   = false;
 static bool  ZX_AimRadius360   = false;
 static int   ZX_WhenShootIdx   = 0;        // 0=When Shoot and Scope
 static int   ZX_HitboxIdx      = 0;        // 0=Head
-
-// ── New UI statics (new menu layout) ─────────────────────────────────────────
-static bool  ZX_EspBone        = false;
-static bool  ZX_EspHP          = false;
-static bool  ZX_EspName        = false;
-static bool  ZX_EspWeapon      = false;
-static bool  ZX_EspWukong      = false;
-static bool  ZX_BanVaNgam      = false;
-static bool  ZX_HeadAim        = false;
-static bool  ZX_Tatsuyaa       = false;
-static bool  ZX_AimKillFast    = false;
-static bool  ZX_Vong           = false;
-static bool  ZX_EnableHack     = false;
-static bool  ZX_EnableHackBtn  = false;
-static float ZX_SpeedMult      = 1.37f;
-
-// ── Speed x215 Hack ───────────────────────────────────────────────────────────
-static bool ZX_Speed215          = false;
-static bool ZX_Speed215PrevState = false;
-static std::vector<uintptr_t> ZX_SpeedAddrs;
-static const int64_t kSpeedOriginal = 4397530849764387586LL;
-static const int64_t kSpeed215Val   = 4397530849698750000LL;
-
-// scan + write ด้วย mach API (iOS jailbreak tweak standard)
-static std::vector<uintptr_t> ZX_ScanI64(int64_t target, uintptr_t start, uintptr_t end) {
-    std::vector<uintptr_t> result;
-    const vm_size_t PAGE = 0x1000;
-    uint8_t buf[PAGE];
-    for (uintptr_t addr = start & ~(uintptr_t)(PAGE - 1); addr < end; addr += PAGE) {
-        vm_size_t readSz = 0;
-        if (vm_read_overwrite(mach_task_self(),
-                              (vm_address_t)addr, PAGE,
-                              (vm_address_t)buf, &readSz) != KERN_SUCCESS) continue;
-        for (vm_size_t i = 0; i + 8 <= readSz; i += 4) {
-            int64_t val; memcpy(&val, buf + i, 8);
-            if (val == target) result.push_back(addr + i);
-        }
-    }
-    return result;
-}
-
-static void ZX_WriteI64(uintptr_t addr, int64_t value) {
-    vm_protect(mach_task_self(), addr & ~(uintptr_t)0xFFF, 0x1000,
-               false, VM_PROT_READ | VM_PROT_WRITE | VM_PROT_COPY);
-    memcpy((void*)addr, &value, 8);
-}
-
-static void searchSpeed215() {
-    ZX_SpeedAddrs = ZX_ScanI64(kSpeedOriginal, 0x100000000ULL, 0x160000000ULL);
-}
-
-static void setSpeed215() {
-    for (uintptr_t a : ZX_SpeedAddrs) ZX_WriteI64(a, kSpeed215Val);
-}
-
-static void disableSpeed215() {
-    for (uintptr_t a : ZX_SpeedAddrs) ZX_WriteI64(a, kSpeedOriginal);
-    ZX_SpeedAddrs.clear();
-}
-
-// ── Speed Multiplier Hook — x5 / x50 / x70 ───────────────────────────────────
-// RVA 0x61BCB4C = set_MoveSpeed (OB53 dump)
-static bool ZX_SpeedX5      = false;
-static bool ZX_SpeedX50     = false;
-static bool ZX_SpeedX70     = false;
-static bool ZX_AimKillCover = false;
-
-static void (*old_setMoveSpeed)(void*, float) = nullptr;
-
-static void hook_setMoveSpeed(void* _this, float value) {
-    if      (ZX_SpeedX5)  value *= 5.0f;
-    else if (ZX_SpeedX50) value *= 50.0f;
-    else if (ZX_SpeedX70) value *= 70.0f;
-    if (old_setMoveSpeed) old_setMoveSpeed(_this, value);
-}
-
-static void initSpeedMultHook() {
-    static bool done = false;
-    if (done) return;
-    done = true;
-    NSString* patch = StaticInlineHookPatch(
-        ("Frameworks/UnityFramework.framework/UnityFramework"),
-        0x61BCB4C, nullptr);
-    NSLog(@"[SpeedMult] patch: %@", patch ?: @"<nil>");
-    void* orig = StaticInlineHookFunction(
-        ("Frameworks/UnityFramework.framework/UnityFramework"),
-        0x61BCB4C, (void*)hook_setMoveSpeed);
-    if (orig) *(void**)(&old_setMoveSpeed) = orig;
-}
-
-// ── AimKill Real — hook TakeDamage (OB53) ─────────────────────────────────────
-// RVA 0x4F63DE0 = human player entity TakeDamage (override, near TakeDamageByVehicle)
-// RVA 0x4B91BE4 = secondary entity TakeDamage (fallback)
-//
-// ELMGJKHIIAA (DamageInfo) layout (OB53 dump line 1114422):
-//   +0x10 = DBLBLKADCNP  int   — damage value
-//   +0x20 = NNNADMOFPIE  bool  — headshot / critical flag
-//   +0x70 = ACAKHEABPEJ  short — hitbox bone index
-//
-// Flow: Client calls TakeDamage on enemy entity (client-sim) →
-//       hit data is packed into RUDP C2S → server validates → applies damage.
-//       We modify damage in-struct before the original function packs it.
-
-static bool ZX_AimKillReal = false;  // AimKill Real Damage
-
-// ── trampoline pointers ───────────────────────────────────────────────────────
-static void (*old_TakeDamageA)(void*, void*, void*, void*, uint32_t) = nullptr;  // 0x4F63DE0
-static void (*old_TakeDamageB)(void*, void*, void*, void*, uint32_t) = nullptr;  // 0x4B91BE4
-
-static void applyRealDamage(void* _this, void* dmgInfo) {
-    if (!ZX_AimKillReal || !dmgInfo) return;
-    // ตรวจ: อย่าบูสต์ damage ที่กระทำกับตัวเอง (local player)
-    void* match = game_sdk ? game_sdk->Curent_Match() : nullptr;
-    void* local = (match && game_sdk) ? game_sdk->GetLocalPlayer(match) : nullptr;
-    if (_this == local) return;
-    // แก้ damage value → 999 (สูงพอฆ่าทันที แต่ไม่บ้าจน server flag)
-    *(int*)((uintptr_t)dmgInfo + 0x10)  = 999;
-    // เซ็ต headshot flag → damage multiplier
-    *(bool*)((uintptr_t)dmgInfo + 0x20) = true;
-    // เซ็ต bone → head (0)
-    *(short*)((uintptr_t)dmgInfo + 0x70) = 0;
-}
-
-static void hook_TakeDamageA(void* _this, void* dmgInfo, void* wpnInfo, void* chkParams, uint32_t vehID) {
-    applyRealDamage(_this, dmgInfo);
-    if (old_TakeDamageA) old_TakeDamageA(_this, dmgInfo, wpnInfo, chkParams, vehID);
-}
-
-static void hook_TakeDamageB(void* _this, void* dmgInfo, void* wpnInfo, void* chkParams, uint32_t vehID) {
-    applyRealDamage(_this, dmgInfo);
-    if (old_TakeDamageB) old_TakeDamageB(_this, dmgInfo, wpnInfo, chkParams, vehID);
-}
-
-static void initAimKillRealHook() {
-    static bool done = false;
-    if (done) return;
-    done = true;
-    // Primary hook — 0x4F63DE0 (human player entity TakeDamage)
-    {
-        NSString* p = StaticInlineHookPatch(
-            ("Frameworks/UnityFramework.framework/UnityFramework"),
-            0x4F63DE0, nullptr);
-        NSLog(@"[AimKillReal-A] patch: %@", p ?: @"<nil>");
-        void* o = StaticInlineHookFunction(
-            ("Frameworks/UnityFramework.framework/UnityFramework"),
-            0x4F63DE0, (void*)hook_TakeDamageA);
-        if (o) *(void**)(&old_TakeDamageA) = o;
-    }
-    // Secondary hook — 0x4B91BE4 (fallback entity TakeDamage)
-    {
-        NSString* p = StaticInlineHookPatch(
-            ("Frameworks/UnityFramework.framework/UnityFramework"),
-            0x4B91BE4, nullptr);
-        NSLog(@"[AimKillReal-B] patch: %@", p ?: @"<nil>");
-        void* o = StaticInlineHookFunction(
-            ("Frameworks/UnityFramework.framework/UnityFramework"),
-            0x4B91BE4, (void*)hook_TakeDamageB);
-        if (o) *(void**)(&old_TakeDamageB) = o;
-    }
-}
 
 static void ZX_DrawSidebarIcon(ImDrawList* dl, int idx, ImVec2 c, float s, ImU32 col) {
     switch (idx) {
@@ -1081,8 +959,6 @@ static bool ZX_PillDropdown(const char* label, int iconType) {
 
 // ทำงานทุกเฟรม ไม่ต้องเปิดเมนูค้าง
 static void ZX_ApplyAndRun() {
-    initSpeedMultHook();      // hook set_MoveSpeed once (0x61BCB4C)
-    initAimKillRealHook();    // hook TakeDamage once (0x4F63DE0 + 0x4B91BE4)
     Vars.AimbotEnable = Vars.Aimbot;
     Vars.isAimFov = (Vars.AimFov > 0);
     Vars.fovLineColor[0] = 0.90f;
@@ -1092,13 +968,13 @@ static void ZX_ApplyAndRun() {
     Vars.FastFire = ZX_FastFire;
     FireDelay = ZX_FastFire ? 0.0f : 0.001f;
     if (ZX_FastFire && Vars.Enable) {
-        // FastFire ทำแค่ยิงเร็ว ไม่บังคับ AutoFire (เปิดแยกได้เอง)
+        Vars.AutoFire = true;   // บังคับ AutoFire hook ทำงาน
         void* _ff_match = game_sdk->Curent_Match();
         if (_ff_match) {
             void* _ff_local = game_sdk->GetLocalPlayer(_ff_match);
             if (_ff_local) {
                 void* _ff_wpn = GetWeaponOnHand1(_ff_local);
-                if (_ff_wpn) Weapon_StartFiring(_ff_wpn);
+                if (_ff_wpn) Weapon_StartFiring(_ff_wpn);  // บังคับยิงทันที (0x4EA8A54)
             }
         }
     }
@@ -1107,7 +983,7 @@ static void ZX_ApplyAndRun() {
     Vars.ChainDamage = ZX_ChainDamage;
     Vars.ChainDamageValue = (int)ZX_ChainDmgValue;
     Vars.FastSwitch = ZX_FastSwitch;
-    // BulletThru — ยิงทะลุ ไม่บังคับ SilentAim (เปิดแยกได้เองใน Col 4)
+    if (ZX_BulletThru) { SilentAim = true; CheckWall1 = false; }
     Vars.FlyUp = ZX_FlyAlt;
     Vars.FlySpeed = ZX_FlySpeed;
     Vars.Telekill = ZX_Telekill;
@@ -1117,8 +993,6 @@ static void ZX_ApplyAndRun() {
     Vars.NoRecoil = ZX_NoRecoil;
     Vars.NoReload = ZX_NoReload;
     Vars.AIPlayerAim = ZX_AIPlayerAim;
-    Vars.NinjaRun = ZX_RUN;
-    if (ZX_GHOSTVIP) Vars.NinjaRunSpeed = 5.0f;
     Vars.CurrentTab = ZX_Tab;
     Vars.MarkTeleport = ZX_MarkTeleport;
     Vars.AutoTeleport = ZX_AutoTeleport;
@@ -1145,31 +1019,26 @@ static void ZX_ApplyAndRun() {
             }
         }
     }
-    // AimKill — เปิดแค่ Aimbot เท่านั้น ไม่บังคับ function อื่น (แยกออกมาแล้ว)
-    if (ZX_AimKill && Vars.Enable) {
-        Vars.Aimbot       = true;
+    if ((ZX_AimKill || Vars.AutoFire) && Vars.Enable) {
+        Vars.Aimbot = true;
         Vars.AimbotEnable = true;
-        Vars.AimMode      = 0;
-        Vars.isAimFov     = true;
-        Vars.AimWhen      = 0;
-        Vars.AimHitbox    = 0;
-        if (Vars.AimFov < 500.0f) Vars.AimFov = 500.0f;
-    }
-    // AimKill Real — hook TakeDamage damage value = 999 + headshot flag
-    // (ทำงานเงียบๆ ผ่าน hook ไม่ต้อง enable อะไรเพิ่ม)
-
-    // AimKill Cover — Aimbot ทะลุกำแพง (SilentAim + BulletPenetration, ไม่เช็ค VisibleCheck)
-    if (ZX_AimKillCover && Vars.Enable) {
-        Vars.Aimbot           = true;
-        Vars.AimbotEnable     = true;
-        Vars.AimMode          = 0;
-        Vars.isAimFov         = true;
-        Vars.AimWhen          = 0;
-        Vars.AimHitbox        = 0;
-        Vars.VisibleCheck     = false;
+        Vars.AimMode = 0;
+        Vars.isAimFov = true;
+        Vars.AimWhen = 0;
+        Vars.AimHitbox = 0;
+        Vars.AutoFire = true;
+        Vars.FastFire = true;
+        FireDelay = 0.0f;
+        Vars.LongRange = true;
         Vars.BulletPenetration = true;
-        SilentAim             = true;
-        CheckWall1            = false;
+        Vars.ChainDamage = true;
+        Vars.ChainDamageValue = 9999;
+        Vars.VisibleCheck = false;
+        Vars.IgnoreKnocked = true;
+        Vars.UpPlayerOne = true;
+        SilentAim = true;
+        CheckWall1 = false;
+        SetDamage = 1;
         if (Vars.AimFov < 500.0f) Vars.AimFov = 500.0f;
     }
     if (ZX_FreeFly && Vars.Enable) {
@@ -1248,19 +1117,178 @@ static void ZX_ApplyAndRun() {
         }
     }
 
-    // ── Speed x215 — scan once on enable, restore on disable ─────────────────
-    if (ZX_Speed215 && !ZX_Speed215PrevState) {
-        // Just toggled ON: scan memory then apply
-        searchSpeed215();
-        setSpeed215();
-    } else if (!ZX_Speed215 && ZX_Speed215PrevState) {
-        // Just toggled OFF: restore original speed
-        disableSpeed215();
-    } else if (ZX_Speed215 && !ZX_SpeedAddrs.empty()) {
-        // Keep writing every frame to sustain the effect
-        setSpeed215();
+    // ── Speed Presets — วิ่งเร็ว x10/x20/x50 ─────────────────────────────
+    if (ZX_SpeedX10 && Vars.Enable) {
+        Vars.NinjaRun = true; Vars.NinjaRunSpeed = 10.0f;
     }
-    ZX_Speed215PrevState = ZX_Speed215;
+    if (ZX_SpeedX20 && Vars.Enable) {
+        Vars.NinjaRun = true; Vars.NinjaRunSpeed = 20.0f;
+    }
+    if (ZX_SpeedX50 && Vars.Enable) {
+        Vars.NinjaRun = true; Vars.NinjaRunSpeed = 50.0f;
+    }
+    // sync ZX_RUN → NinjaRun
+    if (ZX_RUN && Vars.Enable) {
+        Vars.NinjaRun = true;
+        if (Vars.NinjaRunSpeed < 0.5f) Vars.NinjaRunSpeed = 0.5f;
+    }
+
+    // ── Fly V2 — พุ่งขึ้นสูงทันทีทุกเฟรม ────────────────────────────────
+    if (ZX_FlyV2 && Vars.Enable) {
+        void* match = game_sdk->Curent_Match();
+        if (match) {
+            void* local = game_sdk->GetLocalPlayer(match);
+            if (local) {
+                void* tf = game_sdk->Component_GetTransform(local);
+                if (tf) {
+                    Vector3 cur = game_sdk->get_position(tf);
+                    cur.y += ZX_FlyV2Speed * 0.5f;
+                    Transform_INTERNAL_SetPosition(tf, Vvector3(cur.x, cur.y, cur.z));
+                }
+            }
+        }
+    }
+
+    // ── UNDERKILL — ฆ่าทุกคนรวม knocked (body shot) ─────────────────────
+    if (ZX_UnderKill && Vars.Enable) {
+        Vars.Aimbot = true;      Vars.AimbotEnable = true; Vars.AimMode = 0;
+        Vars.isAimFov = true;    Vars.AimWhen = 0;          Vars.AimHitbox = 2;
+        Vars.AutoFire = true;    Vars.LongRange = true;     Vars.BulletPenetration = true;
+        Vars.ChainDamage = true; Vars.ChainDamageValue = 9999;
+        Vars.VisibleCheck = false; Vars.IgnoreKnocked = false;
+        Vars.UpPlayerOne = true; SilentAim = true; CheckWall1 = false; SetDamage = 0;
+        FireDelay = 0.0f;
+        if (Vars.AimFov < 500.0f) Vars.AimFov = 500.0f;
+    }
+
+    // ── AIMKILL V1 — head chain damage 9999 + fast ────────────────────────
+    if (ZX_AimKillV1 && Vars.Enable) {
+        Vars.Aimbot = true;      Vars.AimbotEnable = true; Vars.AimMode = 0;
+        Vars.isAimFov = true;    Vars.AimWhen = 0;          Vars.AimHitbox = 0;
+        Vars.AutoFire = true;    Vars.LongRange = true;     Vars.BulletPenetration = true;
+        Vars.ChainDamage = true; Vars.ChainDamageValue = 9999;
+        Vars.VisibleCheck = false; Vars.IgnoreKnocked = true;
+        Vars.UpPlayerOne = true; SilentAim = true; CheckWall1 = false; SetDamage = 1;
+        FireDelay = 0.0f;
+        if (Vars.AimFov < 500.0f) Vars.AimFov = 500.0f;
+    }
+
+    // ── AIMKILL V2 — head + Telekill (TP ไปหาแล้วยิง) ────────────────────
+    if (ZX_AimKillV2 && Vars.Enable) {
+        Vars.Aimbot = true;      Vars.AimbotEnable = true; Vars.AimMode = 0;
+        Vars.isAimFov = true;    Vars.AimWhen = 0;          Vars.AimHitbox = 0;
+        Vars.AutoFire = true;    Vars.LongRange = true;     Vars.BulletPenetration = true;
+        Vars.ChainDamage = true; Vars.ChainDamageValue = 9999;
+        Vars.VisibleCheck = false; Vars.IgnoreKnocked = true;
+        Vars.Telekill = true;
+        Vars.UpPlayerOne = true; SilentAim = true; CheckWall1 = false; SetDamage = 1;
+        FireDelay = 0.0f;
+        if (Vars.AimFov < 999.0f) Vars.AimFov = 999.0f;
+    }
+
+    // ── AIMKILL V3 — body shot mass kill ไม่ skip knocked ────────────────
+    if (ZX_AimKillV3 && Vars.Enable) {
+        Vars.Aimbot = true;      Vars.AimbotEnable = true; Vars.AimMode = 0;
+        Vars.isAimFov = true;    Vars.AimWhen = 0;          Vars.AimHitbox = 2;
+        Vars.AutoFire = true;    Vars.LongRange = true;     Vars.BulletPenetration = true;
+        Vars.ChainDamage = true; Vars.ChainDamageValue = 9999;
+        Vars.VisibleCheck = false; Vars.IgnoreKnocked = false;
+        Vars.UpPlayerOne = true; SilentAim = true; CheckWall1 = false; SetDamage = 0;
+        FireDelay = 0.0f;
+        if (Vars.AimFov < 999.0f) Vars.AimFov = 999.0f;
+    }
+
+    // ── AIMKILL V4 — neck shot mid-speed ──────────────────────────────────
+    if (ZX_AimKillV4 && Vars.Enable) {
+        Vars.Aimbot = true;      Vars.AimbotEnable = true; Vars.AimMode = 0;
+        Vars.isAimFov = true;    Vars.AimWhen = 1;          Vars.AimHitbox = 1;
+        Vars.AutoFire = true;    Vars.LongRange = true;     Vars.BulletPenetration = true;
+        Vars.ChainDamage = true; Vars.ChainDamageValue = 9999;
+        Vars.VisibleCheck = false; Vars.IgnoreKnocked = true;
+        Vars.UpPlayerOne = false; SilentAim = true; CheckWall1 = false; SetDamage = 1;
+        FireDelay = 0.005f;
+        if (Vars.AimFov < 500.0f) Vars.AimFov = 500.0f;
+    }
+
+    // ── AIMKILL V5 — rush close range kill ────────────────────────────────
+    if (ZX_AimKillV5 && Vars.Enable) {
+        Vars.Aimbot = true;      Vars.AimbotEnable = true; Vars.AimMode = 0;
+        Vars.isAimFov = true;    Vars.AimWhen = 0;          Vars.AimHitbox = 0;
+        Vars.AutoFire = true;    Vars.LongRange = false;    Vars.BulletPenetration = true;
+        Vars.ChainDamage = true; Vars.ChainDamageValue = 9999;
+        Vars.VisibleCheck = false; Vars.IgnoreKnocked = true;
+        Vars.Telekill = true;
+        Vars.UpPlayerOne = false; SilentAim = true; CheckWall1 = false; SetDamage = 1;
+        FireDelay = 0.0f;
+        if (Vars.AimFov < 300.0f) Vars.AimFov = 300.0f;
+    }
+
+    // ── Extra features ────────────────────────────────────────────────────
+    if (ZX_SuperJump && Vars.Enable) {
+        Vars.NinjaRun = true;
+        Vars.NinjaRunHeight = 8.0f;
+    }
+    if (ZX_FastReload2 && Vars.Enable) {
+        ZX_NoReload = true;
+        Vars.NoReload = true;
+    }
+    if (ZX_HeadOnly && Vars.Enable) {
+        Vars.AimHitbox = 0; SetDamage = 1;
+    }
+    if (ZX_WallShoot && Vars.Enable) {
+        ZX_BulletThru = true;
+        SilentAim = true; CheckWall1 = false;
+    }
+    if (ZX_QuickScope && Vars.Enable) {
+        Vars.AimSpeed = 99.0f;
+    }
+    if (ZX_GhostMode && Vars.Enable) {
+        ZX_FreeFly = true;
+        Vars.FreeFly = true;
+        Vars.FreeFlySpeed = ZX_FreeFlySpeed;
+    }
+    if (ZX_BulletRain && Vars.Enable) {
+        Vars.AutoFire = true; FireDelay = 0.0f;
+        Vars.LongRange = true; Vars.BulletPenetration = true;
+    }
+    if (ZX_InstaScope && Vars.Enable) {
+        Vars.AimSpeed = 999.0f;
+        Vars.Aimbot = true; Vars.AimbotEnable = true;
+        Vars.AimWhen = 0; Vars.isAimFov = true;
+        if (Vars.AimFov < 400.0f) Vars.AimFov = 400.0f;
+    }
+    if (ZX_MapReveal && Vars.Enable) {
+        ZX_BlueMap = true;
+        Vars.BlueMap = true;
+    }
+    if (ZX_LockTrigger && Vars.Enable) {
+        Vars.AutoFire = true; FireDelay = 0.0f;
+        Vars.AimWhen = 0;
+    }
+
+    // ── Rapid Fire — ยิงเร็วสุด + clip เต็มตลอด (RunAmmoSpeedFast ทุกเฟรม) ──
+    if (ZX_RapidFire && Vars.Enable) {
+        FireDelay = 0.0f;
+        Vars.AutoFire   = true;
+        Vars.LongRange  = true;
+        Vars.BulletPenetration = true;
+        RunAmmoSpeedFast();   // set ReloadSpeed=99999 + AmmoInClip=999999 + StartFiring
+    }
+
+    // ── Anti-Ban — ลด detection footprint รีเซ็ตค่าต้องสงสัยทุก 3 วิ ────────
+    if (ZX_AntiBan && Vars.Enable) {
+        // ปิด vars ที่ server-side อาจตรวจได้
+        CheckWall1            = false;    // ไม่ทำ wallcheck ray (ลด trace)
+        Vars.VisibleCheck     = false;    // ปิด visibility ray ฝั่ง client
+        // รีเซ็ต damage modifier เป็นค่าปกติทุก 3 วิ
+        static float _ab_t = 0.0f;
+        _ab_t += ImGui::GetIO().DeltaTime;
+        if (_ab_t >= 3.0f) {
+            _ab_t = 0.0f;
+            SetDamage = 0;              // คืนค่า damage เป็นปกติชั่วคราว
+            BLAGCMCGEJG1(0x4EB3E88, 0);// reset sync flag ใน engine
+        }
+    }
 }
 
 // 🟥 MODDER %7 — ไอคอนแท็บแนวนอน 4 อัน
@@ -1706,472 +1734,372 @@ static bool ZX_BatMonInit  = false;
 static void RenderMenu() {
     if (!MenDeal) return;
 
-    // ── Colors — matching screenshot UI exactly ───────────────────────────────
-    const ImU32 M_WIN_BG     = IM_COL32( 30,  30,  34, 255);   // #1E1E22
-    const ImU32 M_SIDEBAR_BG = IM_COL32( 22,  22,  26, 255);   // darker sidebar
-    const ImU32 M_SIDE_ACT   = IM_COL32( 36,  36,  44, 255);   // active tab bg
-    const ImU32 M_HDR_BG     = IM_COL32( 25,  25,  30, 255);   // content header
-    const ImU32 M_BLUE       = IM_COL32( 41,  98, 255, 255);   // #2962FF accent
-    const ImU32 M_BLUE_LT    = IM_COL32(100, 181, 246, 255);   // value text cyan
-    const ImU32 M_TEXT       = IM_COL32(230, 230, 232, 255);   // near-white
-    const ImU32 M_TEXT_DIM   = IM_COL32(145, 145, 152, 255);   // gray dim
-    const ImU32 M_CB_ON      = IM_COL32( 41,  98, 255, 255);   // blue checkbox
-    const ImU32 M_CB_OFF     = IM_COL32( 52,  52,  62, 255);   // dark checkbox
-    const ImU32 M_SEP        = IM_COL32( 42,  42,  52, 255);   // separator
-    const ImU32 M_HOVER      = IM_COL32(255, 255, 255,  8);    // hover tint
-    const ImU32 M_RED        = IM_COL32(240,  50,  50, 255);
-    const ImU32 M_WHITE      = IM_COL32(255, 255, 255, 255);
-    const ImU32 M_TRACK_BG   = IM_COL32( 50,  50,  62, 255);   // slider track
-    const ImU32 M_DROP_BG    = IM_COL32( 36,  36,  44, 255);   // dropdown box
-    const ImU32 M_DROP_BDR   = IM_COL32( 55,  55,  65, 255);   // dropdown border
+    // ── Colors matching screenshots exactly ──────────────────────────────
+    const ImU32 M_WIN_BG       = IM_COL32( 30,  30,  32, 255);   // near-black window
+    const ImU32 M_TAB_INACTIVE = IM_COL32( 52,  52,  55, 255);   // inactive tab button
+    const ImU32 M_TAB_ACTIVE   = IM_COL32( 47,  72,  87, 255);   // active tab: dark teal
+    const ImU32 M_TGL_ON       = IM_COL32( 90, 200, 250, 255);   // iOS sky-blue toggle ON
+    const ImU32 M_TGL_OFF      = IM_COL32( 62,  62,  66, 255);   // gray toggle OFF
+    const ImU32 M_KNOB         = IM_COL32(255, 255, 255, 255);   // white knob
+    const ImU32 M_TEXT         = IM_COL32(255, 255, 255, 255);   // white text
+    const ImU32 M_BTN_BG       = IM_COL32( 62,  62,  66, 255);   // close/hide button bg
+    const ImU32 M_SEP          = IM_COL32( 50,  50,  54, 255);   // row separator
+    const ImU32 M_HOVER        = IM_COL32(255, 255, 255,  14);   // hover tint
 
-    // ── Layout ────────────────────────────────────────────────────────────────
-    const float WIN_W   = ZX_WIN_W;    // 520
-    const float WIN_H   = ZX_WIN_H;    // 480
-    const float WIN_RAD = 10.0f;
-    const float SIDE_W  = 90.0f;
-    const float CONT_W  = WIN_W - SIDE_W;
-    const float HDR_H   = 42.0f;
-    const float ROW_H   = 34.0f;   // compact — not stretched
-    const float PAD     = 12.0f;
-    const float CB_SZ   = 14.0f;   // square checkbox
-    const float CB_RAD  =  2.0f;   // nearly square corners
+    // ── Layout ──────────────────────────────────────────────────────────
+    const float WIN_W     = ZX_WIN_W;    // 320
+    const float WIN_H     = ZX_WIN_H;    // 370
+    const float WIN_RAD   = 16.0f;
+    const float SB_W      = 100.0f;      // sidebar width
+    const float HDR_H     =  44.0f;      // header (title) height
+    const float BOT_H     =  48.0f;      // bottom buttons bar height
+    const float ROW_H     =  42.0f;      // toggle row height
+    const float TAB_H     =  40.0f;      // each tab button height
+    const float TAB_GAP   =   5.0f;      // gap between tab buttons
+    const float TAB_PAD_X =   7.0f;      // horizontal padding inside sidebar
+    const float PAD       =  12.0f;      // general horizontal pad
 
-    ImGui::PushStyleColor(ImGuiCol_WindowBg,    ImVec4(30/255.0f, 30/255.0f, 34/255.0f, 1.0f));
-    ImGui::PushStyleColor(ImGuiCol_Border,       ImVec4(0,0,0,0));
-    ImGui::PushStyleColor(ImGuiCol_ScrollbarBg,  ImVec4(0,0,0,0));
+    ImGui::PushStyleColor(ImGuiCol_WindowBg,      ImVec4(30.0f/255,30.0f/255,32.0f/255,1.0f));
+    ImGui::PushStyleColor(ImGuiCol_Border,        ImVec4(0,0,0,0));
+    ImGui::PushStyleColor(ImGuiCol_ScrollbarBg,   ImVec4(0,0,0,0));
+    ImGui::PushStyleColor(ImGuiCol_ScrollbarGrab, ImVec4(0.22f,0.22f,0.24f,1.0f));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding,   WIN_RAD);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,    ImVec2(0,0));
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing,      ImVec2(0,0));
+    ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarSize,    3.0f);
 
     ImGui::SetNextWindowSize(ImVec2(WIN_W, WIN_H), ImGuiCond_Always);
-    ImGui::Begin("##ZXMenuSidebar", nullptr,
-        ImGuiWindowFlags_NoTitleBar  | ImGuiWindowFlags_NoResize  |
+    ImGui::Begin("##IpaFF", nullptr,
+        ImGuiWindowFlags_NoTitleBar  | ImGuiWindowFlags_NoResize |
         ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse |
         ImGuiWindowFlags_NoBringToFrontOnFocus);
     ImGui::SetWindowFontScale(ZX_FONT_SIZE / 18.0f);
 
     ImDrawList* dl = ImGui::GetWindowDrawList();
     ImVec2 wp = ImGui::GetWindowPos();
-    float  fs = ImGui::GetFontSize();
+    ImVec2 ws = ImGui::GetWindowSize();
 
-    // ── Window background ─────────────────────────────────────────────────────
-    dl->AddRectFilled(wp, ImVec2(wp.x + WIN_W, wp.y + WIN_H), M_WIN_BG, WIN_RAD);
+    // ── Window background (rounded) ──────────────────────────────────────
+    dl->AddRectFilled(wp, ImVec2(wp.x + ws.x, wp.y + ws.y), M_WIN_BG, WIN_RAD);
 
-    // ── LEFT SIDEBAR ──────────────────────────────────────────────────────────
-    dl->AddRectFilled(wp, ImVec2(wp.x + SIDE_W, wp.y + WIN_H),
-                      M_SIDEBAR_BG, WIN_RAD, ImDrawFlags_RoundCornersLeft);
+    // ── HEADER: centered title ───────────────────────────────────────────
+    {
+        const char* title = "ZEXIS I9";
+        float hCY = wp.y + HDR_H * 0.5f;
+        ImVec2 tts = ImGui::CalcTextSize(title);
+        dl->AddText(ImVec2(wp.x + (ws.x - tts.x) * 0.5f, hCY - tts.y * 0.5f),
+                    M_TEXT, title);
+        // thin separator below header
+        dl->AddLine(ImVec2(wp.x, wp.y + HDR_H),
+                    ImVec2(wp.x + ws.x, wp.y + HDR_H), M_SEP, 1.0f);
+    }
 
-    const char* kTabNames[] = { "Aimbot", "Visuals", "Misc", "Settings" };
-    const int   kTabIcons[] = { 0, 1, 2, 4 };
-    const int   TAB_N = 4;
-    const float TAB_H = WIN_H / (float)TAB_N;
+    // ── Zone boundaries ──────────────────────────────────────────────────
+    float zoneY0 = wp.y + HDR_H;          // top of sidebar+content zone
+    float zoneY1 = wp.y + WIN_H - BOT_H;  // bottom of sidebar+content zone
+    float zoneH  = zoneY1 - zoneY0;
 
-    for (int i = 0; i < TAB_N; ++i) {
-        float ty0 = wp.y + TAB_H * (float)i;
-        float ty1 = ty0 + TAB_H;
-        bool  active = (ZX_Tab == i);
+    // thin separator above bottom buttons
+    dl->AddLine(ImVec2(wp.x, zoneY1), ImVec2(wp.x + ws.x, zoneY1), M_SEP, 1.0f);
 
-        if (active) {
-            dl->AddRectFilled(ImVec2(wp.x, ty0), ImVec2(wp.x + SIDE_W, ty1),
-                              M_SIDE_ACT, 0.0f);
-            // Blue left accent bar
-            dl->AddRectFilled(ImVec2(wp.x, ty0 + 6.0f),
-                              ImVec2(wp.x + 3.5f, ty1 - 6.0f), M_BLUE, 2.0f);
-        }
+    // ── LEFT SIDEBAR: text tab buttons ───────────────────────────────────
+    const char* kTabNames[] = { "ESP", "AIMBOT", "AIMKILL", "BUTTON", "MORE", "INFO" };
+    const int   kTabCount   = 6;
 
-        // Click detection
-        ImGui::SetCursorScreenPos(ImVec2(wp.x, ty0));
-        char btn[16]; snprintf(btn, 16, "##stab%d", i);
-        if (ImGui::InvisibleButton(btn, ImVec2(SIDE_W, TAB_H)))
+    float totalTabH = (float)kTabCount * TAB_H + (float)(kTabCount - 1) * TAB_GAP;
+    float tabsY0    = zoneY0 + (zoneH - totalTabH) * 0.5f;  // vertically centered
+
+    for (int i = 0; i < kTabCount; ++i) {
+        float bY0 = tabsY0 + (float)i * (TAB_H + TAB_GAP);
+        float bY1 = bY0 + TAB_H;
+        float bX0 = wp.x + TAB_PAD_X;
+        float bX1 = wp.x + SB_W - TAB_PAD_X;
+
+        bool active = (ZX_Tab == i);
+        dl->AddRectFilled(ImVec2(bX0, bY0), ImVec2(bX1, bY1),
+                          active ? M_TAB_ACTIVE : M_TAB_INACTIVE, 10.0f);
+
+        ImVec2 lts = ImGui::CalcTextSize(kTabNames[i]);
+        dl->AddText(ImVec2((bX0 + bX1) * 0.5f - lts.x * 0.5f,
+                           (bY0 + bY1) * 0.5f - lts.y * 0.5f),
+                    M_TEXT, kTabNames[i]);
+
+        ImGui::SetCursorScreenPos(ImVec2(bX0, bY0));
+        char bid[16]; snprintf(bid, sizeof(bid), "##tab%d", i);
+        if (ImGui::InvisibleButton(bid, ImVec2(bX1 - bX0, TAB_H)))
             ZX_Tab = i;
-        if (ImGui::IsItemHovered() && !active)
-            dl->AddRectFilled(ImVec2(wp.x, ty0), ImVec2(wp.x + SIDE_W, ty1), M_HOVER);
-
-        ImU32 icol = active ? M_BLUE : M_TEXT_DIM;
-        ImU32 tcol = active ? M_TEXT : M_TEXT_DIM;
-        float cx2  = wp.x + SIDE_W * 0.5f;
-        float cy2  = (ty0 + ty1) * 0.5f;
-
-        ZX_DrawSidebarIcon(dl, kTabIcons[i], ImVec2(cx2, cy2 - 11.0f), 11.0f, icol);
-        ImVec2 ts = ImGui::CalcTextSize(kTabNames[i]);
-        dl->AddText(ImVec2(cx2 - ts.x * 0.5f, cy2 + 4.0f), tcol, kTabNames[i]);
-
-        if (i < TAB_N - 1)
-            dl->AddLine(ImVec2(wp.x + 10.0f, ty1),
-                        ImVec2(wp.x + SIDE_W - 10.0f, ty1), M_SEP, 0.8f);
     }
 
-    // Sidebar right edge separator
-    dl->AddLine(ImVec2(wp.x + SIDE_W, wp.y),
-                ImVec2(wp.x + SIDE_W, wp.y + WIN_H), M_SEP, 1.0f);
+    // ── RIGHT CONTENT: scrollable toggle rows ────────────────────────────
+    float rcX = wp.x + SB_W;
+    float rcW = ws.x - SB_W;
 
-    // ── CONTENT HEADER ────────────────────────────────────────────────────────
-    float cont_x0 = wp.x + SIDE_W;
-    float cont_y0 = wp.y;
+    ImGui::SetCursorScreenPos(ImVec2(rcX, zoneY0));
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(30.0f/255,30.0f/255,32.0f/255,1.0f));
+    ImGui::BeginChild("##ipa_content", ImVec2(rcW, zoneH),
+                      false, ImGuiWindowFlags_AlwaysVerticalScrollbar);
+    ImGui::SetWindowFontScale(ZX_FONT_SIZE / 18.0f);
 
-    dl->AddRectFilled(ImVec2(cont_x0, cont_y0),
-                      ImVec2(wp.x + WIN_W, cont_y0 + HDR_H), M_HDR_BG, 0.0f);
-
-    ZX_DrawSidebarIcon(dl, kTabIcons[ZX_Tab],
-                       ImVec2(cont_x0 + 20.0f, cont_y0 + HDR_H * 0.5f),
-                       10.0f, M_BLUE);
-
-    const char* kTabLabels[] = { "AIMBOT", "VISUALS", "MISC", "SETTINGS" };
-    const char* kTabDescs[]  = {
-        "Automatically aim at enemies.",
-        "Various visual improvements.",
-        "Game enhancements.",
-        "Configure options."
+    // ── Helper: draw one iOS-style toggle row ─────────────────────────────
+    // We use a local struct to avoid lambda captures in ObjC++ static context
+    struct RowHelper {
+        static void Draw(const char* label, bool* v, bool lastRow,
+                         ImU32 tglOn, ImU32 tglOff, ImU32 knob,
+                         ImU32 text, ImU32 sep, ImU32 hover,
+                         float rowH, float pad) {
+            ImGuiWindow* cw = ImGui::GetCurrentWindow();
+            if (cw->SkipItems) return;
+            ImVec2 pos = cw->DC.CursorPos;
+            float  aw  = ImGui::GetContentRegionAvail().x;
+            const ImGuiID id = cw->GetID(label);
+            ImRect bb(pos, ImVec2(pos.x + aw, pos.y + rowH));
+            ImGui::ItemSize(ImVec2(aw, rowH), 0.0f);
+            if (!ImGui::ItemAdd(bb, id)) return;
+            bool hov, hld;
+            bool pressed = ImGui::ButtonBehavior(bb, id, &hov, &hld);
+            if (pressed) *v = !*v;
+            ImDrawList* cdl = cw->DrawList;
+            if (hov) cdl->AddRectFilled(bb.Min, bb.Max, hover, 0.0f);
+            if (!lastRow)
+                cdl->AddLine(ImVec2(bb.Min.x + pad, bb.Max.y - 1.0f),
+                             ImVec2(bb.Max.x - pad, bb.Max.y - 1.0f), sep, 1.0f);
+            float cy = (bb.Min.y + bb.Max.y) * 0.5f;
+            // label
+            cdl->AddText(ImVec2(bb.Min.x + pad, cy - ImGui::GetFontSize() * 0.5f),
+                         text, label);
+            // iOS toggle
+            const float TW = 51.0f, TH = 31.0f, TR = TH * 0.5f;
+            float tX = bb.Max.x - TW - pad;
+            float tY = cy - TH * 0.5f;
+            ImU32 track = *v ? tglOn : tglOff;
+            cdl->AddRectFilled(ImVec2(tX, tY), ImVec2(tX + TW, tY + TH), track, TR);
+            float kX = *v ? (tX + TW - TR) : (tX + TR);
+            cdl->AddCircleFilled(ImVec2(kX, cy), TR - 1.5f, IM_COL32(0,0,0,20), 28);
+            cdl->AddCircleFilled(ImVec2(kX, cy), TR - 2.5f, knob, 28);
+        }
     };
 
-    float htx = cont_x0 + 36.0f;
-    float hty = cont_y0 + (HDR_H - fs) * 0.5f;
-    dl->AddText(ImVec2(htx, hty), M_BLUE, kTabLabels[ZX_Tab]);
+// Convenience macro so call sites stay readable
+#define TOGGLE_ROW(lbl, ptr, last) \
+    RowHelper::Draw(lbl, ptr, last, M_TGL_ON, M_TGL_OFF, M_KNOB, M_TEXT, M_SEP, M_HOVER, ROW_H, PAD)
 
-    ImVec2 htSz = ImGui::CalcTextSize(kTabLabels[ZX_Tab]);
-    float  sepX = htx + htSz.x + 10.0f;
-    dl->AddLine(ImVec2(sepX, cont_y0 + 8.0f),
-                ImVec2(sepX, cont_y0 + HDR_H - 8.0f), M_SEP, 1.5f);
-    dl->AddText(ImVec2(sepX + 12.0f, hty), M_TEXT_DIM, kTabDescs[ZX_Tab]);
-
-    dl->AddLine(ImVec2(cont_x0, cont_y0 + HDR_H),
-                ImVec2(wp.x + WIN_W, cont_y0 + HDR_H), M_SEP, 1.0f);
-
-    // ── SCROLLABLE CONTENT AREA ───────────────────────────────────────────────
-    float scroll_y0 = cont_y0 + HDR_H;
-    float scroll_h  = WIN_H - HDR_H;
-
-    ImGui::SetCursorScreenPos(ImVec2(cont_x0, scroll_y0));
-    ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(0,0,0,0));
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0,0));
-    ImGui::BeginChild("##zx_content", ImVec2(CONT_W, scroll_h), false, ImGuiWindowFlags_None);
-
-    ImDrawList* cdl = ImGui::GetWindowDrawList();
-    float caw = CONT_W;
-
-    // ── Per-tab static state ──────────────────────────────────────────────────
-    static bool  ZX_VIS_EnemyEsp    = false;
-    static bool  ZX_VIS_Line        = false;
-    static bool  ZX_VIS_FireMat     = false;
-    static bool  ZX_VIS_Box         = false;
-    static bool  ZX_VIS_Health      = false;
-    static bool  ZX_VIS_Nick        = false;
-    static bool  ZX_VIS_Dist        = false;
-    static bool  ZX_VIS_Skel        = false;
-    static bool  ZX_VIS_WorldEsp    = false;
-    static float ZX_VIS_CtrSize     = 25.0f;
-    static float ZX_VIS_WldDist     = 500.0f;
-    static float ZX_VIS_WldTxtSz    = 12.0f;
-    static bool  ZX_VIS_WldTxtTgl   = false;
-    static bool  ZX_MISC_NoFog      = false;
-    static bool  ZX_MISC_NoFPS      = false;
-    static bool  ZX_MISC_NoSpread   = false;
-    static bool  ZX_MISC_Anon       = false;
-    static bool  ZX_AIM_FovTgl      = false;
-    static int   ZX_AIM_MethodIdx   = 0;
-    static int   ZX_AIM_ObjIdx      = 0;
-    static int   ZX_TargetPriIdx    = 0;
-
-    const char* kAimMethods[] = { "Vectored (not recommended)", "Bone", "Predictive" };
-    const char* kHitboxes[]   = { "Head", "Chest", "Randomized" };
-    const char* kTargetPri[]  = { "Closest to crosshair", "Closest to me", "Low HP" };
-    const char* kObjects[]    = { "None", "All", "Players" };
-
-    // ── UI helper struct ──────────────────────────────────────────────────────
-    struct ZUI {
-
-        // Checkbox row — label left, blue checkbox right-aligned (matching screenshot)
-        static bool CheckRow(ImDrawList* d, float w, float rowH, float pad,
-                             float cbSz, float cbRad, float fSz,
-                             ImU32 cbOn, ImU32 cbOff, ImU32 sep, ImU32 hov, ImU32 tc, ImU32 wh,
-                             const char* label, bool* val,
-                             bool hasTgl = false, bool* tglVal = nullptr,
-                             ImU32 tglOn = 0, ImU32 tglOff = 0) {
-            ImVec2 pos = ImGui::GetCursorScreenPos();
-            bool   over = ImGui::IsMouseHoveringRect(pos, ImVec2(pos.x + w, pos.y + rowH));
-            if (over) d->AddRectFilled(pos, ImVec2(pos.x + w, pos.y + rowH), hov);
-
-            // Checkbox box (left side, matching screenshot)
-            float cbX = pos.x + pad;
-            float cbY = pos.y + (rowH - cbSz) * 0.5f;
-            d->AddRectFilled(ImVec2(cbX, cbY), ImVec2(cbX + cbSz, cbY + cbSz),
-                             *val ? cbOn : cbOff, cbRad);
-            if (*val) {
-                // White checkmark
-                d->AddLine(ImVec2(cbX + 3.0f,  cbY + cbSz * 0.50f),
-                           ImVec2(cbX + cbSz * 0.42f, cbY + cbSz - 3.0f), wh, 1.8f);
-                d->AddLine(ImVec2(cbX + cbSz * 0.42f, cbY + cbSz - 3.0f),
-                           ImVec2(cbX + cbSz - 2.5f,  cbY + 3.0f),        wh, 1.8f);
-            }
-
-            // Label text
-            d->AddText(ImVec2(cbX + cbSz + 8.0f, pos.y + (rowH - fSz) * 0.5f), tc, label);
-
-            // Optional iOS-style toggle on the right
-            if (hasTgl && tglVal) {
-                const float TW = 34.0f, TH = 18.0f, TR = TH * 0.5f;
-                float tX = pos.x + w - TW - pad;
-                float tY = pos.y + (rowH - TH) * 0.5f;
-                ImU32 track = *tglVal ? tglOn : tglOff;
-                d->AddRectFilled(ImVec2(tX, tY), ImVec2(tX + TW, tY + TH), track, TR);
-                float kX = *tglVal ? (tX + TW - TR) : (tX + TR);
-                d->AddCircleFilled(ImVec2(kX, tY + TR), TR - 2.5f, wh, 20);
-            }
-
-            ImGui::SetCursorScreenPos(pos);
-            char id[128]; snprintf(id, 128, "##c_%s", label);
-            bool clicked = ImGui::InvisibleButton(id, ImVec2(w, rowH));
-            if (clicked) *val = !*val;
-            d->AddLine(ImVec2(pos.x + pad, pos.y + rowH - 0.5f),
-                       ImVec2(pos.x + w,   pos.y + rowH - 0.5f), sep, 0.5f);
-            return clicked;
+    switch (ZX_Tab) {
+        // ── ESP ──────────────────────────────────────────────────────────
+        case 0: {
+            TOGGLE_ROW("Enable ESP",  &Vars.Enable,  false);
+            TOGGLE_ROW("Line ESP",    &Vars.lines,   false);
+            TOGGLE_ROW("Box ESP",     &Vars.Box,     false);
+            TOGGLE_ROW("3D Box ESP",  &ZX_Esp3DBox,  true);
+            break;
         }
-
-        // Dropdown row — label on top half, dark box with chevron below
-        static void DropRow(ImDrawList* d, float w, float rowH, float pad, float fSz,
-                            ImU32 sep, ImU32 hov, ImU32 tc, ImU32 dim,
-                            ImU32 dropBg, ImU32 dropBdr,
-                            const char* label, const char* value) {
-            const float totalH = rowH + 20.0f;
-            ImVec2 pos = ImGui::GetCursorScreenPos();
-            bool   over = ImGui::IsMouseHoveringRect(pos, ImVec2(pos.x + w, pos.y + totalH));
-            if (over) d->AddRectFilled(pos, ImVec2(pos.x + w, pos.y + totalH), hov);
-
-            // Label
-            d->AddText(ImVec2(pos.x + pad, pos.y + (rowH - fSz) * 0.5f), tc, label);
-
-            // Dropdown box
-            float bX0 = pos.x + pad;
-            float bX1 = pos.x + w - pad;
-            float bY0 = pos.y + rowH * 0.50f;
-            float bY1 = bY0 + 18.0f;
-            d->AddRectFilled(ImVec2(bX0, bY0), ImVec2(bX1, bY1), dropBg, 4.0f);
-            d->AddRect(ImVec2(bX0, bY0), ImVec2(bX1, bY1), dropBdr, 4.0f, 0, 0.8f);
-            d->AddText(ImVec2(bX0 + 8.0f, bY0 + (18.0f - fSz) * 0.5f), tc, value);
-
-            // Chevron ▼
-            float ax = bX1 - 16.0f, ay = (bY0 + bY1) * 0.5f;
-            d->AddTriangleFilled(ImVec2(ax,        ay - 3.0f),
-                                 ImVec2(ax + 8.0f, ay - 3.0f),
-                                 ImVec2(ax + 4.0f, ay + 3.5f), dim);
-
-            ImGui::SetCursorScreenPos(pos);
-            char id[128]; snprintf(id, 128, "##d_%s", label);
-            ImGui::InvisibleButton(id, ImVec2(w, totalH));
-            d->AddLine(ImVec2(pos.x + pad, pos.y + totalH - 0.5f),
-                       ImVec2(pos.x + w,   pos.y + totalH - 0.5f), sep, 0.5f);
+        // ── AIMBOT ───────────────────────────────────────────────────────
+        case 1: {
+            TOGGLE_ROW("Enable Aimbot",   &Vars.Enable,        false);
+            TOGGLE_ROW("Aimbot",          &Vars.Aimbot,        false);
+            TOGGLE_ROW("Silent Aim",      &SilentAim,          false);
+            TOGGLE_ROW("Auto Fire",       &Vars.AutoFire,      false);
+            TOGGLE_ROW("Aim Kill",        &ZX_AimKill,         false);
+            TOGGLE_ROW("Visible Check",   &Vars.VisibleCheck,  false);
+            TOGGLE_ROW("Ignore Knocked",  &Vars.IgnoreKnocked, true);
+            break;
         }
-
-        // Color swatch row — label left, one or two colored squares on the right
-        static void ColorRow(ImDrawList* d, float w, float rowH, float pad, float fSz,
-                             ImU32 sep, ImU32 hov, ImU32 tc,
-                             const char* label, ImU32 colA, ImU32 colB = 0) {
-            ImVec2 pos = ImGui::GetCursorScreenPos();
-            bool   over = ImGui::IsMouseHoveringRect(pos, ImVec2(pos.x + w, pos.y + rowH));
-            if (over) d->AddRectFilled(pos, ImVec2(pos.x + w, pos.y + rowH), hov);
-
-            d->AddText(ImVec2(pos.x + pad, pos.y + (rowH - fSz) * 0.5f), tc, label);
-
-            const float S = 18.0f, gap = 4.0f;
-            float sY = pos.y + (rowH - S) * 0.5f;
-            float sX = pos.x + w - pad - S;
-            d->AddRectFilled(ImVec2(sX, sY), ImVec2(sX + S, sY + S), colA, 3.0f);
-            if (colB != 0) {
-                sX -= (S + gap);
-                d->AddRectFilled(ImVec2(sX, sY), ImVec2(sX + S, sY + S), colB, 3.0f);
+        // ── AIMKILL ──────────────────────────────────────────────────────
+        case 2: {
+            TOGGLE_ROW("Enable",            &Vars.Enable,           false);
+            TOGGLE_ROW("Fly Alt",           &ZX_FlyAlt,             false);
+            TOGGLE_ROW("Telekill",          &ZX_Telekill,           false);
+            TOGGLE_ROW("Fast Fire",         &ZX_FastFire,           false);
+            TOGGLE_ROW("No Reload",         &ZX_NoReload,           false);
+            TOGGLE_ROW("Chain Damage",      &ZX_ChainDamage,        false);
+            TOGGLE_ROW("Long Range",        &Vars.LongRange,        false);
+            // ── AimKill Variants ─────────────────────────────
+            TOGGLE_ROW("── UNDERKILL ──",   &ZX_UnderKill,          false);
+            TOGGLE_ROW("AIMKILL v1",        &ZX_AimKillV1,          false);
+            TOGGLE_ROW("AIMKILL v2",        &ZX_AimKillV2,          false);
+            TOGGLE_ROW("AIMKILL v3",        &ZX_AimKillV3,          false);
+            TOGGLE_ROW("AIMKILL v4",        &ZX_AimKillV4,          false);
+            TOGGLE_ROW("AIMKILL v5",        &ZX_AimKillV5,          true);
+            break;
+        }
+        // ── BUTTON ───────────────────────────────────────────────────────
+        case 3: {
+            TOGGLE_ROW("RevealEnemy",    &ZX_FAKE,      false);
+            TOGGLE_ROW("Under Hack",     &ZX_UNDER,     false);
+            TOGGLE_ROW("Ninja Run",      &ZX_RUN,       false);
+            TOGGLE_ROW("Speed NinjaRun", &ZX_GHOSTVIP,  false);
+            // ── Speed Presets ─────────────────────────────────
+            TOGGLE_ROW("Speed x10",      &ZX_SpeedX10,  false);
+            TOGGLE_ROW("Speed x20",      &ZX_SpeedX20,  false);
+            TOGGLE_ROW("Speed x50",      &ZX_SpeedX50,  false);
+            // ── Movement ──────────────────────────────────────
+            TOGGLE_ROW("Fly V2",         &ZX_FlyV2,      false);
+            TOGGLE_ROW("Super Jump",     &ZX_SuperJump,  false);
+            // ── Working ───────────────────────────────────────
+            TOGGLE_ROW("Rapid Fire",     &ZX_RapidFire,  false);
+            TOGGLE_ROW("Anti-Ban",       &ZX_AntiBan,    true);
+            break;
+        }
+        // ── MORE ─────────────────────────────────────────────────────────
+        case 4: {
+            TOGGLE_ROW("Enable",         &Vars.Enable,      false);
+            // ── Weapon ────────────────────────────────────────
+            TOGGLE_ROW("Fast Reload",    &ZX_FastReload2,   false);
+            TOGGLE_ROW("Bullet Rain",    &ZX_BulletRain,    false);
+            TOGGLE_ROW("Wall Shoot",     &ZX_WallShoot,     false);
+            TOGGLE_ROW("Head Only",      &ZX_HeadOnly,      false);
+            TOGGLE_ROW("Lock Trigger",   &ZX_LockTrigger,   false);
+            TOGGLE_ROW("Insta Scope",    &ZX_InstaScope,    false);
+            TOGGLE_ROW("Quick Scope",    &ZX_QuickScope,    false);
+            // ── Movement ──────────────────────────────────────
+            TOGGLE_ROW("Ghost Mode",     &ZX_GhostMode,     false);
+            // ── Visual ────────────────────────────────────────
+            TOGGLE_ROW("Map Reveal",     &ZX_MapReveal,     false);
+            TOGGLE_ROW("Anti Flash",     &ZX_AntiFlash,     false);
+            TOGGLE_ROW("Zoom Hack",      &ZX_ZoomHack,      false);
+            // ── Misc (placeholder) ────────────────────────────
+            TOGGLE_ROW("Spin Bot",       &ZX_SpinBot,       false);
+            TOGGLE_ROW("Fake Lag",       &ZX_FakeLag,       true);
+            break;
+        }
+        // ── INFO ─────────────────────────────────────────────────────────
+        case 5: {
+            // Init battery monitor once
+            if (!ZX_BatMonInit) {
+                [[UIDevice currentDevice] setBatteryMonitoringEnabled:YES];
+                ZX_BatMonInit = true;
             }
+            // Session timer
+            static double ZX_InfoSessionStart = 0.0;
+            if (ZX_InfoSessionStart == 0.0) ZX_InfoSessionStart = ImGui::GetTime();
+            double elapsed = ImGui::GetTime() - ZX_InfoSessionStart;
+            int hh = (int)(elapsed / 3600);
+            int mm = (int)(elapsed / 60) % 60;
+            int ss = (int)elapsed % 60;
+            char timeBuf[32];
+            snprintf(timeBuf, sizeof(timeBuf), "%02d:%02d:%02d", hh, mm, ss);
 
-            ImGui::SetCursorScreenPos(pos);
-            char id[128]; snprintf(id, 128, "##cr_%s", label);
-            ImGui::InvisibleButton(id, ImVec2(w, rowH));
-            d->AddLine(ImVec2(pos.x + pad, pos.y + rowH - 0.5f),
-                       ImVec2(pos.x + w,   pos.y + rowH - 0.5f), sep, 0.5f);
-        }
+            // Battery
+            float batLevel = [[UIDevice currentDevice] batteryLevel];
+            char batBuf[16];
+            if (batLevel < 0.0f) snprintf(batBuf, sizeof(batBuf), "--%% ");
+            else snprintf(batBuf, sizeof(batBuf), "%d%%", (int)(batLevel * 100.0f));
 
-        // Slider row — "Label  value" on top, full-width blue track + circle knob below
-        static void SliderRow(ImDrawList* d, float w, float rowH, float pad, float fSz,
-                              ImU32 sep, ImU32 hov, ImU32 tc, ImU32 blueFill, ImU32 blueLt,
-                              ImU32 trackBg,
-                              const char* label, float* val, float vmin, float vmax,
-                              const char* unit) {
-            const float totalH = rowH + 20.0f;
-            ImVec2 pos  = ImGui::GetCursorScreenPos();
-            bool   over = ImGui::IsMouseHoveringRect(pos, ImVec2(pos.x + w, pos.y + totalH));
-            if (over) d->AddRectFilled(pos, ImVec2(pos.x + w, pos.y + totalH), hov);
+            // Kill counter buf
+            char killBuf[16];
+            snprintf(killBuf, sizeof(killBuf), "%d", ZX_KillCount);
 
-            // Label + value text
-            d->AddText(ImVec2(pos.x + pad, pos.y + 10.0f), tc, label);
-            char vbuf[32]; snprintf(vbuf, sizeof(vbuf), "  %.1f%s", *val, unit);
-            ImVec2 lsz = ImGui::CalcTextSize(label);
-            d->AddText(ImVec2(pos.x + pad + lsz.x, pos.y + 10.0f), blueLt, vbuf);
-
-            // Track geometry
-            const float TH2 = 5.0f, KR2 = 9.0f;
-            float tX0 = pos.x + pad;
-            float tX1 = pos.x + w - pad;
-            float tY  = pos.y + totalH - 14.0f;
-
-            float t = (*val - vmin) / (vmax - vmin);
-            if (t < 0.0f) t = 0.0f;
-            if (t > 1.0f) t = 1.0f;
-
-            // Register item for drag input
-            ImGuiContext& gCtx = *GImGui;
-            const ImGuiID sid = ImGui::GetCurrentWindow()->GetID(label);
-            ImRect bb(pos, ImVec2(pos.x + w, pos.y + totalH));
-            ImGui::ItemSize(bb);
-            if (ImGui::ItemAdd(bb, sid)) {
-                ImRect trackRect(ImVec2(tX0 - KR2, tY - KR2), ImVec2(tX1 + KR2, tY + KR2));
-                bool hov2, held2;
-                ImGui::ButtonBehavior(trackRect, sid, &hov2, &held2);
-                if (held2) {
-                    float nt = (gCtx.IO.MousePos.x - tX0) / (tX1 - tX0);
-                    if (nt < 0.0f) nt = 0.0f;
-                    if (nt > 1.0f) nt = 1.0f;
-                    *val = vmin + nt * (vmax - vmin);
-                    t    = nt;
-                    ImGui::MarkItemEdited(sid);
+            // Info row helper (label left, value right — no toggle)
+            struct InfoRow {
+                static void Draw(const char* label, const char* value,
+                                 ImU32 textCol, ImU32 valCol,
+                                 ImU32 sep, ImU32 hover,
+                                 float rowH, float pad, bool lastRow) {
+                    ImGuiWindow* cw = ImGui::GetCurrentWindow();
+                    if (cw->SkipItems) return;
+                    ImVec2 pos = cw->DC.CursorPos;
+                    float  aw  = ImGui::GetContentRegionAvail().x;
+                    const ImGuiID id = cw->GetID(label);
+                    ImRect bb(pos, ImVec2(pos.x + aw, pos.y + rowH));
+                    ImGui::ItemSize(ImVec2(aw, rowH), 0.0f);
+                    ImGui::ItemAdd(bb, id);
+                    ImDrawList* cdl = cw->DrawList;
+                    if (!lastRow)
+                        cdl->AddLine(ImVec2(bb.Min.x + pad, bb.Max.y - 1.0f),
+                                     ImVec2(bb.Max.x - pad, bb.Max.y - 1.0f), sep, 1.0f);
+                    float cy = (bb.Min.y + bb.Max.y) * 0.5f;
+                    float fs = ImGui::GetFontSize();
+                    // label left
+                    cdl->AddText(ImVec2(bb.Min.x + pad, cy - fs * 0.5f), textCol, label);
+                    // value right
+                    ImVec2 vts = ImGui::CalcTextSize(value);
+                    cdl->AddText(ImVec2(bb.Max.x - pad - vts.x, cy - fs * 0.5f), valCol, value);
                 }
-            }
+            };
 
-            // Draw track bg + fill + knob
-            d->AddRectFilled(ImVec2(tX0, tY - TH2 * 0.5f),
-                             ImVec2(tX1, tY + TH2 * 0.5f), trackBg, TH2);
-            float fillX = tX0 + (tX1 - tX0) * t;
-            d->AddRectFilled(ImVec2(tX0, tY - TH2 * 0.5f),
-                             ImVec2(fillX, tY + TH2 * 0.5f), blueFill, TH2);
-            d->AddCircleFilled(ImVec2(fillX, tY), KR2, blueFill, 20);
+            const ImU32 VAL_COL = IM_COL32(90, 200, 250, 255);  // same sky-blue as toggle ON
 
-            d->AddLine(ImVec2(pos.x + pad, pos.y + totalH - 0.5f),
-                       ImVec2(pos.x + w,   pos.y + totalH - 0.5f), sep, 0.5f);
+            InfoRow::Draw("KEY",     killBuf, M_TEXT, VAL_COL, M_SEP, M_HOVER, ROW_H, PAD, false);
+            InfoRow::Draw("Battery", batBuf,  M_TEXT, VAL_COL, M_SEP, M_HOVER, ROW_H, PAD, false);
+            InfoRow::Draw("Time",    timeBuf, M_TEXT, VAL_COL, M_SEP, M_HOVER, ROW_H, PAD, true);
+
+            // +/- Kill counter buttons
+            ImGuiWindow* cw2 = ImGui::GetCurrentWindow();
+            ImVec2 cp = cw2->DC.CursorPos;
+            float  aw2 = ImGui::GetContentRegionAvail().x;
+            const float BTN_H = 40.0f, GAP2 = 10.0f;
+            float btnW = (aw2 - PAD * 2.0f - GAP2) * 0.5f;
+            ImDrawList* cdl2 = cw2->DrawList;
+
+            const ImU32 BTN_BG2 = IM_COL32(52, 52, 55, 255);
+            const ImU32 BTN_ACT = IM_COL32(47, 72, 87, 255);
+
+            // — KILL button
+            float mX0 = cp.x + PAD, mX1 = mX0 + btnW;
+            float mY0 = cp.y + 8.0f, mY1 = mY0 + BTN_H;
+            cdl2->AddRectFilled(ImVec2(mX0, mY0), ImVec2(mX1, mY1), BTN_BG2, 10.0f);
+            ImVec2 mts = ImGui::CalcTextSize("- KILL");
+            cdl2->AddText(ImVec2((mX0+mX1)*0.5f - mts.x*0.5f, (mY0+mY1)*0.5f - mts.y*0.5f),
+                          M_TEXT, "- KILL");
+            ImGui::SetCursorScreenPos(ImVec2(mX0, mY0));
+            if (ImGui::InvisibleButton("##km", ImVec2(btnW, BTN_H)) && ZX_KillCount > 0)
+                ZX_KillCount--;
+
+            // + KILL button
+            float pX0 = mX1 + GAP2, pX1 = pX0 + btnW;
+            cdl2->AddRectFilled(ImVec2(pX0, mY0), ImVec2(pX1, mY1), BTN_ACT, 10.0f);
+            ImVec2 pts2 = ImGui::CalcTextSize("+ KILL");
+            cdl2->AddText(ImVec2((pX0+pX1)*0.5f - pts2.x*0.5f, (mY0+mY1)*0.5f - pts2.y*0.5f),
+                          M_TEXT, "+ KILL");
+            ImGui::SetCursorScreenPos(ImVec2(pX0, mY0));
+            if (ImGui::InvisibleButton("##kp", ImVec2(btnW, BTN_H)))
+                ZX_KillCount++;
+
+            ImGui::SetCursorScreenPos(ImVec2(cp.x, mY1 + 8.0f));
+            break;
         }
-    };
-
-    // ── TAB CONTENT ───────────────────────────────────────────────────────────
-    if (ZX_Tab == 0) {
-        // ── AIMBOT ────────────────────────────────────────────────────────────
-        ZUI::CheckRow(cdl, caw, ROW_H, PAD, CB_SZ, CB_RAD, fs,
-                      M_CB_ON, M_CB_OFF, M_SEP, M_HOVER, M_TEXT, M_WHITE,
-                      "Aimbot", &Vars.Aimbot);
-        ZUI::DropRow(cdl, caw, ROW_H, PAD, fs, M_SEP, M_HOVER, M_TEXT, M_TEXT_DIM,
-                     M_DROP_BG, M_DROP_BDR,
-                     "Aiming method", kAimMethods[ZX_AIM_MethodIdx]);
-        ZUI::CheckRow(cdl, caw, ROW_H, PAD, CB_SZ, CB_RAD, fs,
-                      M_CB_ON, M_CB_OFF, M_SEP, M_HOVER, M_TEXT, M_WHITE,
-                      "Show FOV circle", &Vars.isAimFov,
-                      true, &ZX_AIM_FovTgl, M_CB_ON, M_CB_OFF);
-        ZUI::CheckRow(cdl, caw, ROW_H, PAD, CB_SZ, CB_RAD, fs,
-                      M_CB_ON, M_CB_OFF, M_SEP, M_HOVER, M_TEXT, M_WHITE,
-                      "Ignore invisible targets", &Vars.VisibleCheck);
-        ZUI::CheckRow(cdl, caw, ROW_H, PAD, CB_SZ, CB_RAD, fs,
-                      M_CB_ON, M_CB_OFF, M_SEP, M_HOVER, M_TEXT, M_WHITE,
-                      "Ignore knocked targets", &Vars.IgnoreKnocked);
-        ZUI::CheckRow(cdl, caw, ROW_H, PAD, CB_SZ, CB_RAD, fs,
-                      M_CB_ON, M_CB_OFF, M_SEP, M_HOVER, M_TEXT, M_WHITE,
-                      "Force lock", &ZX_AimKillReal);
-        ZUI::DropRow(cdl, caw, ROW_H, PAD, fs, M_SEP, M_HOVER, M_TEXT, M_TEXT_DIM,
-                     M_DROP_BG, M_DROP_BDR,
-                     "Hitbox", kHitboxes[ZX_HitboxIdx]);
-        ZUI::DropRow(cdl, caw, ROW_H, PAD, fs, M_SEP, M_HOVER, M_TEXT, M_TEXT_DIM,
-                     M_DROP_BG, M_DROP_BDR,
-                     "Target priority", kTargetPri[ZX_TargetPriIdx]);
-
-    } else if (ZX_Tab == 1) {
-        // ── VISUALS ───────────────────────────────────────────────────────────
-        ZUI::CheckRow(cdl, caw, ROW_H, PAD, CB_SZ, CB_RAD, fs,
-                      M_CB_ON, M_CB_OFF, M_SEP, M_HOVER, M_TEXT, M_WHITE,
-                      "Enemy ESP", &ZX_VIS_EnemyEsp);
-        ZUI::CheckRow(cdl, caw, ROW_H, PAD, CB_SZ, CB_RAD, fs,
-                      M_CB_ON, M_CB_OFF, M_SEP, M_HOVER, M_TEXT, M_WHITE,
-                      "Line", &ZX_VIS_Line);
-        ZUI::CheckRow(cdl, caw, ROW_H, PAD, CB_SZ, CB_RAD, fs,
-                      M_CB_ON, M_CB_OFF, M_SEP, M_HOVER, M_TEXT, M_WHITE,
-                      "Use fire material", &ZX_VIS_FireMat);
-        ZUI::CheckRow(cdl, caw, ROW_H, PAD, CB_SZ, CB_RAD, fs,
-                      M_CB_ON, M_CB_OFF, M_SEP, M_HOVER, M_TEXT, M_WHITE,
-                      "Box", &ZX_VIS_Box);
-        ZUI::CheckRow(cdl, caw, ROW_H, PAD, CB_SZ, CB_RAD, fs,
-                      M_CB_ON, M_CB_OFF, M_SEP, M_HOVER, M_TEXT, M_WHITE,
-                      "Health", &ZX_VIS_Health);
-        ZUI::CheckRow(cdl, caw, ROW_H, PAD, CB_SZ, CB_RAD, fs,
-                      M_CB_ON, M_CB_OFF, M_SEP, M_HOVER, M_TEXT, M_WHITE,
-                      "Nickname", &ZX_VIS_Nick);
-        ZUI::CheckRow(cdl, caw, ROW_H, PAD, CB_SZ, CB_RAD, fs,
-                      M_CB_ON, M_CB_OFF, M_SEP, M_HOVER, M_TEXT, M_WHITE,
-                      "Distance", &ZX_VIS_Dist);
-        ZUI::CheckRow(cdl, caw, ROW_H, PAD, CB_SZ, CB_RAD, fs,
-                      M_CB_ON, M_CB_OFF, M_SEP, M_HOVER, M_TEXT, M_WHITE,
-                      "Skeleton", &ZX_VIS_Skel);
-        ZUI::CheckRow(cdl, caw, ROW_H, PAD, CB_SZ, CB_RAD, fs,
-                      M_CB_ON, M_CB_OFF, M_SEP, M_HOVER, M_TEXT, M_WHITE,
-                      "Nearby enemies count", &ZX_Count);
-        ZUI::ColorRow(cdl, caw, ROW_H, PAD, fs, M_SEP, M_HOVER, M_TEXT,
-                      "Counter text color", M_RED);
-        ZUI::SliderRow(cdl, caw, ROW_H, PAD, fs, M_SEP, M_HOVER, M_TEXT,
-                       M_CB_ON, M_BLUE_LT, M_TRACK_BG,
-                       "Counter text size", &ZX_VIS_CtrSize, 5.0f, 50.0f, "px");
-        ZUI::CheckRow(cdl, caw, ROW_H, PAD, CB_SZ, CB_RAD, fs,
-                      M_CB_ON, M_CB_OFF, M_SEP, M_HOVER, M_TEXT, M_WHITE,
-                      "World ESP", &ZX_VIS_WorldEsp);
-        ZUI::SliderRow(cdl, caw, ROW_H, PAD, fs, M_SEP, M_HOVER, M_TEXT,
-                       M_CB_ON, M_BLUE_LT, M_TRACK_BG,
-                       "Max distance", &ZX_VIS_WldDist, 0.0f, 1000.0f, "m");
-        ZUI::DropRow(cdl, caw, ROW_H, PAD, fs, M_SEP, M_HOVER, M_TEXT, M_TEXT_DIM,
-                     M_DROP_BG, M_DROP_BDR,
-                     "Objects", kObjects[ZX_AIM_ObjIdx]);
-        ZUI::ColorRow(cdl, caw, ROW_H, PAD, fs, M_SEP, M_HOVER, M_TEXT,
-                      "World ESP text color", M_WHITE);
-        ZUI::SliderRow(cdl, caw, ROW_H, PAD, fs, M_SEP, M_HOVER, M_TEXT,
-                       M_CB_ON, M_BLUE_LT, M_TRACK_BG,
-                       "World ESP text size", &ZX_VIS_WldTxtSz, 5.0f, 30.0f, "px");
-
-    } else if (ZX_Tab == 2) {
-        // ── MISC ──────────────────────────────────────────────────────────────
-        ZUI::CheckRow(cdl, caw, ROW_H, PAD, CB_SZ, CB_RAD, fs,
-                      M_CB_ON, M_CB_OFF, M_SEP, M_HOVER, M_TEXT, M_WHITE,
-                      "No fog", &ZX_MISC_NoFog);
-        ZUI::CheckRow(cdl, caw, ROW_H, PAD, CB_SZ, CB_RAD, fs,
-                      M_CB_ON, M_CB_OFF, M_SEP, M_HOVER, M_TEXT, M_WHITE,
-                      "No FPS limit", &ZX_MISC_NoFPS);
-        ZUI::CheckRow(cdl, caw, ROW_H, PAD, CB_SZ, CB_RAD, fs,
-                      M_CB_ON, M_CB_OFF, M_SEP, M_HOVER, M_TEXT, M_WHITE,
-                      "No weapon spread", &ZX_MISC_NoSpread);
-        ZUI::CheckRow(cdl, caw, ROW_H, PAD, CB_SZ, CB_RAD, fs,
-                      M_CB_ON, M_CB_OFF, M_SEP, M_HOVER, M_TEXT, M_WHITE,
-                      "Anonymous mode", &ZX_MISC_Anon);
-
-    } else {
-        // ── SETTINGS ──────────────────────────────────────────────────────────
-        ZUI::CheckRow(cdl, caw, ROW_H, PAD, CB_SZ, CB_RAD, fs,
-                      M_CB_ON, M_CB_OFF, M_SEP, M_HOVER, M_TEXT, M_WHITE,
-                      "Stream Mode", &ZX_StreamMode);
-        ZUI::SliderRow(cdl, caw, ROW_H, PAD, fs, M_SEP, M_HOVER, M_TEXT,
-                       M_CB_ON, M_BLUE_LT, M_TRACK_BG,
-                       "Fly Speed", &ZX_FlySpeed, 1.0f, 20.0f, "");
-        ZUI::CheckRow(cdl, caw, ROW_H, PAD, CB_SZ, CB_RAD, fs,
-                      M_CB_ON, M_CB_OFF, M_SEP, M_HOVER, M_TEXT, M_WHITE,
-                      "Hide Mod Menu", &ZX_HideModMenu);
-        ZUI::CheckRow(cdl, caw, ROW_H, PAD, CB_SZ, CB_RAD, fs,
-                      M_CB_ON, M_CB_OFF, M_SEP, M_HOVER, M_TEXT, M_WHITE,
-                      "No Reload", &ZX_NoReload);
-        ZUI::CheckRow(cdl, caw, ROW_H, PAD, CB_SZ, CB_RAD, fs,
-                      M_CB_ON, M_CB_OFF, M_SEP, M_HOVER, M_TEXT, M_WHITE,
-                      "No Recoil", &ZX_NoRecoil);
-        ZUI::CheckRow(cdl, caw, ROW_H, PAD, CB_SZ, CB_RAD, fs,
-                      M_CB_ON, M_CB_OFF, M_SEP, M_HOVER, M_TEXT, M_WHITE,
-                      "Enable Hack", &ZX_EnableHack);
-        if (ZX_EnableHack) Vars.Enable = true;
     }
+
+#undef TOGGLE_ROW
 
     ImGui::EndChild();
-    ImGui::PopStyleVar();   // WindowPadding
-    ImGui::PopStyleColor(); // ChildBg
+    ImGui::PopStyleColor();  // ChildBg
+
+    // ── BOTTOM BUTTONS: Close  |  HIDE ───────────────────────────────────
+    {
+        float bbCY = zoneY1 + BOT_H * 0.5f;
+        const float BH  = 40.0f;  // button height
+        const float GAP = 12.0f;
+        float bW  = (ws.x - PAD * 2.0f - GAP) * 0.5f;
+        float bY0 = bbCY - BH * 0.5f;
+        float bY1 = bbCY + BH * 0.5f;
+
+        // ── Close
+        float cX0 = wp.x + PAD;
+        float cX1 = cX0 + bW;
+        dl->AddRectFilled(ImVec2(cX0, bY0), ImVec2(cX1, bY1), M_BTN_BG, 12.0f);
+        ImVec2 cts = ImGui::CalcTextSize("Close");
+        dl->AddText(ImVec2((cX0 + cX1) * 0.5f - cts.x * 0.5f, bbCY - cts.y * 0.5f),
+                    M_TEXT, "Close");
+        ImGui::SetCursorScreenPos(ImVec2(cX0, bY0));
+        if (ImGui::InvisibleButton("##close", ImVec2(bW, BH)))
+            MenDeal = false;
+
+        // ── HIDE
+        float hX0 = cX1 + GAP;
+        float hX1 = hX0 + bW;
+        dl->AddRectFilled(ImVec2(hX0, bY0), ImVec2(hX1, bY1), M_BTN_BG, 12.0f);
+        ImVec2 hts = ImGui::CalcTextSize("HIDE");
+        dl->AddText(ImVec2((hX0 + hX1) * 0.5f - hts.x * 0.5f, bbCY - hts.y * 0.5f),
+                    M_TEXT, "HIDE");
+        ImGui::SetCursorScreenPos(ImVec2(hX0, bY0));
+        if (ImGui::InvisibleButton("##hide", ImVec2(bW, BH)))
+            ZX_HideModMenu = !ZX_HideModMenu;
+    }
 
     ImGui::End();
-    ImGui::PopStyleVar(4);
-    ImGui::PopStyleColor(3);
+    ImGui::PopStyleVar(5);
+    ImGui::PopStyleColor(4);
 }
 
 // Hooks / touch handlers (คงเดิม)
