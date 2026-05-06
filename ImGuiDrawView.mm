@@ -469,6 +469,9 @@ static bool  ZX_AutoTeleport   = false;
 static bool  ZX_AmmoSpeedFast  = false;
 static bool  ZX_BlueMap        = false;
 static bool  ZX_FastMedkit     = false;   // ใช้ยาเร็วขึ้น (FSModeUseMedikitFasterRate)
+static bool  ZX_RealSpeed      = false;   // วิ่งเร็ว (hook GetMoveSpeedForFPP + write RunSpeedUpScale)
+static float ZX_SpeedMult      = 1.8f;   // ตัวคูณ speed (1.0 = ปกติ, สูงสุด 5.0)
+static bool  ZX_AntiBan        = false;  // Bypass anti-ban (clamp SyncPos speed ก่อนส่ง server)
 static bool  ZX_SetMark        = false;
 static bool  ZX_ResetAcc       = false;
 static bool  ZX_DashForward    = false;   // กดปุ่ม → พุ่งไปข้างหน้า 100m ทันที
@@ -1070,6 +1073,12 @@ static void ZX_ApplyAndRun() {
     if (ZX_SetMark) { SetMarkAtCurrentPos(); ZX_SetMark = false; }
     if (ZX_ResetAcc) { DoResetAccount(); ZX_ResetAcc = false; }
     if (ZX_FastMedkit && Vars.Enable) RunFastMedkit();
+    if (ZX_RealSpeed && Vars.Enable) {
+        ZX_SpeedMultiplier = ZX_SpeedMult;
+        RunRealSpeed();
+        initRealSpeedHook();
+    }
+    if (ZX_AntiBan) initAntiBanHook();
     if (ZX_DashForward) { RunDashForward(ZX_DashDistance); ZX_DashForward = false; }
     if (ZX_BlueMap && Vars.Enable) RunBlueMap();
     if (ZX_AmmoSpeedFast && Vars.Enable) RunAmmoSpeedFast();
@@ -2022,6 +2031,12 @@ static void RenderMenu() {
             TOGGLE_ROW("Insta Scope",    &ZX_InstaScope,    false);
             TOGGLE_ROW("Quick Scope",    &ZX_QuickScope,    false);
             // ── Movement ──────────────────────────────────────
+            TOGGLE_ROW("Real Speed",     &ZX_RealSpeed,     false);
+            // Speed multiplier slider (แสดงเฉพาะเมื่อ Real Speed เปิด)
+            if (ZX_RealSpeed) {
+                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - 8.0f);
+                ImGui::SliderFloat("##SpeedMult", &ZX_SpeedMult, 1.0f, 5.0f, "Speed x%.1f");
+            }
             TOGGLE_ROW("Ghost Mode",     &ZX_GhostMode,     false);
             // ── Visual ────────────────────────────────────────
             TOGGLE_ROW("Map Reveal",     &ZX_MapReveal,     false);
@@ -2030,7 +2045,8 @@ static void RenderMenu() {
             // ── Misc (placeholder) ────────────────────────────
             TOGGLE_ROW("Spin Bot",       &ZX_SpinBot,       false);
             TOGGLE_ROW("Fake Lag",       &ZX_FakeLag,       false);
-            // ── Account ───────────────────────────────────────
+            // ── Account / Protection ──────────────────────────
+            TOGGLE_ROW("Anti-ban",       &ZX_AntiBan,       false);
             TOGGLE_ROW("Reset Guest",    &ZX_ResetAcc,      true);
             break;
         }
@@ -2188,6 +2204,34 @@ void initAutoFireHook(void) {
     NSLog(@"[AutoFire] patch result: %@", patchResult ?: @"<nil>");
     void *original = StaticInlineHookFunction(("Frameworks/UnityFramework.framework/UnityFramework"), 0x56524D4, (void *)old_AutoFire);
     if (original) { *(void **)(&_AutoFire) = original; }
+}
+
+// ── Real Speed Hook: GetMoveSpeedForFPPMode (RVA: 0x4B23770) ─────────────────
+extern float (*orig_GetMoveSpeedForFPP)(void*);
+extern float hook_GetMoveSpeedForFPP(void*);
+
+void initRealSpeedHook(void) {
+    static bool done = false;
+    if (done) return;
+    done = true;
+    NSString *r = StaticInlineHookPatch(("Frameworks/UnityFramework.framework/UnityFramework"), 0x4B23770, nullptr);
+    NSLog(@"[RealSpeed] patch: %@", r ?: @"<nil>");
+    void *orig = StaticInlineHookFunction(("Frameworks/UnityFramework.framework/UnityFramework"), 0x4B23770, (void*)hook_GetMoveSpeedForFPP);
+    if (orig) *(void**)(&orig_GetMoveSpeedForFPP) = orig;
+}
+
+// ── Anti-ban Hook: SyncPos (RVA: 0x1186A50) — clamp speed ก่อนส่ง server ─────
+extern void (*orig_SyncPos)(void*, uint32_t, Vector3, Quaternion, Vector3);
+extern void hook_SyncPos(void*, uint32_t, Vector3, Quaternion, Vector3);
+
+void initAntiBanHook(void) {
+    static bool done = false;
+    if (done) return;
+    done = true;
+    NSString *r = StaticInlineHookPatch(("Frameworks/UnityFramework.framework/UnityFramework"), 0x1186A50, nullptr);
+    NSLog(@"[AntiBan] patch: %@", r ?: @"<nil>");
+    void *orig = StaticInlineHookFunction(("Frameworks/UnityFramework.framework/UnityFramework"), 0x1186A50, (void*)hook_SyncPos);
+    if (orig) *(void**)(&orig_SyncPos) = orig;
 }
 
 - (void)updateIOWithTouchEvent:(UIEvent *)event {
