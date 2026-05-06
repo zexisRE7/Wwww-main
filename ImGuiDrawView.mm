@@ -468,6 +468,7 @@ static bool  ZX_MarkTeleport   = false;
 static bool  ZX_AutoTeleport   = false;
 static bool  ZX_AmmoSpeedFast  = false;
 static bool  ZX_BlueMap        = false;
+static bool  ZX_FastMedkit     = false;   // ใช้ยาเร็วขึ้น (FSModeUseMedikitFasterRate)
 static bool  ZX_SetMark        = false;
 static bool  ZX_ResetAcc       = false;
 static bool  ZX_DashForward    = false;   // กดปุ่ม → พุ่งไปข้างหน้า 100m ทันที
@@ -1068,6 +1069,7 @@ static void ZX_ApplyAndRun() {
 
     if (ZX_SetMark) { SetMarkAtCurrentPos(); ZX_SetMark = false; }
     if (ZX_ResetAcc) { DoResetAccount(); ZX_ResetAcc = false; }
+    if (ZX_FastMedkit && Vars.Enable) RunFastMedkit();
     if (ZX_DashForward) { RunDashForward(ZX_DashDistance); ZX_DashForward = false; }
     if (ZX_BlueMap && Vars.Enable) RunBlueMap();
     if (ZX_AmmoSpeedFast && Vars.Enable) RunAmmoSpeedFast();
@@ -2011,6 +2013,7 @@ static void RenderMenu() {
         case 4: {
             TOGGLE_ROW("Enable",         &Vars.Enable,      false);
             // ── Weapon ────────────────────────────────────────
+            TOGGLE_ROW("Fast Medkit",    &ZX_FastMedkit,    false);
             TOGGLE_ROW("Fast Reload",    &ZX_FastReload2,   false);
             TOGGLE_ROW("Bullet Rain",    &ZX_BulletRain,    false);
             TOGGLE_ROW("Wall Shoot",     &ZX_WallShoot,     false);
@@ -2026,7 +2029,9 @@ static void RenderMenu() {
             TOGGLE_ROW("Zoom Hack",      &ZX_ZoomHack,      false);
             // ── Misc (placeholder) ────────────────────────────
             TOGGLE_ROW("Spin Bot",       &ZX_SpinBot,       false);
-            TOGGLE_ROW("Fake Lag",       &ZX_FakeLag,       true);
+            TOGGLE_ROW("Fake Lag",       &ZX_FakeLag,       false);
+            // ── Account ───────────────────────────────────────
+            TOGGLE_ROW("Reset Guest",    &ZX_ResetAcc,      true);
             break;
         }
         // ── INFO ─────────────────────────────────────────────────────────
