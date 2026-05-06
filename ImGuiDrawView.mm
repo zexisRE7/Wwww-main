@@ -303,7 +303,8 @@ static bool ZX_NoRecoil = false;
 static bool ZX_FastSw   = false;
 static bool ZX_RealSpeed= false;
 static float ZX_SpeedMult = 1.3f;
-
+static bool ZX_NoFogHelper = false;
+static bool ZX_HideModMenu = false;
 static void ZX_ApplyAndRun() {
     Vars.Enable       = ZX_EspEnable;
     Vars.Box          = ZX_EspBox;
