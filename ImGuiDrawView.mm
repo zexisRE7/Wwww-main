@@ -1887,7 +1887,7 @@ static void RenderMenu() {
     }
     // Title center
     {
-        const char* title = "@lostx.wq - 3.111.X";
+        const char* title = "MONALISA PANEL 9999";
         ImVec2 tts = ImGui::CalcTextSize(title);
         dl->AddText(ImVec2(wp.x + (ws.x - tts.x) * 0.5f,
                            wp.y + (TITLE_H - tts.y) * 0.5f), LX_TEXT, title);
@@ -2145,7 +2145,7 @@ static void RenderMenu() {
         case 2: {
             LX_C2("Ghost Hack",     &ZX_GhostMode,
                   "Teleport Enemy", &ZX_Telekill);
-            LX_C2("Undergd Up",     &ZX_FlyAlt,
+            LX_C2("Fly Up",     &ZX_FlyAlt,
                   "Wall Hack",      &ZX_WallShoot);
             // Speed / No Recoli buttons row
             {
@@ -2196,7 +2196,7 @@ static void RenderMenu() {
                 ImGui::ItemSize(ImVec2(aw2, lh * 2.0f + 18.0f), 0.0f);
                 ImDrawList* dl2 = cw2->DrawList;
                 dl2->AddText(ImVec2(cp.x + PAD, cp.y + 10.0f),
-                             LX_TEXT_DIM, "- PAINEL DE  @Lost Xiter IOS FFMAX");
+                             LX_TEXT_DIM, "- PAINEL MONALISA 9999");
                 dl2->AddText(ImVec2(cp.x + PAD, cp.y + 10.0f + lh),
                              LX_TEXT_DIM, "AND THIS VERSION FREE FOR ALL COUSTMERS");
             }
