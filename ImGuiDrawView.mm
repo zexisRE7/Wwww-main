@@ -824,7 +824,7 @@ static void ZX_ButtonGridRow(const char* lLabel, ImU32 lColor, bool* lv, const c
     ZX_ButtonCard(rMin, rMax, rLabel, rColor, rv);
 }
 
-// ✅ MODDER %7 — Pill Slider: แสดง [ ค่า ] อยู่กลางแถบ + ป้ายอยู่ด้านขวานอกแถบ
+//  MODDER %7 — Pill Slider: แสดง [ ค่า ] อยู่กลางแถบ + ป้ายอยู่ด้านขวานอกแถบ
 static bool ZX_PillSlider(const char* label, float* v, float vmin, float vmax) {
     ImGuiWindow* window = ImGui::GetCurrentWindow();
     if (window->SkipItems) return false;
@@ -1369,7 +1369,7 @@ static void ZX_ApplyAndRun() {
     }
 }
 
-// 🟥 MODDER %7 — ไอคอนแท็บแนวนอน 4 อัน
+// 🟥MODDER %7 — ไอคอนแท็บแนวนอน 4 อัน
 static void ZX_DrawTopTabIcon(ImDrawList* dl, int idx, ImVec2 c, float s, ImU32 col) {
     switch (idx) {
         case 0: { // AIM — crosshair
@@ -2892,7 +2892,7 @@ void initAntiBanHook(void) {
                          mTxtCol, mtxt);
         }
 
-        // ── Floating KILL Button — ลอยบนหน้าจอตลอด (กด = kill, ค้าง+ลาก = ย้าย) ──
+        // ── Floating KILL Button — ลอยบนหน้าจอตลอด 
         if (Vars.Enable) {
             static ImVec2 killBtnPos(screenW - 90.0f, screenH * 0.5f);
             static bool   killDragging   = false;
@@ -2928,10 +2928,7 @@ void initAntiBanHook(void) {
                                 bMin.y + (BH - ts.y) * 0.5f),
                          IM_COL32(255,255,255,255), txt);
 
-            if (hovered && ImGui::IsMouseReleased(0) && !killDragging) {
-                // ใส่ kill function
-                // ZX_AimKill = true;
-                // KillNearestEnemy();
+            if (hovered && ImGui::IsMouseReleased(0) && !
             }
         }
 
