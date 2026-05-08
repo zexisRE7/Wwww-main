@@ -167,18 +167,21 @@ void aimbot();
 void draw_watermark();
 void get_players();
 void drawlineglow(ImDrawList* draw, ImVec2 p1, ImVec2 p2, ImColor col, float thickness, float glowSize);
-void AddText(ImFont* font, float fontSize, bool outline, bool shadow, ImVec2 pos, ImColor color, const std::string& text);
+
 void Draw3DCircle(Vector3 pos, float radius, float width, ImColor color, int segments, bool outlined, float outlineWidth);
 void OtFovV1(float x, float y, float radius, float startAngle, float endAngle, ImColor color, float thickness);
 void drawEspBox(ImDrawList* drawList, void* player, ImVec2 top, ImVec2 bottom, float distance);
 void DrawGongjakESP(ImDrawList* drawList, ImVec2 center, float radius, ImU32 color, float thickness);
 void DrawSnowfallEffect(ImDrawList* drawList, ImVec2 startPoint, ImVec2 endPoint, ImU32 color);
+void *getItransform(void *itransform);
 
 // ============================================================
 // game_sdk_t::init implementation
 // ============================================================
 void game_sdk_t::init()
 {
+
+
     this->GetHp = (int (*)(void *))getRealOffset(oxo("0x4A8478C"));
     this->Curent_Match = (void *(*)())getRealOffset(oxo("0x4E355B0"));
     this->GetLocalPlayer = (void *(*)(void *))getRealOffset(oxo("0x28FC854"));
@@ -570,13 +573,15 @@ void *GetClosestEnemysilent() {
 // ============================================================
 int SetDamage = 1;
 
-void *getItransform(void *itransform) {
-    void * (*_itransformNode)(void *_this) = (void*(*)(void*))getRealOffset(0x5C52CFC);
-    return _itransformNode(itransform);
-}
+
 
 static float get_Range(void *pthis) {
     return ((float (*)(void *))getRealOffset(ENCRYPTOFFSET("0x4E8703C")))(pthis);
+}
+
+void *getItransform(void *itransform) {
+    void * (*_itransformNode)(void *_this) = (void*(*)(void*))getRealOffset(0x5C52CFC);
+    return _itransformNode(itransform);
 }
 
 bool isEnemyInRangeWeapon(void *player, void *enemy, void* weapon) {
@@ -967,24 +972,24 @@ void aimbot()
 }
 
 void draw_watermark() {
+    ImDrawList *draw_list = ImGui::GetBackgroundDrawList();
     std::string claw = oxorany("");
     ImVec2 text_size = verdana_smol->calc_size(1, claw);
     ImVec2 text_pos(10, ImGui::GetIO().DisplaySize.y - text_size.y - 10);
-    AddText(verdana_smol, 16, false, false, text_pos + ImVec2(1, 1), ImColor(0, 0, 0, 150), claw);
+    AddText(verdana_smol, 16, false, false, text_pos + ImVec2(1, 1), ImColor(0, 0, 0, 150), claw, draw_list);
     static float hue = 0.0f;
     hue += ImGui::GetIO().DeltaTime * 0.1f;
     if (hue > 1.0f) hue = 0.0f;
     ImColor rainbow = ImColor::HSV(hue, 0.8f, 0.8f);
-    AddText(verdana_smol, 16, false, false, text_pos, rainbow, claw);
-    ImDrawList *draw_list = ImGui::GetBackgroundDrawList();
+    AddText(verdana_smol, 16, false, false, text_pos, rainbow, claw, draw_list);
     draw_list->AddLine(ImVec2(text_pos.x, text_pos.y + text_size.y + 2), ImVec2(text_pos.x + text_size.x, text_pos.y + text_size.y + 2), rainbow, 2.0f);
     std::string center_text = "2K COMMUNITY/monalisa";
     ImVec2 ctext_size = verdana_smol->CalcTextSizeA(24, FLT_MAX, 0, center_text.c_str());
     ImVec2 cpos((ImGui::GetIO().DisplaySize.x - ctext_size.x) * 0.5f, 30);
-    AddText(verdana_smol, 24, false, false, ImVec2(cpos.x + 1, cpos.y + 1), ImColor(0, 0, 0, 200), center_text);
-    AddText(verdana_smol, 24, false, false, ImVec2(cpos.x + 2, cpos.y + 2), ImColor(0, 0, 0, 120), center_text);
-    AddText(verdana_smol, 24, false, false, cpos, ImColor(0, 0, 0, 255), center_text);
-    AddText(verdana_smol, 24, false, false, ImVec2(cpos.x + 1, cpos.y), ImColor(0, 0, 0, 200), center_text);
+   AddText(verdana_smol, 24, false, false, ImVec2(cpos.x + 1, cpos.y + 1), ImColor(0, 0, 0, 200), center_text, draw_list);
+   AddText(verdana_smol, 24, false, false, ImVec2(cpos.x + 2, cpos.y + 2), ImColor(0, 0, 0, 120), center_text, draw_list);
+  AddText(verdana_smol, 24, false, false, cpos, ImColor(0, 0, 0, 255), center_text, draw_list);
+    AddText(verdana_smol, 24, false, false, ImVec2(cpos.x + 1, cpos.y), ImColor(0, 0, 0, 200), center_text, draw_list);
 }
 
 // ============================================================
@@ -1078,7 +1083,7 @@ void get_players() {
                     std::transform(names.begin(), names.end(), names.begin(), ::tolower);
                     ImVec2 text_size = verdana_smol->CalcTextSizeA(8, FLT_MAX, 0, names.c_str());
                     ImVec2 name_pos = { rect.Min.x + (rect.GetWidth() / 2) - text_size.x / 2, rect.Min.y - 2 - text_size.y };
-                    AddText(verdana_smol, 8, false, Vars.Outline, name_pos, ImColor(255, 255, 255), names);
+                    AddText(verdana_smol, 8, Vars.Outline, false, name_pos, ImColor(255, 255, 255), names, draw_list);
                 }
                 
                 // Health
@@ -1093,7 +1098,7 @@ void get_players() {
                     std::string hpstr = fmt::format(oxorany("{}HP"), static_cast<int>(health));
                     ImVec2 text_size_hp = pixel_smol->CalcTextSizeA(8, FLT_MAX, 0, hpstr.c_str());
                     ImVec2 text_pos = { rect.Min.x + (rect.GetWidth() / 2) - text_size_hp.x / 2, rect.Max.y };
-                    AddText(pixel_smol, 8, false, true, text_pos, ImColor(0, 255, 0), hpstr.c_str());
+                   AddText(pixel_smol, 8, true, false, text_pos, ImColor(0, 255, 0), hpstr.c_str(), draw_list);
                 }
                 
                 // Gongjak ESP
@@ -1106,7 +1111,7 @@ void get_players() {
                 if (Vars.Distance) {
                     std::string distancestr = fmt::format(oxorany("{}M"), static_cast<int>(distance));
                     ImVec2 distance_pos = { rect.Max.x + 4, rect.Min.y };
-                    AddText(pixel_smol, 8, false, true, distance_pos, ImColor(255, 255, 255), distancestr.c_str());
+                  AddText(pixel_smol, 8, true, false, distance_pos, ImColor(255, 255, 255), distancestr.c_str(), draw_list);
                 }
                 
                 if (Vars.circlepos) Draw3DCircle(pos, 1.0f, 0.5f, ImColor(255, 0, 0), 36, false, 0.5f);
