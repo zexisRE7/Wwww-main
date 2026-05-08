@@ -719,57 +719,56 @@ void get_players() {
                     AddText(pixel_smol, 8, false, true, distance_pos, ImColor(255, 255, 255), distancestr.c_str());
                 }
                 if (Vars.circlepos) Draw3DCircle(pos, 1.0f, 0.5f, ImColor(255, 0, 0), 36, false, 0.5f);
-                if (Vars.skeleton)DrawSkeleton(auto headPos = GetHeadPosition(closestEnemy);
-                    bool w2sh;
-                    ImVec2 hs = Camera$$WorldToScreen::Checker(headPos, w2sh);
-                    if (w2sh) {
-                        // --- วางโค้ดใหม่ทั้งหมดลงในช่องนี้แทนของเดิม ---
-                        const float ds    = 24.0f;
-                        const ImU32 blueColor = IM_COL32(0, 150, 255, 255); // สีน้ำเงินสว่าง
-                        const ImU32 blueFill  = IM_COL32(0, 150, 255, 50);  // แสงสีน้ำเงินจางๆ
+                if (Vars.skeleton)
+{
+    DrawSkeleton(closestEnemy, draw_list);
+}
 
-                        // วาดรูปเพชรบนหัว (ปรับเป็นสีน้ำเงินให้เข้ากัน)
-                        ImVec2 dTop = {hs.x,       hs.y - ds};
-                        ImVec2 dRgt = {hs.x + ds,  hs.y     };
-                        ImVec2 dBot = {hs.x,       hs.y + ds};
-                        ImVec2 dLft = {hs.x - ds,  hs.y     };
-                        draw_list->AddQuad(dTop, dRgt, dBot, dLft, blueColor, 2.0f);
-                        draw_list->AddQuadFilled(dTop, dRgt, dBot, dLft, blueFill);
+// ดึงตำแหน่งหัว (ทำนอก if ก็ได้ หรือจะทำข้างในก็ได้)
+Vector3 headPos = GetHeadPosition(closestEnemy);
+bool w2sh;
+ImVec2 hs = Camera$$WorldToScreen::Checker(headPos, w2sh);
+if (w2sh)
+{
+    const float ds    = 24.0f;
+    const ImU32 blueColor = IM_COL32(0, 150, 255, 255);
+    const ImU32 blueFill  = IM_COL32(0, 150, 255, 50);
 
-                        // ดึงค่า HP
-                        int hp = game_sdk->GetHp(closestEnemy);
-                        int maxHP = game_sdk->get_MaxHP(closestEnemy);
-                        if (maxHP <= 0) maxHP = 200;
+    // Quad รอบหัว
+    ImVec2 dTop = {hs.x,       hs.y - ds};
+    ImVec2 dRgt = {hs.x + ds,  hs.y     };
+    ImVec2 dBot = {hs.x,       hs.y + ds};
+    ImVec2 dLft = {hs.x - ds,  hs.y     };
+    draw_list->AddQuad(dTop, dRgt, dBot, dLft, blueColor, 2.0f);
+    draw_list->AddQuadFilled(dTop, dRgt, dBot, dLft, blueFill);
 
-                        // --- ส่วนกล่องข้อมูล (สีดำ/ตัวหนังสือสีน้ำเงิน) ---
-                        const float bx = hs.x + 32.0f;
-                        const float by = hs.y - 28.0f;
-                        const float bw = 114.0f, bh = 58.0f, rad = 5.0f;
+    // HP
+    int hp = game_sdk->GetHp(closestEnemy);
+    int maxHP = game_sdk->get_MaxHP(closestEnemy);
+    if (maxHP <= 0) maxHP = 200;
 
-                        // 1. พื้นหลังกล่องสีดำสนิท
-                        draw_list->AddRectFilled({bx, by}, {bx + bw, by + bh}, IM_COL32(0, 0, 0, 230), rad);
-                        // 2. ขอบกล่องสีน้ำเงินจางๆ
-                        draw_list->AddRect({bx, by}, {bx + bw, by + bh}, IM_COL32(0, 150, 255, 100), rad, 0, 1.0f);
+    const float bx = hs.x + 32.0f;
+    const float by = hs.y - 28.0f;
+    const float bw = 114.0f, bh = 58.0f, rad = 5.0f;
 
-                        char distBuf[32];
-                        snprintf(distBuf, sizeof distBuf, "DIST: %dm", (int)distance);
-                        // 3. ระยะทางสีน้ำเงิน
-                        draw_list->AddText(ImGui::GetFont(), 13.0f, {bx + 8.0f, by + 7.0f}, blueColor, distBuf);
+    draw_list->AddRectFilled({bx, by}, {bx + bw, by + bh}, IM_COL32(0, 0, 0, 230), rad);
+    draw_list->AddRect({bx, by}, {bx + bw, by + bh}, IM_COL32(0, 150, 255, 100), rad, 0, 1.0f);
 
-                        // --- หลอดเลือดสีน้ำเงิน ---
-                        const float barX0 = bx + 6.0f, barY0 = by + 27.0f;
-                        const float barW  = bw - 12.0f, barH  = 8.0f;
-                        float hpFrac = (float)hp / (float)maxHP;
-                        draw_list->AddRectFilled({barX0, barY0}, {barX0 + barW, barY0 + barH}, IM_COL32(30, 30, 30, 255), 4.0f);
-                        draw_list->AddRectFilled({barX0, barY0}, {barX0 + barW * hpFrac, barY0 + barH}, blueColor, 4.0f);
+    char distBuf[32];
+    snprintf(distBuf, sizeof(distBuf), "DIST: %dm", (int)distance);
+    draw_list->AddText(ImGui::GetFont(), 13.0f, {bx + 8.0f, by + 7.0f}, blueColor, distBuf);
 
-                        char hpBuf[32];
-                        snprintf(hpBuf, sizeof hpBuf, "HP: %d/%d", hp, maxHP);
-                        // 4. เลือดสีน้ำเงิน
-                        draw_list->AddText(ImGui::GetFont(), 13.0f, {bx + 8.0f, by + 39.0f}, blueColor, hpBuf);
-                    }
-                } // ปีกกาปิดส่วนหัว
-            }
+    const float barX0 = bx + 6.0f, barY0 = by + 27.0f;
+    const float barW  = bw - 12.0f, barH  = 8.0f;
+    float hpFrac = (float)hp / (float)maxHP;
+    if (hpFrac > 1.0f) hpFrac = 1.0f;
+    draw_list->AddRectFilled({barX0, barY0}, {barX0 + barW, barY0 + barH}, IM_COL32(30, 30, 30, 255), 4.0f);
+    draw_list->AddRectFilled({barX0, barY0}, {barX0 + barW * hpFrac, barY0 + barH}, blueColor, 4.0f);
+
+    char hpBuf[32];
+    snprintf(hpBuf, sizeof(hpBuf), "HP: %d/%d", hp, maxHP);
+    draw_list->AddText(ImGui::GetFont(), 13.0f, {bx + 8.0f, by + 39.0f}, blueColor, hpBuf);
+}
             if (Vars.OOF) {
                 if ((pos_3.x < 0 || pos_3.x > disp.width) || (pos_3.y < 0 || pos_3.y > disp.height) || !w2sc) {
                     constexpr int maxpixels = 150;
