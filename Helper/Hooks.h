@@ -1019,24 +1019,41 @@ void old_AutoFire(void *_this, int32_t pFireStatus, int32_t pFireMode) {
     }
     return _AutoFire(_this, pFireStatus, pFireMode);
 }
-
-void aimbot() {
+ void aimbot()
+{
     ImVec2 center = ImVec2(ImGui::GetIO().DisplaySize.x / 2, ImGui::GetIO().DisplaySize.y / 2);
     if (!Vars.Aimbot) return;
+    
     ImDrawList *draw_list = ImGui::GetBackgroundDrawList();
     if (!draw_list) return;
+
+    if (Vars.isAimFov)
+    {
+        // 1. วาดวงกลมหลักสีดำ (Black FOV)
+        draw_list->AddCircle(center, Vars.AimFov, IM_COL32(0, 0, 0, 255), 100, 2.5f);
+
+        // 2. เอฟเฟกต์แสงไหลเหมือนสายน้ำ (Water Flow Effect)
+        // ใช้ ImGui::GetTime() เพื่อให้สีขยับตามเวลา
+        float time = ImGui::GetTime();
+        for (int i = 0; i < 3; i++) {
+            // สร้างแสงสีน้ำเงินจางๆ ไหลวน (Cyan/Blue water glow)
+            float glowAlpha = (sinf(time * 2.0f + (i * 1.5f)) * 0.5f + 0.5f) * 150.0f;
+            draw_list->AddCircle(center, Vars.AimFov + (i * 1.2f), IM_COL32(0, 150, 255, (int)glowAlpha), 100, 1.0f);
+         }
+    }
+
+    // ส่วนการวาด Line ไปหาศัตรู
     void *Match = game_sdk->Curent_Match();
     if (!Match) return;
-    if (Vars.isAimFov) {
-        if (Vars.fovaimglow) drawcircleglow(draw_list, center, Vars.AimFov, ImColor(Vars.fovLineColor[0], Vars.fovLineColor[1], Vars.fovLineColor[2], Vars.fovLineColor[3]), 999, 1, 12);
-        else draw_list->AddCircle(center, Vars.AimFov, ImColor(Vars.fovLineColor[0], Vars.fovLineColor[1], Vars.fovLineColor[2], Vars.fovLineColor[3]), 100);
-    }
     void *LocalPlayer = game_sdk->GetLocalPlayer(Match);
     if (!LocalPlayer) return;
     void *playertarget = GetClosestEnemy();
     if (!playertarget) return;
+
     ImVec2 EnemyLocation = Camera$$WorldToScreen::Regular(GetHeadPosition(playertarget));
-    AddDashedLine(draw_list, ImVec2(center.x, center.y), EnemyLocation, IM_COL32(0, 0, 0, 255), 2.5f, 10.0f, 5.0f);
+    // ปรับเส้นยิงให้เป็นสีน้ำเงินนีออนให้เข้ากัน
+    drawlineglow(draw_list, center, EnemyLocation, ImColor(0, 120, 255), 1, 3);
+    
 }
 
 void draw_watermark() {
