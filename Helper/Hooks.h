@@ -719,14 +719,7 @@ void get_players() {
                     AddText(pixel_smol, 8, false, true, distance_pos, ImColor(255, 255, 255), distancestr.c_str());
                 }
                 if (Vars.circlepos) Draw3DCircle(pos, 1.0f, 0.5f, ImColor(255, 0, 0), 36, false, 0.5f);
-                // ... โค้ดด้านบน ESP ต่างๆ ...
-                if (Vars.skeleton)
-                {
-                    DrawSkeleton(closestEnemy, draw_list);
-                }
-
-                // สังเกตปีกกาเปิดอันนี้ { 
-                { 
+                if (Vars.skeleton)DrawSkeleton(closestEnemy, 
                     Vector3 headPos = GetHeadPosition(closestEnemy);
                     bool w2sh;
                     ImVec2 hs = Camera$$WorldToScreen::Checker(headPos, w2sh);
@@ -777,11 +770,6 @@ void get_players() {
                         draw_list->AddText(ImGui::GetFont(), 13.0f, {bx + 8.0f, by + 39.0f}, blueColor, hpBuf);
                     }
                 } // ปีกกาปิดส่วนหัว
-            }
-            if (Vars.OOF)
-            // ... โค้ดด้านล่างต่อๆ ไป ...
-                    }
-                }
             }
             if (Vars.OOF) {
                 if ((pos_3.x < 0 || pos_3.x > disp.width) || (pos_3.y < 0 || pos_3.y > disp.height) || !w2sc) {
