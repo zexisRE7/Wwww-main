@@ -1045,7 +1045,7 @@ void get_players()
                     }
                 }
             }
-            if (Vars.OOF)
+            if (Vars.line)
             {
                 if ((pos_3.x < 0 || pos_3.x > disp.width) || (pos_3.y < 0 || pos_3.y > disp.height) || !w2sc)
                 {
