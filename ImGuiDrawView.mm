@@ -407,8 +407,8 @@ static const ImU32 ZX_PURPLE        = IM_COL32(175,  82, 222, 255);
 static const ImU32 ZX_YELLOW        = IM_COL32(255, 204,   0, 255);
 
 // ── Layout — Dark Gaming sidebar style 
-static const float ZX_WIN_W      = 580.0f;
-static const float ZX_WIN_H      = 420.0f;
+static const float ZX_WIN_W      = 420.0f;
+static const float ZX_WIN_H      = 462.0f;
 static const float ZX_WIN_RAD    = 16.0f;
 static const float ZX_SIDEBAR_W  = 54.0f;   // left sidebar width
 static const float ZX_HEADER_H   = 54.0f;   // header area height
@@ -824,7 +824,7 @@ static void ZX_ButtonGridRow(const char* lLabel, ImU32 lColor, bool* lv, const c
     ZX_ButtonCard(rMin, rMax, rLabel, rColor, rv);
 }
 
-//  MODDER %7 — Pill Slider: แสดง [ ค่า ] อยู่กลางแถบ + ป้ายอยู่ด้านขวานอกแถบ
+// ✅ MODDER %7 — Pill Slider: แสดง [ ค่า ] อยู่กลางแถบ + ป้ายอยู่ด้านขวานอกแถบ
 static bool ZX_PillSlider(const char* label, float* v, float vmin, float vmax) {
     ImGuiWindow* window = ImGui::GetCurrentWindow();
     if (window->SkipItems) return false;
@@ -1369,7 +1369,7 @@ static void ZX_ApplyAndRun() {
     }
 }
 
-// 🟥MODDER %7 — ไอคอนแท็บแนวนอน 4 อัน
+// 🟥 MODDER %7 — ไอคอนแท็บแนวนอน 4 อัน
 static void ZX_DrawTopTabIcon(ImDrawList* dl, int idx, ImVec2 c, float s, ImU32 col) {
     switch (idx) {
         case 0: { // AIM — crosshair
@@ -1809,556 +1809,975 @@ static void ZX_DarkInfoRow(const char* label, const char* value, ImU32 valueColo
 static int  ZX_KillCount   = 0;
 static bool ZX_BatMonInit  = false;
 
-static void RenderMenu() {
+// ── LostXiter dark-red theme (backup — not called) ────────────────────────────
+static void RenderMenu_LOSTXITER() {
     if (!MenDeal) return;
 
     // ══════════════════════════════════════════════════════════════════════
-    // WHITE iOS THEME — exact match to reference screenshots
+    // LOST XITER DARK RED THEME — @lostx.wq 3.111.X
     // ══════════════════════════════════════════════════════════════════════
-    const ImU32 W_WIN_BG      = IM_COL32(255, 255, 255, 250);  // white card
-    const ImU32 W_CONTENT_BG  = IM_COL32(242, 242, 247, 255);  // iOS system gray6
-    const ImU32 W_SEP         = IM_COL32(209, 209, 214, 255);  // iOS separator
-    const ImU32 W_TEXT        = IM_COL32(  0,   0,   0, 255);  // black
-    const ImU32 W_TEXT_DIM    = IM_COL32(142, 142, 147, 255);  // gray
-    const ImU32 W_ORANGE      = IM_COL32(255,  95,  30, 255);  // orange accent
-    const ImU32 W_TGL_ON      = IM_COL32(255,  95,  30, 255);  // orange ON
-    const ImU32 W_TGL_OFF     = IM_COL32(209, 209, 214, 255);  // gray OFF
-    const ImU32 W_KNOB        = IM_COL32(255, 255, 255, 255);  // white knob
-    const ImU32 W_HOVER       = IM_COL32(  0,   0,   0,   8);  // subtle hover
-    const ImU32 W_ICON_BTN_BG = IM_COL32(209, 209, 214, 255);  // header icon circle
+    const ImU32 LX_BG          = IM_COL32( 15,  8,  8, 255);  // near-black bg
+    const ImU32 LX_TITLE_L     = IM_COL32( 85, 10, 10, 255);  // title gradient left
+    const ImU32 LX_TITLE_R     = IM_COL32(170, 22, 22, 255);  // title gradient right
+    const ImU32 LX_TITLE_LINE  = IM_COL32(185, 28, 28, 255);  // title bottom border
+    const ImU32 LX_TAB_ACTIVE  = IM_COL32(170, 22, 22, 255);  // active tab red bg
+    const ImU32 LX_TAB_LINE    = IM_COL32(160, 20, 20, 255);  // tab bottom line
+    const ImU32 LX_WIN_BORDER  = IM_COL32(130, 18, 18, 200);  // window border
+    const ImU32 LX_TEXT        = IM_COL32(255, 255, 255, 255); // white text
+    const ImU32 LX_TEXT_DIM    = IM_COL32(160, 160, 160, 255); // dim gray text
+    const ImU32 LX_RED         = IM_COL32(200,  28,  28, 255); // red accent
+    const ImU32 LX_CHK_BG      = IM_COL32( 28,  12,  12, 255); // checkbox inner bg
+    const ImU32 LX_CHK_OUT     = IM_COL32(145,  20,  20, 255); // checkbox outline
+    const ImU32 LX_CHK_FILL    = IM_COL32(200,  28,  28, 255); // checkbox checked fill
+    const ImU32 LX_DD_BG       = IM_COL32( 25,  12,  12, 255); // dropdown bg
+    const ImU32 LX_DD_BORDER   = IM_COL32(135,  18,  18, 255); // dropdown border
+    const ImU32 LX_BTN_BG      = IM_COL32(170,  22,  22, 255); // button red
+    const ImU32 LX_SLD_FILL    = IM_COL32(200,  28,  28, 255); // slider fill/knob
+    const ImU32 LX_SLD_TRACK   = IM_COL32( 48,  20,  20, 255); // slider track
+    const ImU32 LX_ROW_SEP     = IM_COL32( 38,  18,  18, 255); // row separator
 
     // ── Layout ─────────────────────────────────────────────────────────────
-    const float WIN_W  = 580.0f;
-    const float WIN_H  = 420.0f;
-    const float WIN_RAD = 20.0f;
-    const float SB_W   = 130.0f;   // sidebar
-    const float HDR_H  =  52.0f;   // content header
-    const float ROW_H  =  52.0f;   // row height
-    const float PAD    =  16.0f;
-    const float TW     =  51.0f;   // toggle width
-    const float TH     =  31.0f;   // toggle height
+    const float WIN_W    = 490.0f;
+    const float WIN_H    = 325.0f;
+    const float WIN_RAD  =   8.0f;
+    const float TITLE_H  =  36.0f;
+    const float TABBAR_H =  38.0f;
+    const float ROW_H    =  32.0f;
+    const float BTN_H    =  32.0f;
+    const float CHK_S    =  17.0f;
+    const float PAD      =  12.0f;
 
-    ImGui::PushStyleColor(ImGuiCol_WindowBg,      ImVec4(1.0f,1.0f,1.0f,0.98f));
-    ImGui::PushStyleColor(ImGuiCol_Border,        ImVec4(0,0,0,0));
-    ImGui::PushStyleColor(ImGuiCol_ScrollbarBg,   ImVec4(0.95f,0.95f,0.97f,1.0f));
-    ImGui::PushStyleColor(ImGuiCol_ScrollbarGrab, ImVec4(0.82f,0.82f,0.84f,1.0f));
+    ImGui::PushStyleColor(ImGuiCol_WindowBg,      ImVec4(15.0f/255, 8.0f/255, 8.0f/255, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_Border,        ImVec4(0.51f, 0.07f, 0.07f, 0.78f));
+    ImGui::PushStyleColor(ImGuiCol_ScrollbarBg,   ImVec4(0.08f, 0.04f, 0.04f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ScrollbarGrab, ImVec4(0.75f, 0.10f, 0.10f, 1.0f));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding,   WIN_RAD);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,    ImVec2(0,0));
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing,      ImVec2(0,0));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.2f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,    ImVec2(0, 0));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing,      ImVec2(0, 0));
     ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarSize,    4.0f);
 
     ImGui::SetNextWindowSize(ImVec2(WIN_W, WIN_H), ImGuiCond_Always);
-    ImGui::Begin("##ZXWhiteMenu", nullptr,
+    ImGui::Begin("##LXMenu", nullptr,
         ImGuiWindowFlags_NoTitleBar  | ImGuiWindowFlags_NoResize |
         ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse |
         ImGuiWindowFlags_NoBringToFrontOnFocus);
-    ImGui::SetWindowFontScale(ZX_FONT_SIZE / 18.0f);
+    ImGui::SetWindowFontScale(ZX_FONT_SIZE / 17.0f);
 
     ImDrawList* dl = ImGui::GetWindowDrawList();
     ImVec2 wp = ImGui::GetWindowPos();
     ImVec2 ws = ImGui::GetWindowSize();
 
-    // ── Drop shadow ──────────────────────────────────────────────────────────
-    for (int i = 0; i < 5; ++i) {
-        float e = (float)(i + 1) * 2.5f;
-        dl->AddRectFilled(ImVec2(wp.x - e, wp.y + 4.0f),
-                          ImVec2(wp.x + ws.x + e, wp.y + ws.y + e),
-                          IM_COL32(0, 0, 0, 7 - i), WIN_RAD + e);
+    // ── Main dark bg ─────────────────────────────────────────────────────────
+    dl->AddRectFilled(wp, ImVec2(wp.x + ws.x, wp.y + ws.y), LX_BG, WIN_RAD);
+    dl->AddRect(wp, ImVec2(wp.x + ws.x, wp.y + ws.y), LX_WIN_BORDER, WIN_RAD, 0, 1.2f);
+
+    // ── TITLE BAR (dark-red gradient left→right) ─────────────────────────────
+    dl->AddRectFilledMultiColor(
+        wp, ImVec2(wp.x + ws.x, wp.y + TITLE_H),
+        LX_TITLE_L, LX_TITLE_R, LX_TITLE_R, LX_TITLE_L);
+    dl->AddLine(ImVec2(wp.x, wp.y + TITLE_H),
+                ImVec2(wp.x + ws.x, wp.y + TITLE_H), LX_TITLE_LINE, 1.0f);
+
+    // ▼ collapse arrow (left)
+    {
+        float ax = wp.x + 14.0f, ay = wp.y + TITLE_H * 0.5f;
+        dl->AddTriangleFilled(ImVec2(ax - 7.0f, ay - 4.0f),
+                              ImVec2(ax + 7.0f, ay - 4.0f),
+                              ImVec2(ax,         ay + 5.0f), LX_TEXT);
+    }
+    // Title center
+    {
+        const char* title = "@lostx.wq - 3.111.X";
+        ImVec2 tts = ImGui::CalcTextSize(title);
+        dl->AddText(ImVec2(wp.x + (ws.x - tts.x) * 0.5f,
+                           wp.y + (TITLE_H - tts.y) * 0.5f), LX_TEXT, title);
+    }
+    // X close (right)
+    {
+        float xCX = wp.x + ws.x - 18.0f, xCY = wp.y + TITLE_H * 0.5f, xs = 6.0f;
+        dl->AddLine(ImVec2(xCX-xs, xCY-xs), ImVec2(xCX+xs, xCY+xs), LX_TEXT, 1.8f);
+        dl->AddLine(ImVec2(xCX+xs, xCY-xs), ImVec2(xCX-xs, xCY+xs), LX_TEXT, 1.8f);
+        ImGui::SetCursorScreenPos(ImVec2(xCX - 14.0f, wp.y + 4.0f));
+        if (ImGui::InvisibleButton("##lxX", ImVec2(28.0f, TITLE_H - 8.0f)))
+            MenDeal = false;
     }
 
-    // ── Main white card ──────────────────────────────────────────────────────
-    dl->AddRectFilled(wp, ImVec2(wp.x + ws.x, wp.y + ws.y), W_WIN_BG, WIN_RAD);
+    // ── TAB BAR (horizontal, 4 tabs) ─────────────────────────────────────────
+    const char* kTabLabels[] = { "AIM", "ESP", "MSLC", "INFO" };
+    const int   kTabIcons[]  = { 0, 1, 3, 4 };
+    const int   kTabCount    = 4;
+    float tabBarY = wp.y + TITLE_H;
 
-    // ── Tab definitions ─────────────────────────────────────────────────────
-    //   icon idx: 0=crosshair(Aimbot) 1=eye(Visuals) 2=cube(Misc)
-    //             3=settings-gear(Settings) 4=person(Account)
-    const char* kTabLabels[] = { "Aimbot", "Visuals", "Misc", "Settings", "Account" };
-    const int   kTabCount    = 5;
+    dl->AddRectFilled(ImVec2(wp.x, tabBarY),
+                      ImVec2(wp.x + ws.x, tabBarY + TABBAR_H), LX_BG);
+    dl->AddLine(ImVec2(wp.x, tabBarY + TABBAR_H),
+                ImVec2(wp.x + ws.x, tabBarY + TABBAR_H), LX_TAB_LINE, 1.0f);
 
-    // ── LEFT SIDEBAR ─────────────────────────────────────────────────────────
-    dl->AddRectFilled(wp, ImVec2(wp.x + SB_W, wp.y + ws.y),
-                      W_WIN_BG, WIN_RAD, ImDrawFlags_RoundCornersLeft);
-    // Right border
-    dl->AddLine(ImVec2(wp.x + SB_W, wp.y + 16.0f),
-                ImVec2(wp.x + SB_W, wp.y + ws.y - 16.0f), W_SEP, 1.0f);
-
-    const float TAB_H   = WIN_H / (float)kTabCount;
-    const float ICON_S  = 22.0f;
-
+    float tabW = ws.x / (float)kTabCount;
     for (int i = 0; i < kTabCount; ++i) {
-        float tY0 = wp.y + (float)i * TAB_H;
-        float tY1 = tY0 + TAB_H;
-        float tCX = wp.x + SB_W * 0.5f;
-        float tCY = (tY0 + tY1) * 0.5f;
-
-        bool   active  = (ZX_Tab == i);
-        ImU32  iconCol = active ? W_ORANGE : W_TEXT_DIM;
-        ImU32  textCol = active ? W_ORANGE : W_TEXT_DIM;
-
-        // Tab divider
-        if (i > 0)
-            dl->AddLine(ImVec2(wp.x + 18.0f, tY0), ImVec2(wp.x + SB_W - 8.0f, tY0),
-                        W_SEP, 0.6f);
-
-        // Icon (centered, above text)
-        ZX_DrawTopTabIcon(dl, i, ImVec2(tCX, tCY - 14.0f), ICON_S, iconCol);
-
-        // Label below icon
+        float tX0 = wp.x + (float)i * tabW;
+        float tX1 = tX0 + tabW;
+        float tCX = (tX0 + tX1) * 0.5f;
+        float tCY = tabBarY + TABBAR_H * 0.5f;
+        bool active = (ZX_Tab == i);
+        if (active)
+            dl->AddRectFilled(ImVec2(tX0, tabBarY), ImVec2(tX1, tabBarY + TABBAR_H + 1.0f),
+                              LX_TAB_ACTIVE, 0.0f);
+        // icon + label side-by-side
+        const float iconS = 14.0f;
         ImVec2 lts = ImGui::CalcTextSize(kTabLabels[i]);
-        dl->AddText(ImVec2(tCX - lts.x * 0.5f, tCY + 6.0f), textCol, kTabLabels[i]);
-
-        // Click target
-        ImGui::SetCursorScreenPos(ImVec2(wp.x, tY0));
-        char bid[16]; snprintf(bid, sizeof(bid), "##wtab%d", i);
-        if (ImGui::InvisibleButton(bid, ImVec2(SB_W, TAB_H)))
+        float totalW = iconS + 5.0f + lts.x;
+        float startX = tCX - totalW * 0.5f;
+        ZX_DrawTopTabIcon(dl, kTabIcons[i], ImVec2(startX + iconS * 0.5f, tCY), iconS, LX_TEXT);
+        dl->AddText(ImVec2(startX + iconS + 5.0f, tCY - lts.y * 0.5f), LX_TEXT, kTabLabels[i]);
+        // click
+        ImGui::SetCursorScreenPos(ImVec2(tX0, tabBarY));
+        char bid[16]; snprintf(bid, sizeof(bid), "##lxtab%d", i);
+        if (ImGui::InvisibleButton(bid, ImVec2(tabW, TABBAR_H)))
             ZX_Tab = i;
     }
 
-    // ── RIGHT: content area (light gray) ────────────────────────────────────
-    float rcX = wp.x + SB_W;
-    float rcW = ws.x - SB_W;
-
-    dl->AddRectFilled(ImVec2(rcX, wp.y), ImVec2(wp.x + ws.x, wp.y + ws.y),
-                      W_CONTENT_BG, WIN_RAD, ImDrawFlags_RoundCornersRight);
-
-    // ── CONTENT HEADER (white strip) ────────────────────────────────────────
-    dl->AddRectFilled(ImVec2(rcX, wp.y), ImVec2(wp.x + ws.x, wp.y + HDR_H),
-                      W_WIN_BG, WIN_RAD, ImDrawFlags_RoundCornersTopRight);
-    dl->AddLine(ImVec2(rcX, wp.y + HDR_H),
-                ImVec2(wp.x + ws.x, wp.y + HDR_H), W_SEP, 1.0f);
-
-    // Header left: orange icon + tab name uppercase
-    {
-        float hCY = wp.y + HDR_H * 0.5f;
-        float hX  = rcX + PAD;
-        ZX_DrawTopTabIcon(dl, ZX_Tab, ImVec2(hX + 11.0f, hCY), 17.0f, W_ORANGE);
-        hX += 28.0f;
-        char uName[32]; int k = 0;
-        for (const char* p = kTabLabels[ZX_Tab]; *p && k < 30; ++p, ++k)
-            uName[k] = (*p >= 'a' && *p <= 'z') ? (*p - 32) : *p;
-        uName[k] = 0;
-        dl->AddText(ImVec2(hX, hCY - ImGui::GetFontSize() * 0.5f), W_ORANGE, uName);
-    }
-
-    // Header right: sun-brightness circle + X circle
-    {
-        float hCY = wp.y + HDR_H * 0.5f;
-        const float BR = 16.0f;
-
-        // X close button
-        float xCX = wp.x + ws.x - PAD - BR;
-        dl->AddCircleFilled(ImVec2(xCX, hCY), BR, W_ICON_BTN_BG, 20);
-        float xs = 5.5f;
-        dl->AddLine(ImVec2(xCX - xs, hCY - xs), ImVec2(xCX + xs, hCY + xs), W_TEXT, 1.8f);
-        dl->AddLine(ImVec2(xCX + xs, hCY - xs), ImVec2(xCX - xs, hCY + xs), W_TEXT, 1.8f);
-        ImGui::SetCursorScreenPos(ImVec2(xCX - BR, hCY - BR));
-        if (ImGui::InvisibleButton("##wxclose", ImVec2(BR * 2.0f, BR * 2.0f)))
-            MenDeal = false;
-
-        // Sun / brightness circle
-        float sunCX = xCX - BR * 2.0f - 10.0f;
-        dl->AddCircleFilled(ImVec2(sunCX, hCY), BR, W_ICON_BTN_BG, 20);
-        float sr = 5.0f;
-        dl->AddCircle(ImVec2(sunCX, hCY), sr, W_TEXT_DIM, 16, 1.3f);
-        for (int j = 0; j < 8; ++j) {
-            float a = (float)j / 8.0f * 2.0f * IM_PI;
-            dl->AddLine(ImVec2(sunCX + cosf(a) * (sr + 2.5f), hCY + sinf(a) * (sr + 2.5f)),
-                        ImVec2(sunCX + cosf(a) * (sr + 5.2f), hCY + sinf(a) * (sr + 5.2f)),
-                        W_TEXT_DIM, 1.3f);
-        }
-        ImGui::SetCursorScreenPos(ImVec2(sunCX - BR, hCY - BR));
-        if (ImGui::InvisibleButton("##wsunbtn", ImVec2(BR * 2.0f, BR * 2.0f)))
-            ZX_StreamMode = !ZX_StreamMode;
-    }
-
     // ── SCROLLABLE CONTENT ───────────────────────────────────────────────────
-    float contentY = wp.y + HDR_H;
-    float contentH = ws.y - HDR_H;
+    float contentY = tabBarY + TABBAR_H + 1.0f;
+    float contentH = ws.y - TITLE_H - TABBAR_H - 2.0f;
 
-    ImGui::SetCursorScreenPos(ImVec2(rcX + PAD * 0.5f, contentY + 10.0f));
+    ImGui::SetCursorScreenPos(ImVec2(wp.x, contentY));
     ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0, 0, 0, 0));
-    ImGui::BeginChild("##wl_content", ImVec2(rcW - PAD, contentH - 16.0f),
+    ImGui::BeginChild("##lx_content", ImVec2(ws.x, contentH),
                       false, ImGuiWindowFlags_AlwaysVerticalScrollbar);
-    ImGui::SetWindowFontScale(ZX_FONT_SIZE / 18.0f);
+    ImGui::SetWindowFontScale(ZX_FONT_SIZE / 17.0f);
 
-    // ── Helper: white toggle row ─────────────────────────────────────────────
-    struct WRow {
-        static bool Toggle(const char* label, bool* v, bool last,
-                           float rowH, float pad, float tw, float th,
-                           ImU32 tOn, ImU32 tOff, ImU32 knob,
-                           ImU32 textC, ImU32 sep, ImU32 hover) {
+    // ── Checkbox helper ──────────────────────────────────────────────────────
+    struct LXChk {
+        // Draw one checkbox + label at given screen position, return pressed
+        static bool One(const char* lbl, bool* v, float cx, float cy, float chkS,
+                        ImU32 bg, ImU32 outline, ImU32 fill, ImU32 textC) {
             ImGuiWindow* cw = ImGui::GetCurrentWindow();
-            if (cw->SkipItems) return false;
+            ImDrawList*  dl = cw->DrawList;
+            float cY0 = cy - chkS * 0.5f;
+            dl->AddRectFilled(ImVec2(cx, cY0), ImVec2(cx + chkS, cY0 + chkS), bg,      chkS * 0.22f);
+            dl->AddRect      (ImVec2(cx, cY0), ImVec2(cx + chkS, cY0 + chkS), outline, chkS * 0.22f, 0, 1.0f);
+            if (*v) {
+                float m = 3.5f;
+                dl->AddRectFilled(ImVec2(cx+m, cY0+m), ImVec2(cx+chkS-m, cY0+chkS-m), fill, chkS * 0.15f);
+            }
+            ImVec2 lts = ImGui::CalcTextSize(lbl);
+            dl->AddText(ImVec2(cx + chkS + 5.0f, cy - lts.y * 0.5f), textC, lbl);
+            // invisible click area covering chk + text
+            float hitW = chkS + 6.0f + lts.x + 10.0f;
+            const ImGuiID id = cw->GetID(lbl);
+            ImRect bb(ImVec2(cx - 2.0f, cY0 - 2.0f), ImVec2(cx + hitW, cY0 + chkS + 2.0f));
+            if (ImGui::ItemAdd(bb, id)) {
+                bool hov, hld;
+                bool pressed = ImGui::ButtonBehavior(bb, id, &hov, &hld);
+                if (pressed) *v = !*v;
+                return pressed;
+            }
+            return false;
+        }
+
+        // Two checkboxes on one row
+        static void Row2(const char* l1, bool* v1, const char* l2, bool* v2,
+                         float rowH, float pad, float chkS,
+                         ImU32 bg, ImU32 outline, ImU32 fill, ImU32 textC, ImU32 sep) {
+            ImGuiWindow* cw = ImGui::GetCurrentWindow();
+            if (cw->SkipItems) return;
             ImVec2 pos = cw->DC.CursorPos;
             float  aw  = ImGui::GetContentRegionAvail().x;
-            const ImGuiID id = cw->GetID(label);
-            ImRect bb(pos, ImVec2(pos.x + aw, pos.y + rowH));
             ImGui::ItemSize(ImVec2(aw, rowH), 0.0f);
-            if (!ImGui::ItemAdd(bb, id)) return false;
-            bool hov, hld;
-            bool pressed = ImGui::ButtonBehavior(bb, id, &hov, &hld);
-            if (pressed) *v = !*v;
-            ImDrawList* dl = cw->DrawList;
-            dl->AddRectFilled(bb.Min, bb.Max, IM_COL32(255,255,255,255), 0.0f);
-            if (hov) dl->AddRectFilled(bb.Min, bb.Max, hover, 0.0f);
-            if (!last)
-                dl->AddLine(ImVec2(bb.Min.x + pad, bb.Max.y - 1.0f),
-                             ImVec2(bb.Max.x, bb.Max.y - 1.0f), sep, 1.0f);
-            float cy = (bb.Min.y + bb.Max.y) * 0.5f;
-            dl->AddText(ImVec2(bb.Min.x + pad, cy - ImGui::GetFontSize() * 0.5f), textC, label);
-            float tr = th * 0.5f;
-            float tX = bb.Max.x - tw - pad;
-            float tY = cy - th * 0.5f;
-            dl->AddRectFilled(ImVec2(tX, tY), ImVec2(tX + tw, tY + th), *v ? tOn : tOff, tr);
-            float kX = *v ? (tX + tw - tr) : (tX + tr);
-            dl->AddCircleFilled(ImVec2(kX, cy), tr - 1.5f, IM_COL32(0,0,0,18), 28);
-            dl->AddCircleFilled(ImVec2(kX, cy), tr - 2.5f, knob, 28);
-            return pressed;
+            cw->DrawList->AddLine(ImVec2(pos.x, pos.y + rowH - 1.0f),
+                                  ImVec2(pos.x + aw, pos.y + rowH - 1.0f), sep, 0.5f);
+            float cy = pos.y + rowH * 0.5f;
+            One(l1, v1, pos.x + pad,              cy, chkS, bg, outline, fill, textC);
+            if (l2 && l2[0])
+                One(l2, v2, pos.x + aw * 0.5f + pad, cy, chkS, bg, outline, fill, textC);
         }
 
-        // Label-only row (section header, gray)
-        static void Label(const char* text, ImU32 col, float h, float pad) {
+        // Single checkbox row
+        static void Row1(const char* lbl, bool* v,
+                         float rowH, float pad, float chkS,
+                         ImU32 bg, ImU32 outline, ImU32 fill, ImU32 textC, ImU32 sep) {
             ImGuiWindow* cw = ImGui::GetCurrentWindow();
             if (cw->SkipItems) return;
             ImVec2 pos = cw->DC.CursorPos;
             float  aw  = ImGui::GetContentRegionAvail().x;
-            ImGui::ItemSize(ImVec2(aw, h), 0.0f);
-            float cy = pos.y + h * 0.5f;
-            cw->DrawList->AddText(ImVec2(pos.x + pad, cy - ImGui::GetFontSize() * 0.5f),
-                                  col, text);
+            ImGui::ItemSize(ImVec2(aw, rowH), 0.0f);
+            cw->DrawList->AddLine(ImVec2(pos.x, pos.y + rowH - 1.0f),
+                                  ImVec2(pos.x + aw, pos.y + rowH - 1.0f), sep, 0.5f);
+            One(lbl, v, pos.x + pad, pos.y + rowH * 0.5f, chkS, bg, outline, fill, textC);
         }
+    };
 
-        // Dropdown row: label left, [value ▼] pill right
-        static void Dropdown(const char* label, const char* value,
-                             float rowH, float pad,
-                             ImU32 textC, ImU32 orange, ImU32 sep, ImU32 hover) {
+    // ── Dropdown helper ──────────────────────────────────────────────────────
+    struct LXDrop {
+        static void Draw(const char* value, const char* suffix,
+                         float rowH, float pad, float dropFrac,
+                         ImU32 bg, ImU32 border, ImU32 red, ImU32 textC) {
             ImGuiWindow* cw = ImGui::GetCurrentWindow();
             if (cw->SkipItems) return;
             ImVec2 pos = cw->DC.CursorPos;
             float  aw  = ImGui::GetContentRegionAvail().x;
-            const ImGuiID id = cw->GetID(label);
+            const ImGuiID id = cw->GetID(value);
             ImRect bb(pos, ImVec2(pos.x + aw, pos.y + rowH));
             ImGui::ItemSize(ImVec2(aw, rowH), 0.0f);
             if (!ImGui::ItemAdd(bb, id)) return;
-            bool hov, hld;
-            ImGui::ButtonBehavior(bb, id, &hov, &hld);
-            ImDrawList* dl = cw->DrawList;
-            dl->AddRectFilled(bb.Min, bb.Max, IM_COL32(255,255,255,255), 0.0f);
-            if (hov) dl->AddRectFilled(bb.Min, bb.Max, hover, 0.0f);
-            dl->AddLine(ImVec2(bb.Min.x + pad, bb.Max.y - 1.0f),
-                         ImVec2(bb.Max.x, bb.Max.y - 1.0f), sep, 1.0f);
+            bool hov, hld; ImGui::ButtonBehavior(bb, id, &hov, &hld);
             float cy = (bb.Min.y + bb.Max.y) * 0.5f;
-            dl->AddText(ImVec2(bb.Min.x + pad, cy - ImGui::GetFontSize() * 0.5f), textC, label);
-            // value pill
-            const float pillH = 34.0f, pillPad = 10.0f;
-            ImVec2 vts = ImGui::CalcTextSize(value);
-            float pillW = vts.x + pillPad * 2.0f + 22.0f;
-            float pX = bb.Max.x - pillW - pad;
-            float pY = cy - pillH * 0.5f;
-            dl->AddRectFilled(ImVec2(pX, pY), ImVec2(pX + pillW, pY + pillH),
-                              IM_COL32(242, 242, 247, 255), 8.0f);
-            dl->AddRect(ImVec2(pX, pY), ImVec2(pX + pillW, pY + pillH),
-                        sep, 8.0f, 0, 1.0f);
-            dl->AddText(ImVec2(pX + pillPad, cy - ImGui::GetFontSize() * 0.5f), textC, value);
-            // chevron ▼
-            float chCX = pX + pillW - 14.0f;
-            dl->AddTriangleFilled(ImVec2(chCX - 5.0f, cy - 3.0f),
-                                  ImVec2(chCX + 5.0f, cy - 3.0f),
-                                  ImVec2(chCX,        cy + 4.0f), orange);
+            float dW = aw * dropFrac - pad * 2.0f;
+            float dX0 = pos.x + pad, dY0 = pos.y + 5.0f;
+            float dX1 = dX0 + dW,    dY1 = pos.y + rowH - 5.0f;
+            ImDrawList* dl = cw->DrawList;
+            dl->AddRectFilled(ImVec2(dX0, dY0), ImVec2(dX1, dY1), bg,     4.0f);
+            dl->AddRect      (ImVec2(dX0, dY0), ImVec2(dX1, dY1), border, 4.0f, 0, 1.0f);
+            dl->AddText(ImVec2(dX0 + 7.0f, cy - ImGui::GetFontSize() * 0.5f), textC, value);
+            // ▼
+            float arX = dX1 - 13.0f;
+            dl->AddTriangleFilled(ImVec2(arX-5.0f, cy-3.0f),
+                                  ImVec2(arX+5.0f, cy-3.0f),
+                                  ImVec2(arX,       cy+4.0f), red);
+            // suffix label right of dropdown
+            if (suffix && suffix[0])
+                dl->AddText(ImVec2(dX1 + 8.0f, cy - ImGui::GetFontSize() * 0.5f), textC, suffix);
+        }
+    };
+
+    // ── Slider helper ────────────────────────────────────────────────────────
+    struct LXSlider {
+        static void Draw(const char* valueLabel, float* v, float vmin, float vmax,
+                         float rowH, float pad,
+                         ImU32 fill, ImU32 track, ImU32 textC) {
+            ImGuiWindow* cw = ImGui::GetCurrentWindow();
+            if (cw->SkipItems) return;
+            ImGuiContext& g = *GImGui;
+            const ImGuiID id = cw->GetID(valueLabel);
+            ImVec2 pos = cw->DC.CursorPos;
+            float  aw  = ImGui::GetContentRegionAvail().x;
+            ImRect bb(pos, ImVec2(pos.x + aw, pos.y + rowH));
+            ImGui::ItemSize(ImVec2(aw, rowH), 0.0f);
+            if (!ImGui::ItemAdd(bb, id)) return;
+            float cy  = (bb.Min.y + bb.Max.y) * 0.5f;
+            const float KR  = 10.0f, TH2 = 4.0f;
+            const float tX0 = pos.x + pad + KR;
+            const float tX1 = pos.x + aw  - pad - 90.0f;
+            bool hov, hld; ImGui::ButtonBehavior(bb, id, &hov, &hld);
+            float t = (*v - vmin) / (vmax - vmin);
+            t = t < 0.0f ? 0.0f : (t > 1.0f ? 1.0f : t);
+            if (hld) {
+                float nt = (g.IO.MousePos.x - tX0) / (tX1 - tX0);
+                nt = nt < 0.0f ? 0.0f : (nt > 1.0f ? 1.0f : nt);
+                *v = vmin + nt * (vmax - vmin); t = nt;
+                ImGui::MarkItemEdited(id);
+            }
+            ImDrawList* dl = cw->DrawList;
+            dl->AddRectFilled(ImVec2(tX0, cy-TH2*0.5f), ImVec2(tX1, cy+TH2*0.5f), track, TH2);
+            float kX = tX0 + (tX1 - tX0) * t;
+            dl->AddRectFilled(ImVec2(tX0, cy-TH2*0.5f), ImVec2(kX, cy+TH2*0.5f), fill, TH2);
+            dl->AddCircleFilled(ImVec2(kX, cy), KR + 1.0f, IM_COL32(0,0,0,40), 20);
+            dl->AddCircleFilled(ImVec2(kX, cy), KR,        fill, 20);
+            // value "[x.x]" + label
+            char vbuf[24]; snprintf(vbuf, sizeof(vbuf), "[%.1f]", *v);
+            ImVec2 vts = ImGui::CalcTextSize(vbuf);
+            dl->AddText(ImVec2(tX1 + 6.0f, cy - vts.y * 0.5f), textC, vbuf);
+            dl->AddText(ImVec2(tX1 + 6.0f + vts.x + 5.0f, cy - ImGui::GetFontSize() * 0.5f),
+                        textC, valueLabel);
+        }
+    };
+
+    // ── Button helper (inline) ───────────────────────────────────────────────
+    struct LXBtn {
+        static bool Draw(ImDrawList* dl2, const char* lbl,
+                         float x, float y, float w, float h,
+                         ImU32 bg, ImU32 textC) {
+            ImGuiWindow* cw = ImGui::GetCurrentWindow();
+            const ImGuiID id = cw->GetID(lbl);
+            ImRect bb(ImVec2(x, y), ImVec2(x+w, y+h));
+            ImGui::ItemSize(ImVec2(0,0), 0.0f);
+            if (!ImGui::ItemAdd(bb, id)) return false;
+            bool hov, hld;
+            bool pressed = ImGui::ButtonBehavior(bb, id, &hov, &hld);
+            dl2->AddRectFilled(bb.Min, bb.Max, (hov||hld) ? IM_COL32(220,40,40,255) : bg, 6.0f);
+            ImVec2 ts = ImGui::CalcTextSize(lbl);
+            dl2->AddText(ImVec2(x+(w-ts.x)*0.5f, y+(h-ts.y)*0.5f), textC, lbl);
+            return pressed;
+        }
+    };
+
+// Convenience macros
+#define LX_C2(l1,v1,l2,v2) \
+    LXChk::Row2(l1,v1,l2,v2, ROW_H,PAD,CHK_S, LX_CHK_BG,LX_CHK_OUT,LX_CHK_FILL,LX_TEXT,LX_ROW_SEP)
+#define LX_C1(l,v) \
+    LXChk::Row1(l,v, ROW_H,PAD,CHK_S, LX_CHK_BG,LX_CHK_OUT,LX_CHK_FILL,LX_TEXT,LX_ROW_SEP)
+#define LX_DD(val,sfx,frac) \
+    LXDrop::Draw(val,sfx, ROW_H,PAD,frac, LX_DD_BG,LX_DD_BORDER,LX_RED,LX_TEXT)
+#define LX_SLD(lbl,ptr,mn,mx) \
+    LXSlider::Draw(lbl,ptr,mn,mx, ROW_H+4.0f,PAD, LX_SLD_FILL,LX_SLD_TRACK,LX_TEXT)
+
+    switch (ZX_Tab) {
+
+        // ── TAB 0: AIM ───────────────────────────────────────────────────────
+        case 0: {
+            LX_C2("Activate Aimbot", &Vars.Aimbot,
+                  "Visible FOV",     &Vars.ShowFovCircle);
+            LX_C2("Aim Silent",      &ZX_AimKill,
+                  "Skip Knocked",    &Vars.IgnoreKnocked);
+            {
+                const char* aimModes[] = {"Automatico", "Distance", "FOV"};
+                LX_DD(aimModes[Vars.AimWhen < 3 ? Vars.AimWhen : 0], "\xE2\x97\x86", 0.65f);
+            }
+            LX_DD(Vars.aimHitboxes[Vars.AimHitbox < 3 ? Vars.AimHitbox : 0], "+", 0.65f);
+            LX_SLD("Regular Fov", &Vars.AimFov, 0.0f, 500.0f);
+            break;
         }
 
-        // Warning text block with mixed normal+orange text (two lines)
-        static void WarnBlock(const char* l1a, const char* l1b, const char* l1c,
-                              const char* l2a, const char* l2b, const char* l2c,
-                              ImU32 textC, ImU32 orange, float pad) {
+        // ── TAB 1: ESP ───────────────────────────────────────────────────────
+        case 1: {
+            LX_C2("Activate ESP", &Vars.Enable,
+                  "Stream Mode",  &ZX_StreamMode);
+            LX_C1("ESP Line",     &Vars.lines);
+            LX_C1("ESP Nickname", &Vars.Name);
+            LX_C1("ESP Box",      &Vars.Box);
+            LX_C1("ESP Skeleton", &Vars.skeleton);
+            LX_C1("ESP Health",   &Vars.Health);
+            break;
+        }
+
+        // ── TAB 2: MSLC ──────────────────────────────────────────────────────
+        case 2: {
+            LX_C2("Ghost Hack",     &ZX_GhostMode,
+                  "Teleport Enemy", &ZX_Telekill);
+            LX_C2("Undergd Up",     &ZX_FlyAlt,
+                  "Wall Hack",      &ZX_WallShoot);
+            // Speed / No Recoli buttons row
+            {
+                ImGuiWindow* cw2 = ImGui::GetCurrentWindow();
+                ImVec2 cp  = cw2->DC.CursorPos;
+                float  aw2 = ImGui::GetContentRegionAvail().x;
+                const float bW = 108.0f, gap = 8.0f;
+                float bY = cp.y + 5.0f;
+                ImGui::ItemSize(ImVec2(aw2, BTN_H + 10.0f), 0.0f);
+                ImDrawList* dl2 = cw2->DrawList;
+                // Speed (Beta) + (?)
+                LXBtn::Draw(dl2, "Speed (Beta)", cp.x + PAD, bY, bW, BTN_H, LX_BTN_BG, LX_TEXT);
+                dl2->AddText(ImVec2(cp.x + PAD + bW + 4.0f,
+                                    bY + (BTN_H - ImGui::GetFontSize()) * 0.5f),
+                             LX_TEXT_DIM, "(?)");
+                // No Recoli + (?)
+                float nx = cp.x + PAD + bW + 30.0f;
+                LXBtn::Draw(dl2, "No Recoli", nx, bY, bW, BTN_H, LX_BTN_BG, LX_TEXT);
+                dl2->AddText(ImVec2(nx + bW + 4.0f,
+                                    bY + (BTN_H - ImGui::GetFontSize()) * 0.5f),
+                             LX_TEXT_DIM, "(?)");
+            }
+            // Color dropdown (full-width)
+            LX_DD("Cor Red", "CEr De MOinel", 0.55f);
+            // Fix Login / Reset Guest buttons
+            {
+                ImGuiWindow* cw2 = ImGui::GetCurrentWindow();
+                ImVec2 cp  = cw2->DC.CursorPos;
+                float  aw2 = ImGui::GetContentRegionAvail().x;
+                const float bW = 100.0f, gap = 8.0f;
+                float bY = cp.y + 5.0f;
+                ImGui::ItemSize(ImVec2(aw2, BTN_H + 10.0f), 0.0f);
+                ImDrawList* dl2 = cw2->DrawList;
+                LXBtn::Draw(dl2, "Fix Login",   cp.x + PAD, bY, bW, BTN_H, LX_BTN_BG, LX_TEXT);
+                LXBtn::Draw(dl2, "Reset Guest", cp.x + PAD + bW + gap, bY, bW, BTN_H, LX_BTN_BG, LX_TEXT);
+            }
+            break;
+        }
+
+        // ── TAB 3: INFO ──────────────────────────────────────────────────────
+        case 3: {
+            // Info text block
+            {
+                ImGuiWindow* cw2 = ImGui::GetCurrentWindow();
+                ImVec2 cp  = cw2->DC.CursorPos;
+                float  aw2 = ImGui::GetContentRegionAvail().x;
+                float  lh  = ImGui::GetFontSize() + 5.0f;
+                ImGui::ItemSize(ImVec2(aw2, lh * 2.0f + 18.0f), 0.0f);
+                ImDrawList* dl2 = cw2->DrawList;
+                dl2->AddText(ImVec2(cp.x + PAD, cp.y + 10.0f),
+                             LX_TEXT_DIM, "- PAINEL DE  @Lost Xiter IOS FFMAX");
+                dl2->AddText(ImVec2(cp.x + PAD, cp.y + 10.0f + lh),
+                             LX_TEXT_DIM, "AND THIS VERSION FREE FOR ALL COUSTMERS");
+            }
+            // Social buttons
+            {
+                ImGuiWindow* cw2 = ImGui::GetCurrentWindow();
+                ImVec2 cp  = cw2->DC.CursorPos;
+                float  aw2 = ImGui::GetContentRegionAvail().x;
+                float  bW  = (aw2 - PAD * 2.0f - 16.0f) / 3.0f;
+                const float bHI = BTN_H + 4.0f;
+                float bY = cp.y + 6.0f;
+                ImGui::ItemSize(ImVec2(aw2, bHI + 12.0f), 0.0f);
+                ImDrawList* dl2 = cw2->DrawList;
+                LXBtn::Draw(dl2, "Websites", cp.x + PAD,                    bY, bW, bHI, LX_BTN_BG, LX_TEXT);
+                LXBtn::Draw(dl2, "Telegram", cp.x + PAD + (bW + 8.0f),     bY, bW, bHI, LX_BTN_BG, LX_TEXT);
+                LXBtn::Draw(dl2, "Discord",  cp.x + PAD + (bW + 8.0f)*2.0f,bY, bW, bHI, LX_BTN_BG, LX_TEXT);
+            }
+            break;
+        }
+    }
+
+#undef LX_C2
+#undef LX_C1
+#undef LX_DD
+#undef LX_SLD
+
+    ImGui::EndChild();
+    ImGui::PopStyleColor();  // ChildBg
+
+    ImGui::End();
+    ImGui::PopStyleVar(5);
+    ImGui::PopStyleColor(4);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// FLUCK V2 THEME — exact match to reference screenshots
+// ══════════════════════════════════════════════════════════════════════════════
+static void RenderMenu() {
+    if (!MenDeal) return;
+
+    // ── Colors ────────────────────────────────────────────────────────────────
+    const ImU32 FL_WIN_BG    = IM_COL32(245, 245, 245, 255);
+    const ImU32 FL_TAB_OFF   = IM_COL32(215, 215, 215, 255);
+    const ImU32 FL_TAB_ON    = IM_COL32( 22,  22,  22, 255);
+    const ImU32 FL_ICON_OFF  = IM_COL32( 55,  55,  55, 255);
+    const ImU32 FL_ICON_ON   = IM_COL32(255, 255, 255, 255);
+    const ImU32 FL_CPY       = IM_COL32(150, 150, 150, 255);
+    const ImU32 FL_HDR_PILL  = IM_COL32(205, 205, 205, 255);
+    const ImU32 FL_HDR_BTN   = IM_COL32(210, 210, 210, 255);
+    const ImU32 FL_HDR_TEXT  = IM_COL32( 22,  22,  22, 255);
+    const ImU32 FL_SEP       = IM_COL32(200, 200, 200, 255);
+    const ImU32 FL_ROW_BG    = IM_COL32(175, 175, 175, 255);
+    const ImU32 FL_ROW_HOV   = IM_COL32(160, 160, 160, 255);
+    const ImU32 FL_ROW_TEXT  = IM_COL32( 22,  22,  22, 255);
+    const ImU32 FL_ROW_SUB   = IM_COL32(100, 100, 100, 255);
+    const ImU32 FL_SEC       = IM_COL32(140, 140, 140, 255);
+    const ImU32 FL_TGL_ON    = IM_COL32( 22,  22,  22, 255);
+    const ImU32 FL_TGL_OFF   = IM_COL32(230, 230, 230, 255);
+    const ImU32 FL_TGL_CHK   = IM_COL32(255, 255, 255, 255);
+    const ImU32 FL_SLD_TRACK = IM_COL32( 48,  48,  48, 255);
+    const ImU32 FL_SEG_BG    = IM_COL32(150, 150, 150, 255);
+    const ImU32 FL_SEG_ACT   = IM_COL32( 22,  22,  22, 255);
+    const ImU32 FL_WARN      = IM_COL32(255, 165,   0, 255);
+    const ImU32 FL_CARD_BG   = IM_COL32(255, 255, 255, 255);
+    const ImU32 FL_DEL_BG    = IM_COL32(255, 188, 188, 255);
+    const ImU32 FL_DEL_TEXT  = IM_COL32(200,  38,  38, 255);
+    const ImU32 FL_DL_BG     = IM_COL32(195, 195, 195, 255);
+
+    // ── Layout ────────────────────────────────────────────────────────────────
+    const float WIN_W   = 420.0f;
+    const float WIN_H   = 462.0f;
+    const float WIN_RAD = 20.0f;
+    const float SB_W    = 66.0f;
+    const float CPY_H   = 22.0f;
+    const float HDR_H   = 38.0f;
+    const float ROW_RAD = 13.0f;
+    const float ROW_H   = 50.0f;
+    const float ROW_GAP =  7.0f;
+    const float PAD     = 10.0f;
+    const float TGL_R   = 14.0f;
+
+    ImGui::PushStyleColor(ImGuiCol_WindowBg,      ImVec4(245.0f/255, 245.0f/255, 245.0f/255, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_Border,        ImVec4(0.75f, 0.75f, 0.75f, 0.25f));
+    ImGui::PushStyleColor(ImGuiCol_ScrollbarBg,   ImVec4(0.90f, 0.90f, 0.90f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ScrollbarGrab, ImVec4(0.60f, 0.60f, 0.60f, 1.0f));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding,   WIN_RAD);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.5f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,    ImVec2(0, 0));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing,      ImVec2(0, 0));
+    ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarSize,    4.0f);
+
+    ImGui::SetNextWindowSize(ImVec2(WIN_W, WIN_H), ImGuiCond_Always);
+    ImGui::Begin("##FLMenu", nullptr,
+        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse |
+        ImGuiWindowFlags_NoBringToFrontOnFocus);
+    ImGui::SetWindowFontScale(ZX_FONT_SIZE / 17.0f);
+
+    ImDrawList* dl = ImGui::GetWindowDrawList();
+    ImVec2 wp = ImGui::GetWindowPos();
+    ImVec2 ws = ImGui::GetWindowSize();
+
+    // Main background + drop shadow
+    for (int i = 0; i < 4; ++i) {
+        float e = (float)(i + 1) * 3.0f;
+        dl->AddRect(ImVec2(wp.x - e, wp.y + 2.0f),
+                    ImVec2(wp.x + ws.x + e, wp.y + ws.y + e),
+                    IM_COL32(0, 0, 0, 5 - i), WIN_RAD + e, 0, 1.0f);
+    }
+    dl->AddRectFilled(wp, ImVec2(wp.x + ws.x, wp.y + ws.y), FL_WIN_BG, WIN_RAD);
+
+    // ── SIDEBAR ───────────────────────────────────────────────────────────────
+    const char* kTabNames[] = { "ESP", "AIMBOT", "MSL", "MISC", "UI" };
+    const int   kTabCount   = 5;
+    const float BTN_R       = 22.0f;
+    float sbCX = wp.x + SB_W * 0.5f;
+    // Center buttons vertically
+    float totalH = (float)kTabCount * BTN_R * 2.0f + (float)(kTabCount - 1) * 12.0f;
+    float sbY0   = wp.y + (ws.y - totalH) * 0.5f;
+
+    for (int i = 0; i < kTabCount; ++i) {
+        float tCY = sbY0 + (float)i * (BTN_R * 2.0f + 12.0f) + BTN_R;
+        bool  act = (ZX_Tab == i);
+        // Shadow for active
+        if (act) dl->AddCircleFilled(ImVec2(sbCX, tCY + 2.5f), BTN_R + 1.0f,
+                                     IM_COL32(0,0,0,28), 28);
+        dl->AddCircleFilled(ImVec2(sbCX, tCY), BTN_R, act ? FL_TAB_ON : FL_TAB_OFF, 28);
+        ImU32 ic = act ? FL_ICON_ON : FL_ICON_OFF;
+        const float IS = 18.0f;
+        switch (i) {
+            case 0: ZX_DrawTopTabIcon(dl, 1, ImVec2(sbCX, tCY), IS, ic); break; // eye
+            case 1: ZX_DrawTopTabIcon(dl, 0, ImVec2(sbCX, tCY), IS, ic); break; // crosshair
+            case 2: { // gamepad
+                float gW = IS*0.9f, gH = IS*0.55f;
+                float gX = sbCX-gW*0.5f, gY = tCY-gH*0.5f;
+                dl->AddRectFilled(ImVec2(gX,gY),ImVec2(gX+gW,gY+gH),ic,gH*0.4f);
+                dl->AddCircleFilled(ImVec2(gX+gW*0.25f, gY-2.5f), 4.0f, ic, 12);
+                dl->AddCircleFilled(ImVec2(gX+gW*0.75f, gY-2.5f), 4.0f, ic, 12);
+                break;
+            }
+            case 3: { // scissors ×
+                float xs = IS*0.32f;
+                dl->AddLine(ImVec2(sbCX-xs,tCY-xs),ImVec2(sbCX+xs,tCY+xs),ic,2.3f);
+                dl->AddLine(ImVec2(sbCX+xs,tCY-xs),ImVec2(sbCX-xs,tCY+xs),ic,2.3f);
+                break;
+            }
+            case 4: { // grid 2×2
+                float gs = IS*0.19f, gg = 3.2f;
+                float gX0 = sbCX-gs-gg*0.5f, gY0 = tCY-gs-gg*0.5f;
+                for (int r = 0; r < 2; ++r)
+                    for (int c = 0; c < 2; ++c)
+                        dl->AddRectFilled(
+                            ImVec2(gX0+c*(gs*2+gg), gY0+r*(gs*2+gg)),
+                            ImVec2(gX0+c*(gs*2+gg)+gs*2, gY0+r*(gs*2+gg)+gs*2),
+                            ic, 2.5f);
+                break;
+            }
+        }
+        ImGui::SetCursorScreenPos(ImVec2(sbCX-BTN_R, tCY-BTN_R));
+        char bid[16]; snprintf(bid, sizeof(bid), "##fltab%d", i);
+        if (ImGui::InvisibleButton(bid, ImVec2(BTN_R*2.0f, BTN_R*2.0f)))
+            ZX_Tab = i;
+    }
+
+    // Sidebar separator
+    dl->AddLine(ImVec2(wp.x+SB_W, wp.y+18.0f),
+                ImVec2(wp.x+SB_W, wp.y+ws.y-18.0f), FL_SEP, 0.8f);
+
+    // ── HEADER (right panel) ──────────────────────────────────────────────────
+    float rcX = wp.x + SB_W + 2.0f;
+    float rcW = ws.x - SB_W - 2.0f;
+
+    // © copyright
+    {
+        const char* cpy = "\xC2\xA9 Fluck. All rights reserved.";
+        ImVec2 cts = ImGui::CalcTextSize(cpy);
+        dl->AddText(ImVec2(rcX + (rcW - cts.x) * 0.5f, wp.y + 6.0f), FL_CPY, cpy);
+    }
+
+    float hdrY  = wp.y + CPY_H + 5.0f;
+    float hdrCY = hdrY + HDR_H * 0.5f;
+
+    // Header pill (tab icon + name)
+    const float BTN3_R = HDR_H * 0.5f;
+    float pillX = rcX + PAD;
+    float pillW = rcW - PAD * 2.0f - 3.0f * (BTN3_R * 2.0f + 6.0f) - 4.0f;
+    dl->AddRectFilled(ImVec2(pillX, hdrY), ImVec2(pillX+pillW, hdrY+HDR_H),
+                      FL_HDR_PILL, HDR_H * 0.5f);
+    // icon inside pill
+    {
+        float icX = pillX + BTN3_R, icY = hdrCY;
+        switch (ZX_Tab) {
+            case 0: ZX_DrawTopTabIcon(dl, 1, ImVec2(icX,icY), 15.0f, FL_HDR_TEXT); break;
+            case 1: ZX_DrawTopTabIcon(dl, 0, ImVec2(icX,icY), 15.0f, FL_HDR_TEXT); break;
+            case 2: { float gW=14.0f,gH=8.0f,gX=icX-gW*0.5f,gY=icY-gH*0.5f;
+                      dl->AddRectFilled(ImVec2(gX,gY),ImVec2(gX+gW,gY+gH),FL_HDR_TEXT,gH*0.4f);
+                      dl->AddCircleFilled(ImVec2(gX+gW*0.25f,gY-2.0f),3.0f,FL_HDR_TEXT,10);
+                      dl->AddCircleFilled(ImVec2(gX+gW*0.75f,gY-2.0f),3.0f,FL_HDR_TEXT,10);
+                      break; }
+            case 3: { float xs=6.0f;
+                      dl->AddLine(ImVec2(icX-xs,icY-xs),ImVec2(icX+xs,icY+xs),FL_HDR_TEXT,2.0f);
+                      dl->AddLine(ImVec2(icX+xs,icY-xs),ImVec2(icX-xs,icY+xs),FL_HDR_TEXT,2.0f);
+                      break; }
+            case 4: { float gs=3.5f,gg=2.5f,gX0=icX-gs-gg*0.5f,gY0=icY-gs-gg*0.5f;
+                      for (int r=0;r<2;++r) for (int c=0;c<2;++c)
+                          dl->AddRectFilled(ImVec2(gX0+c*(gs*2+gg),gY0+r*(gs*2+gg)),
+                                            ImVec2(gX0+c*(gs*2+gg)+gs*2,gY0+r*(gs*2+gg)+gs*2),
+                                            FL_HDR_TEXT,1.5f); break; }
+        }
+    }
+    // tab name in pill (truncated if needed)
+    {
+        const char* nm = kTabNames[ZX_Tab < kTabCount ? ZX_Tab : 0];
+        char buf[20]; snprintf(buf, sizeof(buf), "%s", nm);
+        ImVec2 ts = ImGui::CalcTextSize(buf);
+        float maxW = pillW - BTN3_R*2.0f - 10.0f;
+        if (ts.x > maxW) snprintf(buf, sizeof(buf), "%.5s...", nm);
+        dl->AddText(ImVec2(pillX + BTN3_R*2.0f, hdrCY - ImGui::GetFontSize()*0.5f),
+                    FL_HDR_TEXT, buf);
+    }
+
+    // 3 header icon buttons: Save, Sun, ×
+    float b3X = rcX + rcW - PAD;
+    // × close
+    {
+        float cx = b3X - BTN3_R;
+        dl->AddCircleFilled(ImVec2(cx, hdrCY), BTN3_R, FL_HDR_BTN, 24);
+        float xs = 5.5f;
+        dl->AddLine(ImVec2(cx-xs,hdrCY-xs),ImVec2(cx+xs,hdrCY+xs),FL_HDR_TEXT,1.8f);
+        dl->AddLine(ImVec2(cx+xs,hdrCY-xs),ImVec2(cx-xs,hdrCY+xs),FL_HDR_TEXT,1.8f);
+        ImGui::SetCursorScreenPos(ImVec2(cx-BTN3_R, hdrCY-BTN3_R));
+        if (ImGui::InvisibleButton("##flclose", ImVec2(BTN3_R*2,BTN3_R*2))) MenDeal = false;
+        b3X -= BTN3_R*2.0f + 6.0f;
+    }
+    // sun
+    {
+        float cx = b3X - BTN3_R;
+        dl->AddCircleFilled(ImVec2(cx, hdrCY), BTN3_R, FL_HDR_BTN, 24);
+        float sr = 5.0f;
+        dl->AddCircle(ImVec2(cx,hdrCY), sr, FL_HDR_TEXT, 14, 1.3f);
+        for (int j = 0; j < 8; ++j) {
+            float a = (float)j / 8.0f * 2.0f * IM_PI;
+            dl->AddLine(ImVec2(cx+cosf(a)*(sr+2.5f),hdrCY+sinf(a)*(sr+2.5f)),
+                        ImVec2(cx+cosf(a)*(sr+5.0f),hdrCY+sinf(a)*(sr+5.0f)),
+                        FL_HDR_TEXT, 1.2f);
+        }
+        ImGui::SetCursorScreenPos(ImVec2(cx-BTN3_R, hdrCY-BTN3_R));
+        if (ImGui::InvisibleButton("##flsun", ImVec2(BTN3_R*2,BTN3_R*2)))
+            ZX_StreamMode = !ZX_StreamMode;
+        b3X -= BTN3_R*2.0f + 6.0f;
+    }
+    // save/export
+    {
+        float cx = b3X - BTN3_R;
+        dl->AddCircleFilled(ImVec2(cx, hdrCY), BTN3_R, FL_HDR_BTN, 24);
+        float sW = 9.0f, sH = 7.0f;
+        float sX0 = cx-sW*0.5f, sY0 = hdrCY-sH*0.5f;
+        dl->AddRect(ImVec2(sX0, sY0+sH*0.45f), ImVec2(sX0+sW, sY0+sH),
+                    FL_HDR_TEXT, 2.0f, 0, 1.5f);
+        dl->AddLine(ImVec2(cx, sY0), ImVec2(cx, sY0+sH*0.5f), FL_HDR_TEXT, 1.5f);
+        dl->AddTriangleFilled(ImVec2(cx-3.5f,sY0+4.0f),
+                              ImVec2(cx+3.5f,sY0+4.0f),
+                              ImVec2(cx,     sY0-1.0f), FL_HDR_TEXT);
+        ImGui::SetCursorScreenPos(ImVec2(cx-BTN3_R, hdrCY-BTN3_R));
+        ImGui::InvisibleButton("##flsave", ImVec2(BTN3_R*2,BTN3_R*2));
+    }
+
+    // Header bottom separator
+    float hdrSepY = hdrY + HDR_H + 6.0f;
+    dl->AddLine(ImVec2(rcX+PAD, hdrSepY), ImVec2(wp.x+ws.x-PAD, hdrSepY), FL_SEP, 0.8f);
+
+    // ── SCROLLABLE CONTENT ────────────────────────────────────────────────────
+    float contentY = hdrSepY + 5.0f;
+    float contentH = ws.y - (contentY - wp.y) - 6.0f;
+    ImGui::SetCursorScreenPos(ImVec2(rcX, contentY));
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0,0,0,0));
+    ImGui::BeginChild("##fl_content", ImVec2(rcW, contentH),
+                      false, ImGuiWindowFlags_AlwaysVerticalScrollbar);
+    ImGui::SetWindowFontScale(ZX_FONT_SIZE / 17.0f);
+
+    // ── Toggle row helper ─────────────────────────────────────────────────────
+    struct FLRow {
+        static void Toggle(const char* label, const char* sub, bool warn,
+                           bool* v, float rowH, float rowR, float pad,
+                           float tglR, float gap,
+                           ImU32 rowBg, ImU32 rowHov, ImU32 textC, ImU32 subC,
+                           ImU32 warnC, ImU32 tOn, ImU32 tOff, ImU32 tChk) {
             ImGuiWindow* cw = ImGui::GetCurrentWindow();
             if (cw->SkipItems) return;
             ImVec2 pos = cw->DC.CursorPos;
             float  aw  = ImGui::GetContentRegionAvail().x;
             float  fs  = ImGui::GetFontSize();
-            float  lh  = fs + 5.0f;
-            float  totalH = lh * 2.0f + 22.0f;
-            ImGui::ItemSize(ImVec2(aw, totalH), 0.0f);
+            float  subH = (sub && sub[0]) ? (fs + 4.0f) : 0.0f;
+            float  warnH= warn           ? (fs + 2.0f) : 0.0f;
+            float  h    = rowH + subH + warnH;
+            const ImGuiID id = cw->GetID(label);
+            ImRect bb(pos, ImVec2(pos.x + aw, pos.y + h));
+            ImGui::ItemSize(ImVec2(aw, h + gap), 0.0f);
+            if (!ImGui::ItemAdd(bb, id)) return;
+            bool hov, hld;
+            bool pressed = ImGui::ButtonBehavior(bb, id, &hov, &hld);
+            if (pressed) *v = !*v;
             ImDrawList* dl = cw->DrawList;
-            float y1 = pos.y + 11.0f, y2 = y1 + lh;
-            // Line 1
-            float x = pos.x + pad;
-            ImVec2 s1 = ImGui::CalcTextSize(l1a);
-            dl->AddText(ImVec2(x, y1), textC, l1a);   x += s1.x;
-            ImVec2 s1o = ImGui::CalcTextSize(l1b);
-            dl->AddText(ImVec2(x, y1), orange, l1b);  x += s1o.x;
-            dl->AddText(ImVec2(x, y1), textC, l1c);
-            // Line 2
-            x = pos.x + pad;
-            ImVec2 s2 = ImGui::CalcTextSize(l2a);
-            dl->AddText(ImVec2(x, y2), textC, l2a);   x += s2.x;
-            ImVec2 s2o = ImGui::CalcTextSize(l2b);
-            dl->AddText(ImVec2(x, y2), orange, l2b);  x += s2o.x;
-            dl->AddText(ImVec2(x, y2), textC, l2c);
+            dl->AddRectFilled(bb.Min, ImVec2(bb.Max.x, bb.Min.y + h),
+                              (hov||hld) ? rowHov : rowBg, rowR);
+            float cy = pos.y + rowH * 0.5f;
+            // label
+            dl->AddText(ImVec2(pos.x + pad, cy - fs * 0.5f), textC, label);
+            // subtitle
+            if (sub && sub[0])
+                dl->AddText(ImVec2(pos.x + pad, pos.y + rowH + 1.0f), subC, sub);
+            // warning
+            if (warn)
+                dl->AddText(ImVec2(pos.x + pad, pos.y + rowH + subH + 1.0f), warnC,
+                            "Warning: This feature might flag your account");
+            // toggle circle
+            float tcX = bb.Max.x - pad - tglR;
+            dl->AddCircleFilled(ImVec2(tcX, cy + 1.5f), tglR + 1.0f, IM_COL32(0,0,0,22), 24);
+            dl->AddCircleFilled(ImVec2(tcX, cy), tglR, *v ? tOn : tOff, 24);
+            if (*v) {
+                float ck = tglR * 0.52f;
+                dl->AddLine(ImVec2(tcX-ck*0.7f, cy-ck*0.05f),
+                            ImVec2(tcX-ck*0.1f, cy+ck*0.55f), tChk, 2.0f);
+                dl->AddLine(ImVec2(tcX-ck*0.1f, cy+ck*0.55f),
+                            ImVec2(tcX+ck*0.75f,cy-ck*0.55f), tChk, 2.0f);
+            }
+        }
+
+        static void SecLabel(const char* text, float pad, float gap, ImU32 col) {
+            ImGuiWindow* cw = ImGui::GetCurrentWindow();
+            if (cw->SkipItems) return;
+            ImVec2 pos = cw->DC.CursorPos;
+            float  aw  = ImGui::GetContentRegionAvail().x;
+            float  h   = ImGui::GetFontSize() + 8.0f;
+            ImGui::ItemSize(ImVec2(aw, h + gap * 0.4f), 0.0f);
+            cw->DrawList->AddText(ImVec2(pos.x + pad, pos.y + 4.0f), col, text);
         }
     };
 
-    // ── Helper: white slider row ─────────────────────────────────────────────
-    struct WSlider {
+    // ── Slider helper ─────────────────────────────────────────────────────────
+    struct FLSlider {
         static void Draw(const char* label, float* v, float vmin, float vmax,
-                         const char* unit, float rowH, float pad,
-                         ImU32 orange, ImU32 textC, ImU32 dimC, ImU32 sep) {
+                         bool integer, float rowH, float rowR, float pad, float gap,
+                         ImU32 rowBg, ImU32 textC, ImU32 track) {
             ImGuiWindow* cw = ImGui::GetCurrentWindow();
             if (cw->SkipItems) return;
             ImGuiContext& g = *GImGui;
             const ImGuiID id = cw->GetID(label);
             ImVec2 pos = cw->DC.CursorPos;
             float  aw  = ImGui::GetContentRegionAvail().x;
-            const float totalH = rowH + 10.0f;
-            ImRect bb(pos, ImVec2(pos.x + aw, pos.y + totalH));
-            ImGui::ItemSize(ImVec2(aw, totalH), 0.0f);
+            float  h   = rowH + 22.0f;
+            ImRect bb(pos, ImVec2(pos.x + aw, pos.y + h));
+            ImGui::ItemSize(ImVec2(aw, h + gap), 0.0f);
             if (!ImGui::ItemAdd(bb, id)) return;
             ImDrawList* dl = cw->DrawList;
-            dl->AddRectFilled(bb.Min, bb.Max, IM_COL32(255,255,255,255));
-            // Label top-left
-            dl->AddText(ImVec2(pos.x + pad, pos.y + 10.0f), textC, label);
-            // Value top-right orange
-            char vbuf[32];
-            if (unit && unit[0]) snprintf(vbuf, sizeof(vbuf), "%.0f%s", *v, unit);
-            else                 snprintf(vbuf, sizeof(vbuf), "%.2f", *v);
-            ImVec2 vts = ImGui::CalcTextSize(vbuf);
-            dl->AddText(ImVec2(pos.x + aw - pad - vts.x, pos.y + 10.0f), orange, vbuf);
-            // Track
-            const float TH2 = 4.0f, KR = 11.0f;
-            const float tX0 = pos.x + pad;
-            const float tX1 = pos.x + aw - pad;
-            const float tY  = pos.y + totalH - 16.0f;
+            dl->AddRectFilled(bb.Min, ImVec2(bb.Max.x, bb.Min.y + h), rowBg, rowR);
             float t = (*v - vmin) / (vmax - vmin);
             t = t < 0.0f ? 0.0f : (t > 1.0f ? 1.0f : t);
-            ImRect trackBB(ImVec2(tX0 - KR, tY - KR), ImVec2(tX1 + KR, tY + KR));
-            bool hov, hld;
-            ImGui::ButtonBehavior(trackBB, id, &hov, &hld);
+            char vbuf[24];
+            if (integer) snprintf(vbuf, sizeof(vbuf), "%.0f", *v);
+            else         snprintf(vbuf, sizeof(vbuf), "%.1f", *v);
+            ImVec2 vts = ImGui::CalcTextSize(vbuf);
+            float  fs  = ImGui::GetFontSize();
+            dl->AddText(ImVec2(pos.x + pad, pos.y + 8.0f), textC, label);
+            dl->AddText(ImVec2(pos.x + aw - pad - vts.x, pos.y + 8.0f), textC, vbuf);
+            const float KR = 11.0f, TH2 = 5.0f;
+            const float tX0 = pos.x + pad, tX1 = pos.x + aw - pad;
+            const float tY  = pos.y + h - 14.0f;
+            bool hov, hld; ImGui::ButtonBehavior(bb, id, &hov, &hld);
             if (hld) {
                 float nt = (g.IO.MousePos.x - tX0) / (tX1 - tX0);
                 nt = nt < 0.0f ? 0.0f : (nt > 1.0f ? 1.0f : nt);
-                *v = vmin + nt * (vmax - vmin);
-                t  = nt;
+                *v = vmin + nt * (vmax - vmin); t = nt;
                 ImGui::MarkItemEdited(id);
             }
-            dl->AddRectFilled(ImVec2(tX0, tY - TH2 * 0.5f), ImVec2(tX1, tY + TH2 * 0.5f),
-                              IM_COL32(209,209,214,255), TH2);
-            dl->AddRectFilled(ImVec2(tX0, tY - TH2 * 0.5f),
-                              ImVec2(tX0 + (tX1 - tX0) * t, tY + TH2 * 0.5f), orange, TH2);
+            dl->AddRectFilled(ImVec2(tX0, tY-TH2*0.5f), ImVec2(tX1, tY+TH2*0.5f), track, TH2);
             float kX = tX0 + (tX1 - tX0) * t;
-            dl->AddCircleFilled(ImVec2(kX, tY), KR + 1.5f, IM_COL32(0,0,0,16), 28);
-            dl->AddCircleFilled(ImVec2(kX, tY), KR,        IM_COL32(255,255,255,255), 28);
-            dl->AddCircle      (ImVec2(kX, tY), KR,        orange, 28, 1.8f);
-            dl->AddLine(ImVec2(pos.x + pad, bb.Max.y - 1.0f),
-                        ImVec2(pos.x + aw, bb.Max.y - 1.0f), sep, 1.0f);
+            dl->AddCircleFilled(ImVec2(kX, tY+0.5f), KR+1.5f, IM_COL32(0,0,0,22), 24);
+            dl->AddCircleFilled(ImVec2(kX, tY),      KR,       track, 24);
         }
     };
 
-// ── Convenience macros ───────────────────────────────────────────────────────
-#define W_TOGGLE(lbl, ptr, last) \
-    WRow::Toggle(lbl, ptr, last, ROW_H, PAD, TW, TH, \
-                 W_TGL_ON, W_TGL_OFF, W_KNOB, W_TEXT, W_SEP, W_HOVER)
-#define W_DROPDOWN(lbl, val) \
-    WRow::Dropdown(lbl, val, ROW_H, PAD, W_TEXT, W_ORANGE, W_SEP, W_HOVER)
-#define W_SLIDER(lbl, ptr, mn, mx, unit) \
-    WSlider::Draw(lbl, ptr, mn, mx, unit, ROW_H, PAD, W_ORANGE, W_TEXT, W_TEXT_DIM, W_SEP)
+    // ── Segmented control helper ──────────────────────────────────────────────
+    struct FLSeg {
+        static void Draw(const char* const* opts, int cnt, int* sel,
+                         float rowH, float rowR, float pad, float gap,
+                         ImU32 segBg, ImU32 actBg, ImU32 actText, ImU32 inText) {
+            ImGuiWindow* cw = ImGui::GetCurrentWindow();
+            if (cw->SkipItems) return;
+            ImVec2 pos = cw->DC.CursorPos;
+            float  aw  = ImGui::GetContentRegionAvail().x;
+            float  h   = rowH;
+            ImGui::ItemSize(ImVec2(aw, h + gap), 0.0f);
+            ImDrawList* dl = cw->DrawList;
+            dl->AddRectFilled(pos, ImVec2(pos.x+aw, pos.y+h), segBg, rowR);
+            float optW = (aw - pad * 2.0f) / (float)cnt;
+            float fs   = ImGui::GetFontSize();
+            for (int i = 0; i < cnt; ++i) {
+                float oX = pos.x + pad + i * optW;
+                float oH = h - 6.0f, oY = pos.y + 3.0f;
+                bool  act = (*sel == i);
+                if (act)
+                    dl->AddRectFilled(ImVec2(oX+2.0f, oY), ImVec2(oX+optW-2.0f, oY+oH),
+                                      actBg, rowR - 3.0f);
+                ImVec2 ts = ImGui::CalcTextSize(opts[i]);
+                dl->AddText(ImVec2(oX+(optW-ts.x)*0.5f, oY+(oH-fs)*0.5f),
+                            act ? actText : inText, opts[i]);
+                const ImGuiID id = cw->GetID(opts[i]);
+                ImRect bb(ImVec2(oX, pos.y), ImVec2(oX+optW, pos.y+h));
+                if (ImGui::ItemAdd(bb, id)) {
+                    bool hov, hld;
+                    if (ImGui::ButtonBehavior(bb, id, &hov, &hld)) *sel = i;
+                }
+            }
+        }
+    };
 
-    // ── Per-tab content ──────────────────────────────────────────────────────
+    // ── Settings card helper ──────────────────────────────────────────────────
+    struct FLCard {
+        static void Draw(const char* title, const char* sub,
+                         const char* b1lbl, ImU32 b1bg, ImU32 b1tc,
+                         const char* b2lbl, ImU32 b2bg, ImU32 b2tc,
+                         float rowR, float pad, float gap,
+                         ImU32 cardBg, ImU32 textC, ImU32 subC) {
+            ImGuiWindow* cw = ImGui::GetCurrentWindow();
+            if (cw->SkipItems) return;
+            ImVec2 pos = cw->DC.CursorPos;
+            float  aw  = ImGui::GetContentRegionAvail().x;
+            float  fs  = ImGui::GetFontSize();
+            float  h   = fs * 2.5f + pad * 2.0f;
+            ImGui::ItemSize(ImVec2(aw, h + gap), 0.0f);
+            ImDrawList* dl = cw->DrawList;
+            dl->AddRectFilled(ImVec2(pos.x+2.0f, pos.y+2.0f),
+                              ImVec2(pos.x+aw+2.0f, pos.y+h+2.0f),
+                              IM_COL32(0,0,0,10), rowR);
+            dl->AddRectFilled(pos, ImVec2(pos.x+aw, pos.y+h), cardBg, rowR);
+            dl->AddText(ImVec2(pos.x+pad, pos.y+pad), textC, title);
+            dl->AddText(ImVec2(pos.x+pad, pos.y+pad+fs+3.0f), subC, sub);
+            float cy = pos.y + h * 0.5f;
+            float bH = fs + 10.0f, bX = pos.x + aw - pad;
+            const float bW = 64.0f, bGap = 6.0f;
+            if (b2lbl && b2lbl[0]) {
+                float x0 = bX - bW; bX -= bW + bGap;
+                dl->AddRectFilled(ImVec2(x0, cy-bH*0.5f), ImVec2(x0+bW, cy+bH*0.5f),
+                                  b2bg, bH * 0.4f);
+                ImVec2 ts = ImGui::CalcTextSize(b2lbl);
+                dl->AddText(ImVec2(x0+(bW-ts.x)*0.5f, cy-fs*0.5f), b2tc, b2lbl);
+            }
+            if (b1lbl && b1lbl[0]) {
+                float x0 = bX - bW;
+                dl->AddRectFilled(ImVec2(x0, cy-bH*0.5f), ImVec2(x0+bW, cy+bH*0.5f),
+                                  b1bg, bH * 0.4f);
+                ImVec2 ts = ImGui::CalcTextSize(b1lbl);
+                dl->AddText(ImVec2(x0+(bW-ts.x)*0.5f, cy-fs*0.5f), b1tc, b1lbl);
+            }
+        }
+    };
+
+// Macros
+#define FL_TGL(l, s, warn, ptr) \
+    FLRow::Toggle(l, s, warn, ptr, ROW_H, ROW_RAD, PAD, TGL_R, ROW_GAP, \
+                  FL_ROW_BG, FL_ROW_HOV, FL_ROW_TEXT, FL_ROW_SUB, FL_WARN, \
+                  FL_TGL_ON, FL_TGL_OFF, FL_TGL_CHK)
+#define FL_SEC(t) FLRow::SecLabel(t, PAD, ROW_GAP, FL_SEC)
+#define FL_SLD(l, ptr, mn, mx, intg) \
+    FLSlider::Draw(l, ptr, mn, mx, intg, ROW_H, ROW_RAD, PAD, ROW_GAP, \
+                   FL_ROW_BG, FL_ROW_TEXT, FL_SLD_TRACK)
+
+    static int   flLineSrc   = 1;
+    static int   flTrigger   = 0;
+    static float flFovRad    = 500.0f;
+    static float flFlyMov    = 60.0f;
+    static float flTeleRad   = 2.3f;
+    static float flWidth     = 1080.0f;
+    static float flHeight    = 1920.0f;
+    static float flFPS       = 120.0f;
+    static bool  flResetRes  = false;
+
     switch (ZX_Tab) {
 
-        // ── TAB 0: AIMBOT ────────────────────────────────────────────────────
+        // ── TAB 0: ESP ───────────────────────────────────────────────────────
         case 0: {
-            WRow::WarnBlock("Use Aimbot with ", "restraint", ".",
-                            "Avoid excessive ", "headshots",
-                            " to reduce unexpected detections.",
-                            W_TEXT, W_ORANGE, PAD);
-            W_TOGGLE("Aimbot",          &Vars.Aimbot,        false);
-            W_TOGGLE("Show FOV Circle", &Vars.ShowFovCircle, true);
-            W_DROPDOWN("Ignore enemies", "None");
-            {
-                static float fovVal = 90.0f;
-                W_SLIDER("FOV",      &fovVal,        1.0f, 500.0f, "");
-                Vars.AimFov = fovVal;
+            FL_TGL("Enable",    nullptr, false, &Vars.Enable);
+            FL_TGL("ESP Box",   nullptr, false, &Vars.Box);
+            FL_TGL("ESP Lines", nullptr, false, &Vars.lines);
+            if (Vars.lines) {
+                FL_SEC("Line from");
+                const char* ls[] = {"Top","Bottom","Alternate"};
+                FLSeg::Draw(ls, 3, &flLineSrc, ROW_H, ROW_RAD, PAD, ROW_GAP,
+                            FL_SEG_BG, FL_SEG_ACT,
+                            IM_COL32(255,255,255,255), IM_COL32(22,22,22,255));
             }
-            W_SLIDER("Speed",    &Vars.AimSpeed, 1.0f,  50.0f, "");
-            {
-                static float distVal = 150.0f;
-                W_SLIDER("Distance", &distVal,       10.0f, 500.0f, "m");
-            }
-            W_DROPDOWN("Aim Priority", "Crosshair");
-            W_DROPDOWN("Bone",         Vars.aimHitboxes[Vars.AimHitbox < 3 ? Vars.AimHitbox : 0]);
-            {
-                const char* trgOpts[] = {"Always", "Firing", "Scope", "Fire+Scope"};
-                int ti = Vars.AimWhen < 4 ? Vars.AimWhen : 0;
-                W_DROPDOWN("Trigger", trgOpts[ti]);
-            }
-            W_TOGGLE("Visible Check",  &Vars.VisibleCheck,  false);
-            W_TOGGLE("Ignore Knocked", &Vars.IgnoreKnocked, true);
+            FL_TGL("Skeleton",  nullptr, false, &Vars.skeleton);
+            FL_TGL("Health Bar",nullptr, false, &Vars.Health);
+            FL_TGL("Name",      nullptr, false, &Vars.Name);
+            FL_TGL("Distance",  nullptr, false, &Vars.Distance);
             break;
         }
 
-        // ── TAB 1: VISUALS ───────────────────────────────────────────────────
+        // ── TAB 1: AIMBOT ────────────────────────────────────────────────────
         case 1: {
-            W_TOGGLE("ESP Enable",   &Vars.Enable,      false);
-            W_DROPDOWN("Ignore enemies", "None");
-            W_TOGGLE("Lines",        &Vars.lines,       false);
-            W_TOGGLE("Boxes",        &Vars.Box,         false);
-            W_TOGGLE("Health",       &Vars.Health,      false);
-            W_TOGGLE("Name",         &Vars.Name,        false);
-            W_TOGGLE("Distance",     &Vars.Distance,    false);
-            W_TOGGLE("Skeleton",     &Vars.skeleton,    false);
-            W_TOGGLE("OOF Arrow",    &Vars.OOF,         false);
-            W_TOGGLE("3D Box",       &ZX_Esp3DBox,      false);
-            W_TOGGLE("Enemy Count",  &Vars.enemycount,  true);
-            break;
-        }
-
-        // ── TAB 2: MISC (Combat / Movement) ─────────────────────────────────
-        case 2: {
-            W_TOGGLE("Fast Fire",       &ZX_FastFire,     false);
-            W_TOGGLE("Chain Damage",    &ZX_ChainDamage,  false);
-            W_TOGGLE("Long Range",      &ZX_LongRange,    false);
-            W_TOGGLE("Bullet Through",  &ZX_BulletThru,   false);
-            W_TOGGLE("No Reload",       &ZX_NoReload,     false);
-            W_TOGGLE("Fast Medkit",     &ZX_FastMedkit,   false);
-            W_TOGGLE("Fly Alt",         &ZX_FlyAlt,       false);
-            W_TOGGLE("Telekill",        &ZX_Telekill,     false);
-            W_TOGGLE("Aim Kill",        &ZX_AimKill,      false);
-            W_TOGGLE("No Recoil",       &ZX_NoRecoil,     false);
-            W_TOGGLE("Ninja Run",       &ZX_RUN,          false);
-            W_TOGGLE("Speed x10",       &ZX_SpeedX10,     false);
-            W_TOGGLE("Speed x20",       &ZX_SpeedX20,     false);
-            W_TOGGLE("Speed x50",       &ZX_SpeedX50,     false);
-            W_TOGGLE("Rapid Fire",      &ZX_RapidFire,    false);
-            W_TOGGLE("Anti-Ban",        &ZX_AntiBan,      false);
-            W_TOGGLE("Mark Teleport",   &ZX_MarkTeleport, false);
-            W_TOGGLE("Auto Teleport",   &ZX_AutoTeleport, false);
-            W_TOGGLE("Fly V2",          &ZX_FlyV2,        false);
-            W_TOGGLE("Super Jump",      &ZX_SuperJump,    false);
-            W_TOGGLE("Ghost Mode",      &ZX_GhostMode,    false);
-            W_TOGGLE("Underkill",       &ZX_UnderKill,    false);
-            W_TOGGLE("AimKill v1",      &ZX_AimKillV1,    false);
-            W_TOGGLE("AimKill v2",      &ZX_AimKillV2,    false);
-            W_TOGGLE("AimKill v3",      &ZX_AimKillV3,    false);
-            W_TOGGLE("AimKill v4",      &ZX_AimKillV4,    false);
-            W_TOGGLE("AimKill v5",      &ZX_AimKillV5,    true);
-            break;
-        }
-
-        // ── TAB 3: SETTINGS ─────────────────────────────────────────────────
-        case 3: {
+            FL_TGL("Enable Aimbot",     nullptr,
+                   false,              &Vars.Aimbot);
+            FL_TGL("Aimsilent",
+                   "Hides Aimbot from killcam & replays",
+                   false,              &ZX_AimKill);
+            FL_TGL("Ignore Wall Check",
+                   "Always aim at enemy head, ignore wall/tanghin...",
+                   false,              &Vars.VisibleCheck);
+            FL_TGL("Aimkillv2",
+                   "Automatically kills enemies when aiming at the...",
+                   false,              &ZX_AimKillV2);
+            FL_SEC("Automatically fires when target is in FOV");
+            FL_TGL("Increase Rate of fire",
+                   "Increases weapon fire rate for faster shooting",
+                   false,              &ZX_RapidFire);
+            FL_SLD("FOV Radius", &flFovRad, 0.0f, 500.0f, true);
+            Vars.AimFov = flFovRad;
+            FL_SEC("Trigger When");
             {
-                static float fovS = 90.0f;
-                W_SLIDER("FOV",          &fovS,           1.0f,  500.0f, "");
-                Vars.AimFov = fovS;
+                const char* tr[] = {"Always","Firing","Scope"};
+                FLSeg::Draw(tr, 3, &flTrigger, ROW_H, ROW_RAD, PAD, ROW_GAP,
+                            FL_SEG_BG, FL_SEG_ACT,
+                            IM_COL32(255,255,255,255), IM_COL32(22,22,22,255));
             }
-            W_SLIDER("Aim Speed",        &Vars.AimSpeed,  1.0f,   50.0f, "");
-            W_SLIDER("Fly Speed",        &ZX_FlySpeed,    1.0f,   30.0f, "");
-            W_SLIDER("Free Fly Speed",   &ZX_FreeFlySpeed,1.0f,   30.0f, "");
-            W_SLIDER("Chain Damage",     &ZX_ChainDmgValue, 100.0f,9999.0f,"");
-            W_SLIDER("Speed Mult",       &ZX_SpeedMult,   1.0f,    5.0f, "x");
-            W_TOGGLE("Bullet Rain",   &ZX_BulletRain,  false);
-            W_TOGGLE("Wall Shoot",    &ZX_WallShoot,   false);
-            W_TOGGLE("Head Only",     &ZX_HeadOnly,    false);
-            W_TOGGLE("Lock Trigger",  &ZX_LockTrigger, false);
-            W_TOGGLE("Insta Scope",   &ZX_InstaScope,  false);
-            W_TOGGLE("Quick Scope",   &ZX_QuickScope,  false);
-            W_TOGGLE("Real Speed",    &ZX_RealSpeed,   false);
-            W_TOGGLE("AI Player Aim", &ZX_AIPlayerAim, false);
-            W_TOGGLE("Fast Switch",   &ZX_FastSwitch,  false);
-            W_TOGGLE("Blue Map",      &ZX_BlueMap,     false);
-            W_TOGGLE("Map Reveal",    &ZX_MapReveal,   false);
-            W_TOGGLE("Anti Flash",    &ZX_AntiFlash,   false);
-            W_TOGGLE("Zoom Hack",     &ZX_ZoomHack,    false);
-            W_TOGGLE("Spin Bot",      &ZX_SpinBot,     false);
-            W_TOGGLE("Fake Lag",      &ZX_FakeLag,     false);
-            W_TOGGLE("Reset Guest",   &ZX_ResetAcc,    true);
+            Vars.AimWhen = flTrigger;
+            FL_SEC("Target Bone");
+            FL_SLD("Fly Move Value",     &flFlyMov,  0.0f, 100.0f, true);
+            FL_SLD("Go Teleport Radius", &flTeleRad, 0.0f,  10.0f, false);
+            FL_TGL("Second Phase Fire",
+                   "Enable get_StartFiring, OnFirstphasefire, OnS...",
+                   false, &ZX_FastFire);
+            FL_TGL("First Phase Fire",
+                   "Enable phasefireRivalTarget)",
+                   false, &ZX_RapidFire);
             break;
         }
 
-        // ── TAB 4: ACCOUNT / INFO ────────────────────────────────────────────
+        // ── TAB 2: MSL ───────────────────────────────────────────────────────
+        case 2: {
+            FL_TGL("Speed Bypass",
+                   "Increates theyement and kuneyond normal lim...",
+                   false,  &ZX_RUN);
+            FL_TGL("Up Player",
+                   "Elevates player position above ground",
+                   false,  &ZX_FlyAlt);
+            FL_TGL("Telekill",
+                   "Teleports to enemies and kills them instantly",
+                   true,   &ZX_Telekill);
+            FL_TGL("Underground Kill2", nullptr, false, &ZX_UnderKill);
+            FL_TGL("Wall Hack",         nullptr, false, &ZX_WallShoot);
+            FL_TGL("Ghost Mode",        nullptr, false, &ZX_GhostMode);
+            FL_TGL("No Recoil",         nullptr, false, &ZX_NoRecoil);
+            break;
+        }
+
+        // ── TAB 3: MISC ──────────────────────────────────────────────────────
+        case 3: {
+            FL_SEC("Fullsbrend Menu");
+            FL_SLD("Width",              &flWidth,  360.0f, 1920.0f, true);
+            FL_SLD("Height",             &flHeight, 640.0f, 2560.0f, true);
+            FL_SLD("Refresh Rate (FPS)", &flFPS,     30.0f,  120.0f, true);
+            FL_TGL("Reset resolution",   nullptr, false, &flResetRes);
+            break;
+        }
+
+        // ── TAB 4: UI ────────────────────────────────────────────────────────
         case 4: {
-            if (!ZX_BatMonInit) {
-                [[UIDevice currentDevice] setBatteryMonitoringEnabled:YES];
-                ZX_BatMonInit = true;
-            }
-            static double sessStart = 0.0;
-            if (sessStart == 0.0) sessStart = ImGui::GetTime();
-            double elapsed = ImGui::GetTime() - sessStart;
-            int hh=(int)(elapsed/3600), mm2=(int)(elapsed/60)%60, ss2=(int)elapsed%60;
-            char timeBuf[32]; snprintf(timeBuf, sizeof(timeBuf), "%02d:%02d:%02d", hh, mm2, ss2);
-            float batLevel = [[UIDevice currentDevice] batteryLevel];
-            char batBuf[16];
-            if (batLevel < 0.0f) snprintf(batBuf, sizeof(batBuf), "--%%");
-            else                 snprintf(batBuf, sizeof(batBuf), "%d%%", (int)(batLevel * 100.0f));
-            char killBuf[16]; snprintf(killBuf, sizeof(killBuf), "%d", ZX_KillCount);
-
-            // Info display row helper
-            struct AR {
-                static void Draw(const char* lbl, const char* val, bool last,
-                                 float rowH, float pad,
-                                 ImU32 tc, ImU32 vc, ImU32 sep) {
-                    ImGuiWindow* cw = ImGui::GetCurrentWindow();
-                    if (cw->SkipItems) return;
-                    ImVec2 pos = cw->DC.CursorPos;
-                    float  aw  = ImGui::GetContentRegionAvail().x;
-                    ImGui::ItemSize(ImVec2(aw, rowH), 0.0f);
-                    ImDrawList* dl = cw->DrawList;
-                    dl->AddRectFilled(pos, ImVec2(pos.x + aw, pos.y + rowH),
-                                      IM_COL32(255,255,255,255));
-                    if (!last)
-                        dl->AddLine(ImVec2(pos.x + pad, pos.y + rowH - 1.0f),
-                                    ImVec2(pos.x + aw,  pos.y + rowH - 1.0f), sep, 1.0f);
-                    float cy = pos.y + rowH * 0.5f;
-                    float fs = ImGui::GetFontSize();
-                    dl->AddText(ImVec2(pos.x + pad, cy - fs * 0.5f), tc, lbl);
-                    ImVec2 vts = ImGui::CalcTextSize(val);
-                    dl->AddText(ImVec2(pos.x + aw - pad - vts.x, cy - fs * 0.5f), vc, val);
-                }
-            };
-
-            AR::Draw("Kill Count", killBuf, false, ROW_H, PAD, W_TEXT, W_ORANGE, W_SEP);
-            AR::Draw("Battery",    batBuf,  false, ROW_H, PAD, W_TEXT, W_ORANGE, W_SEP);
-            AR::Draw("Session",    timeBuf, true,  ROW_H, PAD, W_TEXT, W_ORANGE, W_SEP);
-
-            // Kill counter +/- buttons
-            ImGuiWindow* cw2 = ImGui::GetCurrentWindow();
-            ImVec2 cp  = cw2->DC.CursorPos;
-            float  aw2 = ImGui::GetContentRegionAvail().x;
-            const float BTN_H2 = 42.0f, GAP3 = 12.0f;
-            float btnW2 = (aw2 - PAD * 2.0f - GAP3) * 0.5f;
-            ImDrawList* cdl2 = cw2->DrawList;
-            ImGui::ItemSize(ImVec2(aw2, BTN_H2 + 16.0f), 0.0f);
-            float mX0 = cp.x + PAD, mX1 = mX0 + btnW2;
-            float mY0 = cp.y + 8.0f, mY1 = mY0 + BTN_H2;
-            // - KILL
-            cdl2->AddRectFilled(ImVec2(mX0, mY0), ImVec2(mX1, mY1),
-                                IM_COL32(255,255,255,255), 10.0f);
-            cdl2->AddRect(ImVec2(mX0, mY0), ImVec2(mX1, mY1), W_SEP, 10.0f, 0, 1.0f);
-            ImVec2 mts2 = ImGui::CalcTextSize("- KILL");
-            cdl2->AddText(ImVec2((mX0+mX1)*0.5f - mts2.x*0.5f,
-                                  (mY0+mY1)*0.5f - mts2.y*0.5f), W_TEXT, "- KILL");
-            ImGui::SetCursorScreenPos(ImVec2(mX0, mY0));
-            if (ImGui::InvisibleButton("##wkm", ImVec2(btnW2, BTN_H2)) && ZX_KillCount > 0)
-                ZX_KillCount--;
-            // + KILL
-            float pX0 = mX1 + GAP3, pX1 = pX0 + btnW2;
-            cdl2->AddRectFilled(ImVec2(pX0, mY0), ImVec2(pX1, mY1), W_ORANGE, 10.0f);
-            ImVec2 pts3 = ImGui::CalcTextSize("+ KILL");
-            cdl2->AddText(ImVec2((pX0+pX1)*0.5f - pts3.x*0.5f,
-                                  (mY0+mY1)*0.5f - pts3.y*0.5f),
-                          IM_COL32(255,255,255,255), "+ KILL");
-            ImGui::SetCursorScreenPos(ImVec2(pX0, mY0));
-            if (ImGui::InvisibleButton("##wkp", ImVec2(btnW2, BTN_H2)))
-                ZX_KillCount++;
-            ImGui::SetCursorScreenPos(ImVec2(cp.x, mY1 + 8.0f));
+            FL_TGL("Show TeleVIP UI",     nullptr, false, &ZX_MarkTeleport);
+            FL_TGL("Show Underground UI", nullptr, false, &ZX_FlyV2);
+            FL_TGL("Show AI Telekill UI", nullptr, false, &ZX_AutoTeleport);
+            FL_TGL("Show Ninja Run UI",   nullptr, false, &ZX_SpeedX10);
+            FL_TGL("Show Fly Altura UI",  nullptr, false, &ZX_FlyAlt);
             break;
         }
     }
 
-#undef W_TOGGLE
-#undef W_DROPDOWN
-#undef W_SLIDER
+#undef FL_TGL
+#undef FL_SEC
+#undef FL_SLD
 
     ImGui::EndChild();
     ImGui::PopStyleColor();  // ChildBg
@@ -2892,7 +3311,7 @@ void initAntiBanHook(void) {
                          mTxtCol, mtxt);
         }
 
-        // ── Floating KILL Button — ลอยบนหน้าจอตลอด 
+        // ── Floating KILL Button — ลอยบนหน้าจอตลอด (กด = kill, ค้าง+ลาก = ย้าย) ──
         if (Vars.Enable) {
             static ImVec2 killBtnPos(screenW - 90.0f, screenH * 0.5f);
             static bool   killDragging   = false;
@@ -2928,7 +3347,10 @@ void initAntiBanHook(void) {
                                 bMin.y + (BH - ts.y) * 0.5f),
                          IM_COL32(255,255,255,255), txt);
 
-            if (hovered && ImGui::IsMouseReleased(0) && !
+            if (hovered && ImGui::IsMouseReleased(0) && !killDragging) {
+                // ใส่ kill function
+                // ZX_AimKill = true;
+                // KillNearestEnemy();
             }
         }
 
