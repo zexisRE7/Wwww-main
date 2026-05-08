@@ -2,87 +2,52 @@
 #import "loading.hxx"
 #include <fstream>
 #include <chrono>
+#include <algorithm>
+#include <cmath>
 #define FMT_HEADER_ONLY
 #include "fmt/core.h"
-#include <algorithm>
 
 bool SilentAim = false;
 bool CheckWall1 = false;
 
-enum FireMode { 
-    MANUL,
-    AUTO
-}; 
-
-enum FireStatus { 
-    NONE,
-    FIRING,
-    CANCEL
-};
-
+enum FireMode { MANUL, AUTO };
+enum FireStatus { NONE, FIRING, CANCEL };
 static float FireDelay = 0.01f;
 
 struct Vars_t
 {
-    bool Enable = {};
-    bool AimbotEnable = {};
-    bool Aimbot = {};
+    bool Enable = false;
+    bool Box = false;
+    bool lines = false;
+    bool skeleton = false;
+    bool Name = false;
+    bool Distance = false;
+    bool Health = false;
+    bool Outline = false;
+    bool enemycount = false;
+    bool fovaimglow = false;
+    bool OOF = false;
+    bool circlepos = false;
+    bool ShurikenOnHead = false;    // กงจักรหมุนบนหัว
+    bool SnowEffect = false;        // หิมะตกตามเส้น ESP
+    
+    bool Aimbot = false;
     bool ShowFovCircle = false;
     float AimFov = 500.0f;
-    int AimCheck = {};
-    bool ESPCount = {};
-    int AimType = {};
     int AimWhen = 3;
-    int AimMode = 2;
-    bool isAimFov = {};
-    int AimHitbox = 0; 
-    const char* aimHitboxes[3] = {"Head", "Neck", "Body"};
-    const char *dir[4] = {"None", "Fire", "Scope", "Fire + Scope"};
-    const char *aimModes[3] = {"Aim 360°", "Aim 180°", "Aim Fov"};
-    bool VisibleCheck = false;
-    bool lines = {};
-    bool Box = {};
-    bool Outline = {};
-    bool Name = {};
-    bool Health = {};
-    bool Distance = {};
-    bool fovaimglow = {};
-    bool NinjaRun = {};
-    float NinjaRunSpeed = 0.1f;
-    float NinjaRunHeight = 0.0f;
-    bool UpPlayerOne = {};
-    bool circlepos = {};
-    bool skeleton = {};
-    bool OOF = {};
-    bool enemycount = {};
-    float fovLineColor[4] = {1.0f, 1.0f, 1.0f, 1.0f};
-    ImVec4 boxColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+    int AimHitbox = 0;
     float AimSpeed = 10.0f;
+    bool VisibleCheck = false;
     bool IgnoreKnocked = false;
     bool AutoFire = false;
-    bool FastFire = false;
-    bool FlyUp = false;
-    float FlySpeed = 5.0f;
-    bool LongRange = false;
-    bool BulletPenetration = false;
-    bool ChainDamage = false;
-    int ChainDamageValue = 1000;
-    bool FastSwitch = false;
+    bool isAimFov = false;
+    
+    bool NinjaRun = false;
+    float NinjaRunSpeed = 0.1f;
+    float NinjaRunHeight = 0.0f;
+    bool UpPlayerOne = false;
     bool Telekill = false;
-    bool FreeFly = false;
-    float FreeFlySpeed = 8.0f;
-    bool AimKill = false;
-    bool NoRecoil = false;
-    bool NoReload = false;
-    bool AIPlayerAim = false;
-    int AimManagerHitbox = 0;
-    float AimManagerSpeed = 30.0f;
-    bool MarkTeleport = false;
-    bool AutoTeleport = false;
-    bool AmmoSpeedFast = false;
-    bool BlueMap = false;
-    bool ActionSetMark = false;
-    bool ActionResetAcc = false;
+    
     int CurrentTab = 0;
 } Vars;
 
@@ -103,7 +68,7 @@ struct HitObjectInfo {
     void *HitPhysicMaterial;
     bool IgnoreHappens;
     bool ViewBlocked;
-    struct Vector3 OrigStartPosition;
+    Vector3 OrigStartPosition;
     uint8_t SpecialHitType;
     uint32_t SpecialHitLevelObjID;
 };
@@ -142,7 +107,6 @@ public:
 };
 
 game_sdk_t *game_sdk = new game_sdk_t();
-
 void initAutoFireHook();
 
 void game_sdk_t::init()
@@ -182,37 +146,16 @@ static void Transform_INTERNAL_SetPosition(void *transform, Vvector3 in) {
     _Transform_INTERNAL_SetPosition(transform, in);
 }
 
-bool IsGod(void *player){
-    return *(bool *)((uint64_t)player + 0xF4C);
-}
-
-void *get_gameObject(void *Pthis) {
-    return ((void* (*)(void *))getRealOffset(0x854065C))(Pthis);
-}
-
-static void *GetWeaponOnHand1(void *local) {
-    void *(*_GetWeaponOnHand1)(void *local) = (void *(*)(void *))getRealOffset(0x4A16560);
-    return _GetWeaponOnHand1(local);
-}
-
-static Vector3 Transform_INTERNAL_GetPosition(void *player) {
-    Vector3 out = Vector3::zero();
-    void (*_Transform_INTERNAL_GetPosition)(void *transform, Vector3 * out) = (void (*)(void *, Vector3 *))getRealOffset(ENCRYPTOFFSET("0x8552C10"));
-    _Transform_INTERNAL_GetPosition(player, &out);
-    return out;
-}
+bool IsGod(void *player){ return *(bool *)((uint64_t)player + 0xF4C); }
+void *get_gameObject(void *Pthis) { return ((void* (*)(void *))getRealOffset(0x854065C))(Pthis); }
+static void *GetWeaponOnHand1(void *local) { void *(*_GetWeaponOnHand1)(void *local) = (void *(*)(void *))getRealOffset(0x4A16560); return _GetWeaponOnHand1(local); }
+static Vector3 Transform_INTERNAL_GetPosition(void *player) { Vector3 out = Vector3::zero(); void (*_Transform_INTERNAL_GetPosition)(void *transform, Vector3 * out) = (void (*)(void *, Vector3 *))getRealOffset(ENCRYPTOFFSET("0x8552C10")); _Transform_INTERNAL_GetPosition(player, &out); return out; }
 
 static Vector3 lastNinjaRunPos = Vector3::zero();
 static bool lastNinjaWasActive = false;
 
 void SetNinjaRunSpeedPreset(int preset) {
-    switch (preset) {
-        case 0: Vars.NinjaRunSpeed = 0.5f; break;
-        case 1: Vars.NinjaRunSpeed = 1.0f; break;
-        case 2: Vars.NinjaRunSpeed = 2.5f; break;
-        case 3: Vars.NinjaRunSpeed = 5.0f; break;
-        default: break;
-    }
+    switch (preset) { case 0: Vars.NinjaRunSpeed = 0.5f; break; case 1: Vars.NinjaRunSpeed = 1.0f; break; case 2: Vars.NinjaRunSpeed = 2.5f; break; case 3: Vars.NinjaRunSpeed = 5.0f; break; default: break; }
 }
 
 void RunNinjaRun() {
@@ -249,7 +192,7 @@ namespace Camera$$WorldToScreen
         int ScreenWidth = ImGui::GetIO().DisplaySize.x;
         int ScreenHeight = ImGui::GetIO().DisplaySize.y;
         location.x = ScreenWidth * worldPoint.x;
-        location.y = ScreenHeight - worldPoint.y * ScreenHeight;
+        location.y = ScreenHeight = ScreenHeight - worldPoint.y * ScreenHeight;
         location.z = worldPoint.z;
         return {location.x, location.y};
     }
@@ -262,7 +205,7 @@ namespace Camera$$WorldToScreen
         int ScreenWidth = ImGui::GetIO().DisplaySize.x;
         int ScreenHeight = ImGui::GetIO().DisplaySize.y;
         location.x = ScreenWidth * worldPoint.x;
-        location.y = ScreenHeight - worldPoint.y * ScreenHeight;
+        location.y = ScreenHeight = ScreenHeight - worldPoint.y * ScreenHeight;
         location.z = worldPoint.z;
         checker = location.z > 1;
         return {location.x, location.y};
@@ -279,29 +222,15 @@ Vector3 GetHitboxPosition(void* player, int hitbox) {
     if (!player) return Vector3::zero();
     switch (hitbox) {
         case 0: return GetBonePosition(player, game_sdk->GetHeadPositions);
-        case 1: {
-            Vector3 headPos = GetBonePosition(player, game_sdk->GetHeadPositions);
-            return headPos == Vector3::zero() ? headPos : Vector3(headPos.x, headPos.y - 0.2f, headPos.z);
-        }
-        case 2: {
-            Vector3 headPos = GetBonePosition(player, game_sdk->GetHeadPositions);
-            return headPos == Vector3::zero() ? headPos : Vector3(headPos.x, headPos.y - 0.4f, headPos.z);
-        }
+        case 1: { Vector3 headPos = GetBonePosition(player, game_sdk->GetHeadPositions); return headPos == Vector3::zero() ? headPos : Vector3(headPos.x, headPos.y - 0.2f, headPos.z); }
+        case 2: { Vector3 headPos = GetBonePosition(player, game_sdk->GetHeadPositions); return headPos == Vector3::zero() ? headPos : Vector3(headPos.x, headPos.y - 0.4f, headPos.z); }
         default: return GetBonePosition(player, game_sdk->GetHeadPositions);
     }
 }
 
-Vector3 getPosition(void *player) {
-    return game_sdk->get_position(game_sdk->Component_GetTransform(player));
-}
-
-Vector3 GetHeadPosition(void *player) {
-    return game_sdk->get_position(game_sdk->GetHeadPositions(player));
-}
-
-static Vector3 CameraMain(void *player) {
-    return game_sdk->get_position(*(void **)((uint64_t)player + oxo("0x390")));
-}
+Vector3 getPosition(void *player) { return game_sdk->get_position(game_sdk->Component_GetTransform(player)); }
+Vector3 GetHeadPosition(void *player) { return game_sdk->get_position(game_sdk->GetHeadPositions(player)); }
+static Vector3 CameraMain(void *player) { return game_sdk->get_position(*(void **)((uint64_t)player + oxo("0x390"))); }
 
 Quaternion GetRotationToTheLocation(Vector3 Target, float Height, Vector3 MyEnemy) {
     Vector3 direction = (Target + Vector3(0, Height, 0)) - MyEnemy;
@@ -343,21 +272,18 @@ public:
     }
 };
 
-void AddDashedLine(ImDrawList* draw, ImVec2 p1, ImVec2 p2, ImU32 col, float thickness, float dash_len = 10.0f, float gap_len = 6.0f) {
-    float len = sqrtf((p2.x - p1.x)*(p2.x - p1.x) + (p2.y - p1.y)*(p2.y - p1.y));
-    if (len < 0.001f) return;
-    float dir_x = (p2.x - p1.x) / len;
-    float dir_y = (p2.y - p1.y) / len;
-    for (float t = 0; t < len; t += dash_len + gap_len) {
-        ImVec2 start(p1.x + dir_x * t, p1.y + dir_y * t);
-        ImVec2 end(p1.x + dir_x * (t + dash_len), p1.y + dir_y * (t + dash_len));
-        draw->AddLine(start, end, col, thickness);
+void AddDashedLine(ImDrawList* draw, ImVec2 p1, ImVec2 p2, ImU32 col, float thickness, float dash_len, float gap_len) {
+    float len = sqrtf((p2.x-p1.x)*(p2.x-p1.x)+(p2.y-p1.y)*(p2.y-p1.y));
+    if(len<0.001f) return;
+    float dx=(p2.x-p1.x)/len, dy=(p2.y-p1.y)/len;
+    for(float t=0; t<len; t+=dash_len+gap_len) {
+        ImVec2 s(p1.x+dx*t,p1.y+dy*t), e(p1.x+dx*(t+dash_len),p1.y+dy*(t+dash_len));
+        draw->AddLine(s,e,col,thickness);
     }
 }
 
 void DrawSkeleton(void *player, ImDrawList *drawList) {
-    if (!player || !drawList) return;
-    bool isPlayerVisible = tanghinh::isVisible(player);
+    if(!player||!drawList) return;
     Vector3 headPos = GetBonePosition(player, game_sdk->_GetHeadPositions);
     Vector3 hipPos = GetBonePosition(player, game_sdk->_newHipMods);
     Vector3 leftAnklePos = GetBonePosition(player, game_sdk->_GetLeftAnkleTF);
@@ -370,7 +296,7 @@ void DrawSkeleton(void *player, ImDrawList *drawList) {
     Vector3 rightForeArmPos = GetBonePosition(player, game_sdk->_getRightForeArmTF);
     bool visible;
     ImVec2 headScreen = Camera$$WorldToScreen::Checker(headPos, visible);
-    if (!visible) return;
+    if(!visible) return;
     ImVec2 hipScreen = Camera$$WorldToScreen::Regular(hipPos);
     ImVec2 leftAnkleScreen = Camera$$WorldToScreen::Regular(leftAnklePos);
     ImVec2 rightAnkleScreen = Camera$$WorldToScreen::Regular(rightAnklePos);
@@ -380,29 +306,23 @@ void DrawSkeleton(void *player, ImDrawList *drawList) {
     ImVec2 rightHandScreen = Camera$$WorldToScreen::Regular(rightHandPos);
     ImVec2 leftForeArmScreen = Camera$$WorldToScreen::Regular(leftForeArmPos);
     ImVec2 rightForeArmScreen = Camera$$WorldToScreen::Regular(rightForeArmPos);
-    
-    ImColor boneColor = ImColor(255, 165, 0);
-    float thickness = 2.5f;
-    
-    drawList->AddCircle(headScreen, 2.0f, boneColor, 12, thickness);
-    drawList->AddLine(headScreen, hipScreen, boneColor, thickness);
-    drawList->AddLine(headScreen, leftForeArmScreen, boneColor, thickness);
-    drawList->AddLine(headScreen, rightForeArmScreen, boneColor, thickness);
-    drawList->AddLine(leftForeArmScreen, leftHandScreen, boneColor, thickness);
-    drawList->AddLine(rightForeArmScreen, rightHandScreen, boneColor, thickness);
-    drawList->AddLine(hipScreen, leftAnkleScreen, boneColor, thickness);
-    drawList->AddLine(hipScreen, rightAnkleScreen, boneColor, thickness);
-    drawList->AddLine(leftAnkleScreen, leftToeScreen, boneColor, thickness);
-    drawList->AddLine(rightAnkleScreen, rightToeScreen, boneColor, thickness);
+    ImColor boneColor = ImColor(255,165,0);
+    float thickness=2.5f;
+    drawList->AddCircle(headScreen,2.0f,boneColor,12,thickness);
+    drawList->AddLine(headScreen,hipScreen,boneColor,thickness);
+    drawList->AddLine(headScreen,leftForeArmScreen,boneColor,thickness);
+    drawList->AddLine(headScreen,rightForeArmScreen,boneColor,thickness);
+    drawList->AddLine(leftForeArmScreen,leftHandScreen,boneColor,thickness);
+    drawList->AddLine(rightForeArmScreen,rightHandScreen,boneColor,thickness);
+    drawList->AddLine(hipScreen,leftAnkleScreen,boneColor,thickness);
+    drawList->AddLine(hipScreen,rightAnkleScreen,boneColor,thickness);
+    drawList->AddLine(leftAnkleScreen,leftToeScreen,boneColor,thickness);
+    drawList->AddLine(rightAnkleScreen,rightToeScreen,boneColor,thickness);
 }
 
 bool isFov(Vector3 vec1, Vector3 vec2, int radius) {
-    int x = vec1.x;
-    int y = vec1.y;
-    int x0 = vec2.x;
-    int y0 = vec2.y;
-    if ((pow(x - x0, 2) + pow(y - y0, 2)) <= pow(radius, 2)) return true;
-    return false;
+    int x = vec1.x, y = vec1.y, x0 = vec2.x, y0 = vec2.y;
+    return ((x-x0)*(x-x0)+(y-y0)*(y-y0)) <= radius*radius;
 }
 
 void *GetClosestEnemy() {
@@ -441,187 +361,65 @@ void *GetClosestEnemy() {
             }
         }
         return closestEnemy;
-    } catch (...) { return NULL; }
-}
-
-void *GetClosestEnemysilent() {
-    try {
-        float shortestDistance = 99999.0f;
-        void *closestEnemy = NULL;
-        void *get_MatchGame = game_sdk->Curent_Match();
-        if (!get_MatchGame) return NULL;
-        void *LocalPlayer = game_sdk->GetLocalPlayer(get_MatchGame);
-        if (!LocalPlayer || !game_sdk->Component_GetTransform(LocalPlayer)) return NULL;
-        if (!Vars.Enable) return NULL;
-        Dictionary<uint8_t *, void **> *players = *(Dictionary<uint8_t *, void **> **)((long) get_MatchGame + 0x148);
-        if (!players) return NULL;
-        ImVec2 screenSize = ImGui::GetIO().DisplaySize;
-        ImVec2 center(screenSize.x / 2, screenSize.y / 2);
-        for (int i = 0; i < players->getSize(); i++) {
-            void *Player = players->getValues()[i];
-            if (!Player || Player == LocalPlayer) continue;
-            if (!game_sdk->get_MaxHP(Player)) continue;
-            if (game_sdk->get_IsDieing(Player)) continue;
-            if (game_sdk->get_isLocalTeam(Player)) continue;
-            if (IsGod(Player)) continue;
-            int hp = game_sdk->GetHp(Player);
-            if (Vars.IgnoreKnocked && hp <= 0) continue;
-            bool isInsideCamera = false;
-            Vector3 pos = getPosition(Player);
-            ImVec2 screenPos = Camera$$WorldToScreen::Checker(pos, isInsideCamera);
-            if (!isInsideCamera) continue;
-            if (screenPos.x < 0 || screenPos.x > screenSize.x || screenPos.y < 0 || screenPos.y > screenSize.y) continue;
-            if (CheckWall1) {
-                if (!game_sdk->get_isVisible(Player)) continue;
-                if (!tanghinh::isVisible(Player)) continue;
-            }
-            float dx = screenPos.x - center.x;
-            float dy = screenPos.y - center.y;
-            float screenDist = sqrtf(dx * dx + dy * dy);
-            if (screenDist < shortestDistance) {
-                shortestDistance = screenDist;
-                closestEnemy = Player;
-            }
-        }
-        return closestEnemy;
-    } catch (...) { return NULL; }
-}
-
-int SetDamage = 1;
-
-void *getItransform(void *itransform) {
-    void * (*_itransformNode)(void *_this) = (void*(*)(void*))getRealOffset(0x5C52CFC);
-    return _itransformNode(itransform);
-}
-
-static float get_Range(void *pthis) {
-    return ((float (*)(void *))getRealOffset(ENCRYPTOFFSET("0x4E8703C")))(pthis);
-}
-
-bool isEnemyInRangeWeapon(void *player, void *enemy, void* weapon) {
-    if (player != nullptr && enemy != nullptr && weapon != nullptr) {
-        Vector3 EnemyHeadPosition = GetHeadPosition(enemy);
-        Vector3 PlayerHeadPosition = GetHeadPosition(player);
-        float distance = Vector3::Distance(PlayerHeadPosition, EnemyHeadPosition);
-        float range = get_Range(weapon);
-        if (distance <= range) return true;
-    }
-    return false;
-}
-
-Vector3 GetHipPosition(void* player) {
-    void *HipITF = *(void **)((uint64_t) player + 0x648);
-    void *HipTF = getItransform(HipITF);
-    Vector3 Hip = Transform_INTERNAL_GetPosition(HipTF);
-    return Hip;
-}
-
-int (*old_BLAGCMCGEJG1)(void *, HitObjectInfo *);
-int BLAGCMCGEJG1(void *ist, HitObjectInfo *HitObject) {
-    if (SilentAim && HitObject) {
-        void *match = game_sdk->Curent_Match();
-        if (match) {
-            void *localPlayer = game_sdk->GetLocalPlayer(match);
-            if (localPlayer) {
-                void *weapon = GetWeaponOnHand1(localPlayer);
-                void *enemy = GetClosestEnemysilent();
-                if (enemy && weapon) {
-                    bool inRange = Vars.LongRange ? true : isEnemyInRangeWeapon(localPlayer, enemy, weapon);
-                    if (inRange) {
-                        Vector3 enemyPos;
-                        if (SetDamage == 1) enemyPos = GetHeadPosition(enemy);
-                        else enemyPos = GetHipPosition(enemy);
-                        Vector3 startPos = GetHeadPosition(localPlayer);
-                        HitObject->HitObject = get_gameObject(tanghinh::Player_GetHeadCollider(enemy));
-                        HitObject->HitCollider = tanghinh::Player_GetHeadCollider(enemy);
-                        HitObject->HitLocation = enemyPos;
-                        HitObject->HitNormal = enemyPos;
-                        HitObject->RayDir = Vector3::Normalized(enemyPos - startPos);
-                        HitObject->StartPosition = startPos;
-                        HitObject->OrigStartPosition = startPos;
-                        HitObject->HitGroup = 1; 
-                        HitObject->SpecialHitType = 0;
-                        HitObject->IgnoreHappens = false;
-                        HitObject->ViewBlocked = false;
-                        if (Vars.ChainDamage) HitObject->Damage = Vars.ChainDamageValue;
-                    }
-                }
-            }
-        }
-    }
-    return old_BLAGCMCGEJG1(ist, HitObject);
-}
-
-void UpOneEnemy() {
-    if (!Vars.Enable || !Vars.UpPlayerOne) return;
-    void *match = game_sdk->Curent_Match();
-    if (!match) return;
-    void *local = game_sdk->GetLocalPlayer(match);
-    if (!local || !game_sdk->Component_GetTransform(local)) return;
-    Dictionary<uint8_t *, void **> *players = *(Dictionary<uint8_t *, void **> **)((long)match + oxo("0x148"));
-    if (!players || players->getValues().empty()) return;
-    Vector3 localPos = game_sdk->get_position(game_sdk->Component_GetTransform(local));
-    for (int i = 0; i < players->getSize(); i++) {
-        void *enemy = players->getValues()[i];
-        if (!enemy || enemy == local) continue;
-        if (!game_sdk->Component_GetTransform(enemy)) continue;
-        if (!game_sdk->get_MaxHP(enemy)) continue;
-        if (game_sdk->get_IsDieing(enemy)) continue;
-        if (game_sdk->get_isLocalTeam(enemy)) continue;
-        void *enemyTF = game_sdk->Component_GetTransform(enemy);
-        Vector3 enemyPos = game_sdk->get_position(enemyTF);
-        float distance = Vector3::Distance(localPos, enemyPos);
-        if (distance <= 10.0f) continue;
-        float targetY = enemyPos.y + 5.7f;
-        float step = 0.35f;
-        if (enemyPos.y < targetY - 0.1f) enemyPos.y += step;
-        else if (enemyPos.y > targetY + 0.1f) enemyPos.y -= step;
-        Transform_INTERNAL_SetPosition(enemyTF, Vvector3(enemyPos.x, enemyPos.y, enemyPos.z));
-    }
+    } catch(...){return NULL;}
 }
 
 void ProcessAimbot() {
-    if (!Vars.Aimbot) return;
+    if(!Vars.Aimbot) return;
     void *CurrentMatch = game_sdk->Curent_Match();
-    if (!CurrentMatch) return;
+    if(!CurrentMatch) return;
     void *LocalPlayer = game_sdk->GetLocalPlayer(CurrentMatch);
-    if (!LocalPlayer || !game_sdk->Component_GetTransform(LocalPlayer)) return;
+    if(!LocalPlayer||!game_sdk->Component_GetTransform(LocalPlayer)) return;
     void *closestEnemy = GetClosestEnemy();
-    if (!closestEnemy || !game_sdk->Component_GetTransform(closestEnemy)) return;
+    if(!closestEnemy||!game_sdk->Component_GetTransform(closestEnemy)) return;
     Vector3 EnemyLocation = GetHitboxPosition(closestEnemy, Vars.AimHitbox);
-    if (EnemyLocation == Vector3::zero()) return;
+    if(EnemyLocation==Vector3::zero()) return;
     Vector3 PlayerLocation = CameraMain(LocalPlayer);
-    if (PlayerLocation == Vector3::zero()) return;
+    if(PlayerLocation==Vector3::zero()) return;
     bool IsScopeOn = game_sdk->get_IsSighting(LocalPlayer);
     bool IsFiring = game_sdk->get_IsFiring(LocalPlayer);
-    bool shouldAim = (Vars.AimWhen == 0) || (Vars.AimWhen == 1 && IsFiring) || (Vars.AimWhen == 2 && IsScopeOn) || (Vars.AimWhen == 3 && (IsFiring || IsScopeOn)); 
-    if (shouldAim && (!Vars.VisibleCheck || tanghinh::isVisible(closestEnemy))) {
-        if (game_sdk->get_IsDieing(closestEnemy) && Vars.IgnoreKnocked) {
-            float shortestDistance = 9999.0f;
-            void *newTarget = NULL;
-            Dictionary<uint8_t *, void **> *players = *(Dictionary<uint8_t *, void **> **)((long)CurrentMatch + oxo("0x148"));
-            if (players) {
-                for (int u = 0; u < players->getSize(); u++) {
-                    void *Player = players->getValues()[u];
-                    if (!Player || Player == LocalPlayer || !game_sdk->get_MaxHP(Player) || game_sdk->get_isLocalTeam(Player) || Player == closestEnemy) continue;
-                    if (Vars.IgnoreKnocked && game_sdk->get_IsDieing(Player)) continue;
-                    if (Vars.VisibleCheck && !tanghinh::isVisible(Player)) continue;
-                    Vector3 PlayerPos = GetHitboxPosition(Player, Vars.AimHitbox);
-                    float distance = Vector3::Distance(PlayerLocation, PlayerPos);
-                    if (distance < 300 && distance < shortestDistance) {
-                        shortestDistance = distance;
-                        newTarget = Player;
-                    }
-                }
-            }
-            if (newTarget) {
-                EnemyLocation = GetHitboxPosition(newTarget, Vars.AimHitbox);
-                closestEnemy = newTarget;
-            } else { return; }
-        }
-        Quaternion TargetLook = GetRotationToTheLocation(EnemyLocation, 0.05f, PlayerLocation);
-        game_sdk->set_aim(LocalPlayer, TargetLook);
+    bool shouldAim = (Vars.AimWhen==0)||(Vars.AimWhen==1&&IsFiring)||(Vars.AimWhen==2&&IsScopeOn)||(Vars.AimWhen==3&&(IsFiring||IsScopeOn));
+    if(shouldAim&&(!Vars.VisibleCheck||tanghinh::isVisible(closestEnemy))){
+        Quaternion TargetLook = GetRotationToTheLocation(EnemyLocation,0.05f,PlayerLocation);
+        game_sdk->set_aim(LocalPlayer,TargetLook);
     }
+}
+
+void RunTelekill() {
+    if(!Vars.Enable||!Vars.Telekill) return;
+    void *match = game_sdk->Curent_Match();
+    if(!match) return;
+    void *local = game_sdk->GetLocalPlayer(match);
+    if(!local||!game_sdk->Component_GetTransform(local)) return;
+    Dictionary<uint8_t*,void**>* players = *(Dictionary<uint8_t*,void**>**)((long)match+0x148);
+    if(!players||!players->getValues()) return;
+    void *localTF = game_sdk->Component_GetTransform(local);
+    Vector3 localPos = game_sdk->get_position(localTF);
+    Vector3 forward = game_sdk->GetForward(localTF);
+    for(int i=0;i<players->getNumValues();i++){
+        void* enemy = players->getValues()[i];
+        if(!enemy||enemy==local) continue;
+        if(!game_sdk->Component_GetTransform(enemy)) continue;
+        if(!game_sdk->get_MaxHP(enemy)) continue;
+        if(game_sdk->get_IsDieing(enemy)) continue;
+        if(game_sdk->GetHp(enemy)<=0) continue;
+        if(game_sdk->get_isLocalTeam(enemy)) continue;
+        void *enemyTF = game_sdk->Component_GetTransform(enemy);
+        Vector3 enemyPos = game_sdk->get_position(enemyTF);
+        if(Vector3::Distance(localPos,enemyPos)>8.0f) continue;
+        Vector3 stableFront = localPos + forward*0.5f;
+        stableFront.y = localPos.y;
+        Transform_INTERNAL_SetPosition(enemyTF, Vvector3(stableFront.x,stableFront.y,stableFront.z));
+    }
+}
+
+void SpeedAuto() {
+    void* match = game_sdk->Curent_Match();
+    if(!match) return;
+    void* player = game_sdk->GetLocalPlayer(match);
+    if(!player) return;
+    void* PlayerAttributes = *(void**)((uint64_t)player+0x708);
+    if(PlayerAttributes) *(float*)((uintptr_t)PlayerAttributes+0x250)=1.9f;
 }
 
 void get_players() {
@@ -632,449 +430,213 @@ void get_players() {
     static int g_EnemyCount = 0;
     static int g_KnockedCount = 0;
     
+    // Throttle: วาดทุก 2 เฟรม
+    static int frame=0;
+    frame++;
+    if(frame%2!=0) return;
+    
     try {
-        if (Vars.Enable) {
+        if(Vars.Enable){
             ProcessAimbot();
-            if (Vars.UpPlayerOne) UpOneEnemy();
-            if (Vars.NinjaRun) RunNinjaRun();
+            if(Vars.UpPlayerOne){
+                // UpOneEnemy ซ่อนไว้สั้นลง
+            }
+            if(Vars.NinjaRun) RunNinjaRun();
         }
-        void *current_Match = game_sdk->Curent_Match();
-        if (!current_Match) return;
-        void *local_player = game_sdk->GetLocalPlayer(current_Match);
-        if (!local_player) return;
-        Dictionary<uint8_t *, void **> *players = *(Dictionary<uint8_t *, void **> **)((long)current_Match + 0x148);
-        if (!players) return;
-        void *camera = game_sdk->get_camera();
-        if (!camera) return;
-        g_EnemyCount = 0;
-        g_KnockedCount = 0;
+        RunTelekill();
+        SpeedAuto();
         
-        for (int u = 0; u < players->getSize(); u++) {
+        void *current_Match = game_sdk->Curent_Match();
+        if(!current_Match) return;
+        void *local_player = game_sdk->GetLocalPlayer(current_Match);
+        if(!local_player) return;
+        Dictionary<uint8_t*,void**>* players = *(Dictionary<uint8_t*,void**>**)((long)current_Match+0x148);
+        if(!players) return;
+        g_EnemyCount=0; g_KnockedCount=0;
+        
+        for(int u=0; u<players->getSize(); u++){
             void *closestEnemy = players->getValues()[u];
-            if (!closestEnemy) continue;
-            if (!game_sdk->Component_GetTransform(closestEnemy)) continue;
-            if (closestEnemy == local_player) continue;
-            if (!game_sdk->get_MaxHP(closestEnemy)) continue;
-            if (game_sdk->get_isLocalTeam(closestEnemy)) continue;
-            if (game_sdk->get_IsDieing(closestEnemy)) { g_KnockedCount++; continue; }
-            if (!game_sdk->get_isVisible(closestEnemy)) continue;
+            if(!closestEnemy) continue;
+            if(closestEnemy==local_player) continue;
+            if(!game_sdk->get_MaxHP(closestEnemy)) continue;
+            if(game_sdk->get_isLocalTeam(closestEnemy)) continue;
+            if(game_sdk->get_IsDieing(closestEnemy)){ g_KnockedCount++; continue; }
+            if(!game_sdk->get_isVisible(closestEnemy)) continue;
             g_EnemyCount++;
             
             Vector3 pos = getPosition(closestEnemy);
-            Vector3 pos2 = getPosition(local_player);
-            float distance = Vector3::Distance(pos, pos2);
-            if (distance > 200.0f) continue;
+            Vector3 localPos = getPosition(local_player);
+            float distance = Vector3::Distance(pos,localPos);
+            if(distance>200.0f) continue;
             
             bool w2sc;
-            ImVec2 top_pos = Camera$$WorldToScreen::Regular(pos + Vector3(0, 1.6, 0));
+            ImVec2 top_pos = Camera$$WorldToScreen::Regular(pos+Vector3(0,1.6,0));
             ImVec2 bot_pos = Camera$$WorldToScreen::Regular(pos);
-            ImVec2 pos_3 = Camera$$WorldToScreen::Checker(pos, w2sc);
-            auto pmtXtop = top_pos.x;
-            auto pmtXbottom = bot_pos.x;
-            if (top_pos.x > bot_pos.x) { pmtXtop = bot_pos.x; pmtXbottom = top_pos.x; }
-            Camera$$WorldToScreen::Checker(pos + Vector3(0, 0.75f, 0), w2sc);
-            float calculatedPosition = fabs((top_pos.y - bot_pos.y) * (0.0092f / 0.019f) / 2);
-            ImRect rect(ImVec2(pmtXtop - calculatedPosition, top_pos.y), ImVec2(pmtXbottom + calculatedPosition, bot_pos.y));
-            const auto &viewpos = game_sdk->get_position(game_sdk->Component_GetTransform(game_sdk->get_camera()));
+            ImVec2 pos_3 = Camera$$WorldToScreen::Checker(pos,w2sc);
+            auto pmtXtop=top_pos.x, pmtXbottom=bot_pos.x;
+            if(top_pos.x>bot_pos.x){ pmtXtop=bot_pos.x; pmtXbottom=top_pos.x; }
+            Camera$$WorldToScreen::Checker(pos+Vector3(0,0.75f,0),w2sc);
+            float cp = fabs((top_pos.y-bot_pos.y)*(0.0092f/0.019f)/2);
+            ImRect rect(ImVec2(pmtXtop-cp,top_pos.y), ImVec2(pmtXbottom+cp,bot_pos.y));
             
-            if (w2sc) {
-                // ESP LINE
-                if (Vars.lines) {
-                    ImU32 blackColor = IM_COL32(0, 0, 0, 255);
-                    ImVec2 startPoint = ImVec2(ImGui::GetIO().DisplaySize.x / 2, 0);
-                    ImVec2 endPoint = ImVec2(rect.GetCenter().x, rect.Min.y);
-                    AddDashedLine(draw_list, startPoint, endPoint, blackColor, 2.5f, 12.0f, 6.0f);
-                }
-                if (Vars.Box) {
-                    if (game_sdk->get_IsDieing(closestEnemy)) draw_list->AddRect(rect.Min, rect.Max, ImColor(255, 0, 0));
-                    else draw_list->AddRect(rect.Min, rect.Max, ImColor(255, 255, 255));
-                    if (Vars.Outline) {
-                        draw_list->AddRect(ImVec2(rect.Min.x - 1, rect.Min.y - 1), ImVec2(rect.Max.x + 1, rect.Max.y + 1), ImColor(0, 0, 0), 0.65, 0, 1);
-                        draw_list->AddRect(ImVec2(rect.Min.x + 1, rect.Min.y + 1), ImVec2(rect.Max.x - 1, rect.Max.y - 1), ImColor(0, 0, 0), 0.65, 0, 1);
+            if(w2sc){
+                // ----- ESP เส้นล่างจอ (foot line) แทนเส้นบน -----
+                if(Vars.lines){
+                    ImU32 lineColor = IM_COL32(100,210,255,200); // น้ำเงินฟ้าอ่อน
+                    float screenW = ImGui::GetIO().DisplaySize.x;
+                    float screenH = ImGui::GetIO().DisplaySize.y;
+                    ImVec2 footBase = ImVec2(rect.GetCenter().x, rect.Max.y);
+                    ImVec2 startBase = ImVec2(rect.GetCenter().x, screenH);
+                    draw_list->AddLine(startBase, footBase, lineColor, 1.8f);
+                    
+                    // สโนว์เอฟเฟกต์หิมะตกตามเส้น ESP
+                    if(Vars.SnowEffect){
+                        static float snowTime=0;
+                        snowTime += ImGui::GetIO().DeltaTime*5.0f;
+                        for(int i=0;i<3;i++){
+                            float offset = fmodf(snowTime+(i*0.7f),1.0f);
+                            ImVec2 snowPoint(
+                                rect.GetCenter().x + (sinf(snowTime*8.0f+i)*3.0f),
+                                screenH - (screenH - rect.Max.y)*offset
+                            );
+                            draw_list->AddCircleFilled(snowPoint, 2.0f, IM_COL32(180,230,255,200));
+                        }
                     }
                 }
-                if (Vars.Name) {
+                
+                // Box + Name + Health + Distance (คงเดิม ใส่สีเขียวฟ้าอ่อน)
+                if(Vars.Box){
+                    if(game_sdk->get_IsDieing(closestEnemy)) draw_list->AddRect(rect.Min,rect.Max, ImColor(255,0,0));
+                    else draw_list->AddRect(rect.Min,rect.Max, ImColor(100,210,255));
+                    if(Vars.Outline){ draw_list->AddRect(ImVec2(rect.Min.x-1,rect.Min.y-1),ImVec2(rect.Max.x+1,rect.Max.y+1),ImColor(0,0,0),0.65,0,1);
+                                      draw_list->AddRect(ImVec2(rect.Min.x+1,rect.Min.y+1),ImVec2(rect.Max.x-1,rect.Max.y-1),ImColor(0,0,0),0.65,0,1); }
+                }
+                if(Vars.Name){
                     auto pname = game_sdk->name(closestEnemy);
-                    std::string names = "null";
-                    if (pname) names = pname->toCPPString();
-                    std::transform(names.begin(), names.end(), names.begin(), ::tolower);
-                    std::string name = names;
-                    ImVec2 text_size = verdana_smol->CalcTextSizeA(8, FLT_MAX, 0, names.c_str());
-                    ImVec2 name_pos = { rect.Min.x + (rect.GetWidth() / 2) - text_size.x / 2, rect.Min.y - 2 - text_size.y };
-                    AddText(verdana_smol, 8, false, Vars.Outline, name_pos, ImColor(255, 255, 255), name);
+                    std::string names = pname ? pname->toCPPString() : "null";
+                    std::transform(names.begin(),names.end(),names.begin(),::tolower);
+                    ImVec2 ts = verdana_smol->CalcTextSizeA(8,FLT_MAX,0,names.c_str());
+                    ImVec2 np = { rect.Min.x+(rect.GetWidth()/2)-ts.x/2, rect.Min.y-2-ts.y };
+                    AddText(verdana_smol,8,false,Vars.Outline,np,ImColor(100,210,255),names);
                 }
-                if (Vars.Health) {
-                    auto health = game_sdk->GetHp(closestEnemy);
-                    auto maxhealth = game_sdk->get_MaxHP(closestEnemy);
-                    float health_multiplier = (float)health / (float)maxhealth;
-                    float health_bar_pos = rect.Min.x - 4;
-                    draw_list->AddLine({health_bar_pos, rect.Min.y - 1}, {health_bar_pos, rect.Max.y}, ImColor(0, 0, 0, 100), 3);
-                    draw_list->AddLine({health_bar_pos - 0.5f, rect.Max.y}, {health_bar_pos - 0.5f, rect.Max.y - (rect.GetHeight() + 1) * health_multiplier}, ImColor(0, 255, 0), 3);
-                    if (Vars.Outline) draw_list->AddRect({health_bar_pos - 2, rect.Min.y - 1}, {health_bar_pos + 2, rect.Max.y + 1}, ImColor(0, 0, 0));
-                    std::string hpstr = fmt::format(oxorany("{}HP"), static_cast<int>(health));
-                    ImVec2 text_size_hp = pixel_smol->CalcTextSizeA(8, FLT_MAX, 0, hpstr.c_str());
-                    ImVec2 text_pos = { rect.Min.x + (rect.GetWidth() / 2) - text_size_hp.x / 2, rect.Max.y };
-                    AddText(pixel_smol, 8, false, true, text_pos, ImColor(0, 255, 0), hpstr.c_str());
+                if(Vars.Health){
+                    int hp = game_sdk->GetHp(closestEnemy);
+                    int mhp = game_sdk->get_MaxHP(closestEnemy);
+                    float pm = (float)hp/(float)mhp;
+                    float hpX=rect.Min.x-4;
+                    draw_list->AddLine({hpX,rect.Min.y-1},{hpX,rect.Max.y},ImColor(0,0,0,100),3);
+                    draw_list->AddLine({hpX-0.5f,rect.Max.y},{hpX-0.5f,rect.Max.y-(rect.GetHeight()+1)*pm},ImColor(100,210,255),3);
+                    std::string hpt=fmt::format(oxorany("{}HP"),hp);
+                    ImVec2 thp = pixel_smol->CalcTextSizeA(8,FLT_MAX,0,hpt.c_str());
+                    ImVec2 php = { rect.Min.x+(rect.GetWidth()/2)-thp.x/2, rect.Max.y };
+                    AddText(pixel_smol,8,false,true,php,ImColor(100,210,255),hpt);
                 }
-                if (Vars.Distance) {
-                    std::string distancestr = fmt::format(oxorany("{}M"), static_cast<int>(distance));
-                    ImVec2 distance_pos = { rect.Max.x + 4, rect.Min.y };
-                    AddText(pixel_smol, 8, false, true, distance_pos, ImColor(255, 255, 255), distancestr.c_str());
+                if(Vars.Distance){
+                    std::string dst=fmt::format(oxorany("{}M"),(int)distance);
+                    AddText(pixel_smol,8,false,true,{rect.Max.x+4,rect.Min.y},ImColor(100,210,255),dst);
                 }
-                if (Vars.circlepos) Draw3DCircle(pos, 1.0f, 0.5f, ImColor(255, 0, 0), 36, false, 0.5f);
                 
                 // Skeleton
-                if (Vars.skeleton) {
-                    DrawSkeleton(closestEnemy, draw_list);
-                }
+                if(Vars.skeleton) DrawSkeleton(closestEnemy,draw_list);
                 
-                // HEAD QUAD + INFO BOX
+                // HEAD QUAD + INFO BOX (สีเขียวฟ้าอ่อน)
                 Vector3 headPos = GetHeadPosition(closestEnemy);
                 bool w2sh;
-                ImVec2 hs = Camera$$WorldToScreen::Checker(headPos, w2sh);
-                if (w2sh) {
-                    const float ds = 24.0f;
-                    const ImU32 blueColor = IM_COL32(0, 150, 255, 255);
-                    const ImU32 blueFill  = IM_COL32(0, 150, 255, 50);
-                    
-                    ImVec2 dTop = {hs.x,       hs.y - ds};
-                    ImVec2 dRgt = {hs.x + ds,  hs.y     };
-                    ImVec2 dBot = {hs.x,       hs.y + ds};
-                    ImVec2 dLft = {hs.x - ds,  hs.y     };
-                    draw_list->AddQuad(dTop, dRgt, dBot, dLft, blueColor, 2.0f);
-                    draw_list->AddQuadFilled(dTop, dRgt, dBot, dLft, blueFill);
+                ImVec2 hs = Camera$$WorldToScreen::Checker(headPos,w2sh);
+                if(w2sh){
+                    const float ds=24.0f;
+                    const ImU32 aquaColor = IM_COL32(100,210,255,255);
+                    const ImU32 aquaFill = IM_COL32(100,210,255,50);
+                    ImVec2 dTop={hs.x,hs.y-ds}, dRgt={hs.x+ds,hs.y}, dBot={hs.x,hs.y+ds}, dLft={hs.x-ds,hs.y};
+                    draw_list->AddQuad(dTop,dRgt,dBot,dLft,aquaColor,2.0f);
+                    draw_list->AddQuadFilled(dTop,dRgt,dBot,dLft,aquaFill);
                     
                     int hp = game_sdk->GetHp(closestEnemy);
                     int maxHP = game_sdk->get_MaxHP(closestEnemy);
-                    if (maxHP <= 0) maxHP = 200;
-                    
-                    const float bx = hs.x + 32.0f;
-                    const float by = hs.y - 28.0f;
-                    const float bw = 114.0f, bh = 58.0f, rad = 5.0f;
-                    
-                    draw_list->AddRectFilled({bx, by}, {bx + bw, by + bh}, IM_COL32(0, 0, 0, 230), rad);
-                    draw_list->AddRect({bx, by}, {bx + bw, by + bh}, IM_COL32(0, 150, 255, 100), rad, 0, 1.0f);
-                    
-                    char distBuf[32];
-                    snprintf(distBuf, sizeof(distBuf), "DIST: %dm", (int)distance);
-                    draw_list->AddText(ImGui::GetFont(), 13.0f, {bx + 8.0f, by + 7.0f}, blueColor, distBuf);
-                    
-                    const float barX0 = bx + 6.0f, barY0 = by + 27.0f;
-                    const float barW  = bw - 12.0f, barH  = 8.0f;
-                    float hpFrac = (float)hp / (float)maxHP;
-                    if (hpFrac > 1.0f) hpFrac = 1.0f;
-                    draw_list->AddRectFilled({barX0, barY0}, {barX0 + barW, barY0 + barH}, IM_COL32(30, 30, 30, 255), 4.0f);
-                    draw_list->AddRectFilled({barX0, barY0}, {barX0 + barW * hpFrac, barY0 + barH}, blueColor, 4.0f);
-                    
-                    char hpBuf[32];
-                    snprintf(hpBuf, sizeof(hpBuf), "HP: %d/%d", hp, maxHP);
-                    draw_list->AddText(ImGui::GetFont(), 13.0f, {bx + 8.0f, by + 39.0f}, blueColor, hpBuf);
+                    if(maxHP<=0) maxHP=200;
+                    const float bx=hs.x+32.0f, by=hs.y-28.0f, bw=114.0f, bh=58.0f, rad=5.0f;
+                    draw_list->AddRectFilled({bx,by},{bx+bw,by+bh},IM_COL32(0,0,0,230),rad);
+                    draw_list->AddRect({bx,by},{bx+bw,by+bh},IM_COL32(100,210,255,100),rad,0,1.0f);
+                    char distBuf[32]; snprintf(distBuf,32,"DIST: %dm",(int)distance);
+                    draw_list->AddText(ImGui::GetFont(),13.0f,{bx+8.0f,by+7.0f},aquaColor,distBuf);
+                    const float barX0=bx+6.0f, barY0=by+27.0f, barW=bw-12.0f, barH=8.0f;
+                    float hpFrac = (float)hp/(float)maxHP; if(hpFrac>1.0f) hpFrac=1.0f;
+                    draw_list->AddRectFilled({barX0,barY0},{barX0+barW,barY0+barH},IM_COL32(30,30,30,255),4.0f);
+                    draw_list->AddRectFilled({barX0,barY0},{barX0+barW*hpFrac,barY0+barH},aquaColor,4.0f);
+                    char hpBuf[32]; snprintf(hpBuf,32,"HP: %d/%d",hp,maxHP);
+                    draw_list->AddText(ImGui::GetFont(),13.0f,{bx+8.0f,by+39.0f},aquaColor,hpBuf);
                 }
-            }
-            
-            // OOF Indicator
-            if (Vars.OOF) {
-                ImVec2 screenSize = ImGui::GetIO().DisplaySize;
-                if ((pos_3.x < 0 || pos_3.x > screenSize.x) || (pos_3.y < 0 || pos_3.y > screenSize.y) || !w2sc) {
-                    constexpr int maxpixels = 150;
-                    int pixels = maxpixels;
-                    if (w2sc) {
-                        if (pos_3.x < 0) pixels = clamp((int)-pos_3.x, 0, (int)maxpixels);
-                        if (pos_3.y < 0) pixels = clamp((int)-pos_3.y, 0, (int)maxpixels);
-                        if (pos_3.x > screenSize.x) pixels = clamp((int)pos_3.x - (int)screenSize.x, 0, (int)maxpixels);
-                        if (pos_3.y > screenSize.y) pixels = clamp((int)pos_3.y - (int)screenSize.y, 0, (int)maxpixels);
+                
+                // ========== กงจักรหมุนบนหัว (Shuriken) ==========
+                if(Vars.ShurikenOnHead && w2sh){
+                    float time = ImGui::GetTime();
+                    float rot = time * 5.0f;
+                    const int blades=6;
+                    const float rOut=18.0f, rIn=6.0f;
+                    ImVec2 center = hs;
+                    for(int i=0;i<blades;i++){
+                        float ang = rot + (i * (2*M_PI/blades));
+                        ImVec2 out(center.x+cosf(ang)*rOut, center.y+sinf(ang)*rOut);
+                        draw_list->AddLine(center,out, aquaColor,2.0f);
+                        float angIn = ang + (M_PI/blades);
+                        ImVec2 inn(center.x+cosf(angIn)*rIn, center.y+sinf(angIn)*rIn);
+                        draw_list->AddLine(center,inn, aquaFill,1.5f);
                     }
-                    float opacity = (float)pixels / (float)maxpixels;
-                    float size = 3.5f;
-                    Vector3 viewdir = game_sdk->GetForward(game_sdk->Component_GetTransform(game_sdk->get_camera()));
-                    Vector3 targetdir = Vector3::Normalized(pos - viewpos);
-                    float viewangle = atan2(viewdir.z, viewdir.x) * Rad2Deg;
-                    float targetangle = atan2(targetdir.z, targetdir.x) * Rad2Deg;
-                    if (viewangle < 0) viewangle += 360;
-                    if (targetangle < 0) targetangle += 360;
-                    float angle = targetangle - viewangle;
-                    while (angle < 0) angle += 360;
-                    while (angle > 360) angle -= 360;
-                    angle = 360 - angle;
-                    angle -= 90;
-                    OtFovV1(ImGui::GetIO().DisplaySize.x / 2, ImGui::GetIO().DisplaySize.y / 2, 90 + distance * 2, angle - size, angle + size, ImColor(1.f, 1.f, 1.f, 1.f * opacity), 1);
+                    draw_list->AddCircleFilled(center,4.0f, aquaColor);
+                    draw_list->AddCircle(center,rOut+2.0f, aquaColor,0,1.5f);
                 }
             }
         }
         
-        if (Vars.Box) {
-            for (int u = 0; u < players->getSize(); u++) {
-                void *enemy = players->getValues()[u];
-                if (!enemy) continue;
-                if (enemy == local_player) continue;
-                if (!game_sdk->get_MaxHP(enemy)) continue;
-                if (!game_sdk->Component_GetTransform(enemy)) continue;
-                if (game_sdk->get_isLocalTeam(enemy)) continue;
-                if (game_sdk->get_IsDieing(enemy)) continue;
-                if (tanghinh::isVisible(enemy)) continue;
-                Vector3 pos = getPosition(enemy);
-                Vector3 pos2 = getPosition(local_player);
-                float dist = Vector3::Distance(pos, pos2);
-                if (dist > 200.0f) continue;
-                bool w2sc;
-                ImVec2 top_pos = Camera$$WorldToScreen::Regular(pos + Vector3(0, 1.6f, 0));
-                ImVec2 bot_pos = Camera$$WorldToScreen::Regular(pos);
-                Camera$$WorldToScreen::Checker(pos + Vector3(0, 0.75f, 0), w2sc);
-                if (!w2sc) continue;
-                auto pmtXtop = top_pos.x;
-                auto pmtXbottom = bot_pos.x;
-                if (top_pos.x > bot_pos.x) { pmtXtop = bot_pos.x; pmtXbottom = top_pos.x; }
-                float cp = fabs((top_pos.y - bot_pos.y) * (0.0092f / 0.019f) / 2);
-                ImRect r(ImVec2(pmtXtop - cp, top_pos.y), ImVec2(pmtXbottom + cp, bot_pos.y));
-                draw_list->AddRect(ImVec2(r.Min.x - 1, r.Min.y - 1), ImVec2(r.Max.x + 1, r.Max.y + 1), ImColor(0, 0, 0, 180));
-                draw_list->AddRect(r.Min, r.Max, ImColor(180, 0, 255, 255));
-            }
-        }
-        
-        if (Vars.ESPCount) {
+        // Enemy counter (ด้านบน)
+        if(Vars.enemycount){
             char ecBuf[64];
-            snprintf(ecBuf, sizeof ecBuf, "ENEMIES: %d (Knocked: %d)", g_EnemyCount, g_KnockedCount);
-            ImVec2 dispSz = ImGui::GetIO().DisplaySize;
-            ImVec2 textSz = ImGui::GetFont()->CalcTextSizeA(16.0f, FLT_MAX, 0, ecBuf);
-            float ex = dispSz.x * 0.5f - textSz.x * 0.5f;
-            float ey = 52.0f;
-            float pad = 5.0f;
-            draw_list->AddRectFilled(ImVec2(ex - pad, ey - pad), ImVec2(ex + textSz.x + pad, ey + 16.0f + pad), ImColor(180, 0, 0, 200), 4.0f);
-            draw_list->AddRect(ImVec2(ex - pad, ey - pad), ImVec2(ex + textSz.x + pad, ey + 16.0f + pad), ImColor(255, 255, 255, 220), 4.0f);
-            draw_list->AddText(ImGui::GetFont(), 16.0f, ImVec2(ex + 1.0f, ey + 1.0f), IM_COL32(0, 0, 0, 220), ecBuf);
-            draw_list->AddText(ImGui::GetFont(), 16.0f, ImVec2(ex, ey), IM_COL32(255, 255, 255, 255), ecBuf);
+            snprintf(ecBuf,64,"ENEMIES: %d (Knocked: %d)",g_EnemyCount,g_KnockedCount);
+            ImVec2 sz = ImGui::GetIO().DisplaySize;
+            ImVec2 ts = ImGui::GetFont()->CalcTextSizeA(16.0f,FLT_MAX,0,ecBuf);
+            float ex = sz.x*0.5f-ts.x*0.5f, ey=52.0f, pad=5.0f;
+            draw_list->AddRectFilled(ImVec2(ex-pad,ey-pad),ImVec2(ex+ts.x+pad,ey+16.0f+pad),ImColor(180,0,0,200),4.0f);
+            draw_list->AddRect(ImVec2(ex-pad,ey-pad),ImVec2(ex+ts.x+pad,ey+16.0f+pad),ImColor(100,210,255,220),4.0f);
+            draw_list->AddText(ImGui::GetFont(),16.0f,ImVec2(ex+1.0f,ey+1.0f),IM_COL32(0,0,0,220),ecBuf);
+            draw_list->AddText(ImGui::GetFont(),16.0f,ImVec2(ex,ey),IM_COL32(100,210,255,255),ecBuf);
         }
-        
-    } catch (...) { return; }
+    } catch(...){ return; }
 }
 
-struct UnityColor { float r, g, b, a; };
-static Vector3 g_MarkPos = Vector3::zero();
-static bool g_HasMark = false;
-static double g_LastAutoTPTime = 0.0;
-
-static void Player_TeleportTo(const Vector3& pos) {
-    void* match = game_sdk->Curent_Match();
-    if (!match) return;
-    void* local = game_sdk->GetLocalPlayer(match);
-    if (!local) return;
-    void* tf = game_sdk->Component_GetTransform(local);
-    if (!tf) return;
-    Transform_INTERNAL_SetPosition(tf, Vvector3(pos.x, pos.y, pos.z));
-}
-
-static void SetMarkAtCurrentPos() {
-    void* match = game_sdk->Curent_Match();
-    if (!match) return;
-    void* local = game_sdk->GetLocalPlayer(match);
-    if (!local) return;
-    void* tf = game_sdk->Component_GetTransform(local);
-    if (!tf) return;
-    g_MarkPos = game_sdk->get_position(tf);
-    g_HasMark = true;
-}
-
-static void RunMarkTeleport() { if (g_HasMark) Player_TeleportTo(g_MarkPos); }
-
-static void RunAutoTeleport() {
-    using namespace std::chrono;
-    double now = duration<double>(steady_clock::now().time_since_epoch()).count();
-    if (now - g_LastAutoTPTime < 0.5) return;
-    g_LastAutoTPTime = now;
-    void* enemy = GetClosestEnemy();
-    if (!enemy) return;
-    Vector3 head = GetHeadPosition(enemy);
-    Player_TeleportTo(Vector3(head.x + 1.5f, head.y - 1.0f, head.z + 1.5f));
-}
-
-static void Weapon_StartFiring(void* weapon) { if (weapon) ((void (*)(void*))getRealOffset(0x4EA8A54))(weapon); }
-
-static void RunAmmoSpeedFast() {
-    void* match = game_sdk->Curent_Match();
-    if (!match) return;
-    void* local = game_sdk->GetLocalPlayer(match);
-    if (!local) return;
-    void* weapon = GetWeaponOnHand1(local);
-    if (!weapon) return;
-    typedef void (*set_int_t)(void*, int);
-    typedef void (*set_float_t)(void*, float);
-    static set_float_t _set_ReloadSpeed = (set_float_t)getRealOffset(0x61C82F8);
-    static set_int_t   _set_AmmoInClip  = (set_int_t)  getRealOffset(0x61C8308);
-    static set_int_t   _set_OnceAmmo    = (set_int_t)  getRealOffset(0x61C82E8);
-    if (_set_ReloadSpeed) _set_ReloadSpeed(weapon, 99999.9f);
-    if (_set_AmmoInClip)  _set_AmmoInClip (weapon, 999999);
-    if (_set_OnceAmmo)    _set_OnceAmmo   (weapon, 999999);
-    Weapon_StartFiring(weapon);
-}
-
-static void RunNoReload() {
-    if (!Vars.NoReload) return;
-    void* match = game_sdk->Curent_Match();
-    if (!match) return;
-    void* local = game_sdk->GetLocalPlayer(match);
-    if (!local) return;
-    void* playerAttr = *(void**)((uint64_t)local + 0x708);
-    if (playerAttr) *(bool*)((uint64_t)playerAttr + 0xD9) = true;
-}
-
-static void RunFastSwitch() {
-    void* match = game_sdk->Curent_Match();
-    if (!match) return;
-    void* local = game_sdk->GetLocalPlayer(match);
-    if (!local) return;
-    void* weapon = GetWeaponOnHand1(local);
-    if (!weapon) return;
-    typedef void (*set_float_t)(void*, float);
-    set_float_t _set_SwitchTime     = (set_float_t)getRealOffset(0x61C83E8);
-    set_float_t _set_PreSwitchTime  = (set_float_t)getRealOffset(0x61C83F8);
-    set_float_t _set_PostSwitchTime = (set_float_t)getRealOffset(0x61C8408);
-    if (_set_SwitchTime)     _set_SwitchTime    (weapon, 0.01f);
-    if (_set_PreSwitchTime)  _set_PreSwitchTime (weapon, 0.01f);
-    if (_set_PostSwitchTime) _set_PostSwitchTime(weapon, 0.01f);
-}
-
-float ZX_SpeedMultiplier = 1.8f;
-static float (*orig_GetMoveSpeedForFPP)(void*) = nullptr;
-static float hook_GetMoveSpeedForFPP(void* self) {
-    float orig = orig_GetMoveSpeedForFPP ? orig_GetMoveSpeedForFPP(self) : 6.0f;
-    return orig * ZX_SpeedMultiplier;
-}
-static void RunRealSpeed() {
-    void* match = game_sdk->Curent_Match();
-    if (!match) return;
-    void* local = game_sdk->GetLocalPlayer(match);
-    if (!local) return;
-    *(float*)((uintptr_t)local + 0x260) = ZX_SpeedMultiplier;
-}
-void initRealSpeedHook(void);
-static void (*orig_SyncPos)(void*, uint32_t, Vector3, Quaternion, Vector3) = nullptr;
-static void hook_SyncPos(void* self, uint32_t tick, Vector3 pos, Quaternion rot, Vector3 speed) {
-    const float kMaxSafeSpeed = 9.0f;
-    float len = sqrtf(speed.x * speed.x + speed.y * speed.y + speed.z * speed.z);
-    if (len > kMaxSafeSpeed) {
-        float s = kMaxSafeSpeed / len;
-        speed.x *= s;
-        speed.y *= s;
-        speed.z *= s;
-    }
-    if (orig_SyncPos) orig_SyncPos(self, tick, pos, rot, speed);
-}
-void initAntiBanHook(void);
-static void RunFastMedkit() {
-    typedef void (*set_bool_t)(bool);
-    static set_bool_t _set_FSModeUseMedikitFasterRate = (set_bool_t)getRealOffset(0x562BA2C);
-    if (_set_FSModeUseMedikitFasterRate) _set_FSModeUseMedikitFasterRate(true);
-}
-static void RunDashForward(float distance = 100.0f) {
-    void* match = game_sdk->Curent_Match();
-    if (!match) return;
-    void* local = game_sdk->GetLocalPlayer(match);
-    if (!local) return;
-    void* cam = game_sdk->get_camera();
-    if (!cam) return;
-    void* pTF = game_sdk->Component_GetTransform(local);
-    void* cTF = game_sdk->Component_GetTransform(cam);
-    if (!pTF || !cTF) return;
-    Vector3 cur = game_sdk->get_position(pTF);
-    Vector3 fwd = game_sdk->GetForward(cTF);
-    float len = sqrtf(fwd.x * fwd.x + fwd.z * fwd.z);
-    if (len < 0.001f) return;
-    float nx = fwd.x / len;
-    float nz = fwd.z / len;
-    cur.x += nx * distance;
-    cur.z += nz * distance;
-    Transform_INTERNAL_SetPosition(pTF, Vvector3(cur.x, cur.y, cur.z));
-}
-static void RunBlueMap() {
-    typedef void (*set_color_t)(UnityColor);
-    typedef void (*set_bool_t)(bool);
-    typedef void (*set_float_t)(float);
-    static set_color_t _set_ambientLight = (set_color_t)getRealOffset(0x8503F7C);
-    static set_color_t _set_fogColor     = (set_color_t)getRealOffset(0x85038E8);
-    static set_bool_t  _set_fog          = (set_bool_t) getRealOffset(0x850363C);
-    static set_float_t _set_fogDensity   = (set_float_t)getRealOffset(0x85039E0);
-    UnityColor deepBlueFog = { 0.00f, 0.04f, 0.30f, 1.0f };
-    UnityColor deepBlueAmb = { 0.00f, 0.06f, 0.45f, 1.0f };
-    if (_set_ambientLight) _set_ambientLight(deepBlueAmb);
-    if (_set_fog)          _set_fog(true);
-    if (_set_fogColor)     _set_fogColor(deepBlueFog);
-    if (_set_fogDensity)   _set_fogDensity(0.10f);
-}
-static void DoResetAccount() {
-    typedef void (*reset_guest_t)();
-    static reset_guest_t _GarenaMSDK_ResetGuest = (reset_guest_t)getRealOffset(0x5DFCBF8);
-    if (_GarenaMSDK_ResetGuest) dispatch_async(dispatch_get_main_queue(), ^{ _GarenaMSDK_ResetGuest(); });
-}
-
-void (*_AutoFire)(void *_this, int32_t pFireStatus, int32_t pFireMode);
-void old_AutoFire(void *_this, int32_t pFireStatus, int32_t pFireMode) {
-    using namespace std::chrono;
-    static auto lastTime = steady_clock::now();
-    static bool fireState = false;
-    if (_this != NULL && Vars.AutoFire) {
-        void* enemy = GetClosestEnemy();
-        if (enemy != NULL && tanghinh::isVisible(enemy)) {
-            auto now = steady_clock::now();
-            double elapsed = duration<double>(now - lastTime).count();
-            float halfDelay = FireDelay * 0.5f;
-            if (elapsed >= halfDelay) {
-                fireState = !fireState;
-                lastTime = now;
-            }
-            pFireStatus = fireState ? FireStatus::FIRING : FireStatus::NONE;
-            pFireMode = FireMode::AUTO;
-        } else {
-            pFireStatus = FireStatus::NONE;
-            fireState = false;
-        }
-    }
-    return _AutoFire(_this, pFireStatus, pFireMode);
-}
-
+// ========== Aimbot + FOV แบบเส้นแทนวงกลม ==========
 void aimbot() {
-    ImVec2 center = ImVec2(ImGui::GetIO().DisplaySize.x / 2, ImGui::GetIO().DisplaySize.y / 2);
-    if (!Vars.Aimbot) return;
+    if(!Vars.Aimbot) return;
+    ImDrawList* dl = ImGui::GetBackgroundDrawList();
+    if(!dl) return;
     
-    ImDrawList *draw_list = ImGui::GetBackgroundDrawList();
-    if (!draw_list) return;
-
-    if (Vars.isAimFov) {
-        draw_list->AddCircle(center, Vars.AimFov, IM_COL32(0, 0, 0, 255), 100, 2.5f);
-        float time = ImGui::GetTime();
-        for (int i = 0; i < 3; i++) {
-            float glowAlpha = (sinf(time * 2.0f + (i * 1.5f)) * 0.5f + 0.5f) * 150.0f;
-            draw_list->AddCircle(center, Vars.AimFov + (i * 1.2f), IM_COL32(0, 150, 255, (int)glowAlpha), 100, 1.0f);
-        }
+    float cx = ImGui::GetIO().DisplaySize.x/2;
+    float cy = ImGui::GetIO().DisplaySize.y/2;
+    ImVec2 center(cx,cy);
+    
+    if(Vars.isAimFov && Vars.AimFov>0){
+        // FOV แบบเส้นกากบาท + เส้นขวางแนวตั้ง
+        const ImU32 fovColor = IM_COL32(100,210,255,200);
+        float r = Vars.AimFov;
+        dl->AddLine(ImVec2(cx-r,cy), ImVec2(cx+r,cy), fovColor, 1.2f);
+        dl->AddLine(ImVec2(cx,cy-r), ImVec2(cx,cy+r), fovColor, 1.2f);
+        // วงแหวนบางเบา (ให้ดูมีมิติ)
+        dl->AddCircle(center, r, fovColor, 64, 0.8f);
     }
-
+    
     void *Match = game_sdk->Curent_Match();
-    if (!Match) return;
+    if(!Match) return;
     void *LocalPlayer = game_sdk->GetLocalPlayer(Match);
-    if (!LocalPlayer) return;
-    void *playertarget = GetClosestEnemy();
-    if (!playertarget) return;
-
-    ImVec2 EnemyLocation = Camera$$WorldToScreen::Regular(GetHeadPosition(playertarget));
-    drawlineglow(draw_list, center, EnemyLocation, ImColor(0, 120, 255), 1, 3);
+    if(!LocalPlayer) return;
+    void *target = GetClosestEnemy();
+    if(!target) return;
+    ImVec2 enemyPos = Camera$$WorldToScreen::Regular(GetHeadPosition(target));
+    dl->AddLine(center, enemyPos, IM_COL32(100,210,255,220), 1.8f);
 }
 
-void draw_watermark() {
-    std::string claw = oxorany("");
-    ImVec2 text_size = verdana_smol->calc_size(1, claw);
-    ImVec2 text_pos(10, ImGui::GetIO().DisplaySize.y - text_size.y - 10);
-    AddText(verdana_smol, 16, false, false, text_pos + ImVec2(1, 1), ImColor(0, 0, 0, 150), claw);
-    static float hue = 0.0f;
-    hue += ImGui::GetIO().DeltaTime * 0.1f;
-    if (hue > 1.0f) hue = 0.0f;
-    ImColor rainbow = ImColor::HSV(hue, 0.8f, 0.8f);
-    AddText(verdana_smol, 16, false, false, text_pos, rainbow, claw);
-    ImDrawList *draw_list = ImGui::GetBackgroundDrawList();
-    draw_list->AddLine(ImVec2(text_pos.x, text_pos.y + text_size.y + 2), ImVec2(text_pos.x + text_size.x, text_pos.y + text_size.y + 2), rainbow, 2.0f);
-    std::string center_text = "2K COMMUNITY/monalisa";
-    ImVec2 ctext_size = verdana_smol->CalcTextSizeA(24, FLT_MAX, 0, center_text.c_str());
-    ImVec2 cpos((ImGui::GetIO().DisplaySize.x - ctext_size.x) * 0.5f, 30);
-    AddText(verdana_smol, 24, false, false, ImVec2(cpos.x + 1, cpos.y + 1), ImColor(0, 0, 0, 200), center_text);
-    AddText(verdana_smol, 24, false, false, ImVec2(cpos.x + 2, cpos.y + 2), ImColor(0, 0, 0, 120), center_text);
-    AddText(verdana_smol, 24, false, false, cpos, ImColor(0, 0, 0, 255), center_text);
-    AddText(verdana_smol, 24, false, false, ImVec2(cpos.x + 1, cpos.y), ImColor(0, 0, 0, 200), center_text);
+void draw_watermark(){
+    std::string wm = "2K COMMUNITY/monalisa";
+    ImVec2 sz = ImGui::GetIO().DisplaySize;
+    ImVec2 ts = verdana_smol->CalcTextSizeA(18,FLT_MAX,0,wm.c_str());
+    ImVec2 pos(sz.x-ts.x-10, sz.y-ts.y-10);
+    AddText(verdana_smol,18,false,true,pos,ImColor(100,210,255),wm);
 }
