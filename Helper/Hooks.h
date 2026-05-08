@@ -719,8 +719,7 @@ void get_players() {
                     AddText(pixel_smol, 8, false, true, distance_pos, ImColor(255, 255, 255), distancestr.c_str());
                 }
                 if (Vars.circlepos) Draw3DCircle(pos, 1.0f, 0.5f, ImColor(255, 0, 0), 36, false, 0.5f);
-                if (Vars.skeleton)DrawSkeleton(closestEnemy, 
-                    Vector3 headPos = GetHeadPosition(closestEnemy);
+                if (Vars.skeleton)DrawSkeleton(auto headPos = GetHeadPosition(closestEnemy);
                     bool w2sh;
                     ImVec2 hs = Camera$$WorldToScreen::Checker(headPos, w2sh);
                     if (w2sh) {
