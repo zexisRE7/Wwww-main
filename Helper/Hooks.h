@@ -4,6 +4,7 @@
 #include <chrono>
 #define FMT_HEADER_ONLY
 #include "fmt/core.h"
+#include <algorithm>
 
 bool SilentAim = false;
 bool CheckWall1 = false;
@@ -27,7 +28,6 @@ struct Vars_t
     bool AimbotEnable = {};
     bool Aimbot = {};
     bool ShowFovCircle = false;
-   
     float AimFov = 500.0f;
     int AimCheck = {};
     bool ESPCount = {};
@@ -343,9 +343,9 @@ public:
     }
 };
 
-// ========== DASHED LINE FUNCTION ==========
 void AddDashedLine(ImDrawList* draw, ImVec2 p1, ImVec2 p2, ImU32 col, float thickness, float dash_len = 10.0f, float gap_len = 6.0f) {
     float len = sqrtf((p2.x - p1.x)*(p2.x - p1.x) + (p2.y - p1.y)*(p2.y - p1.y));
+    if (len < 0.001f) return;
     float dir_x = (p2.x - p1.x) / len;
     float dir_y = (p2.y - p1.y) / len;
     for (float t = 0; t < len; t += dash_len + gap_len) {
@@ -381,7 +381,6 @@ void DrawSkeleton(void *player, ImDrawList *drawList) {
     ImVec2 leftForeArmScreen = Camera$$WorldToScreen::Regular(leftForeArmPos);
     ImVec2 rightForeArmScreen = Camera$$WorldToScreen::Regular(rightForeArmPos);
     
-    // 🔥 Skeleton สีส้ม หนา 2.5
     ImColor boneColor = ImColor(255, 165, 0);
     float thickness = 2.5f;
     
@@ -624,6 +623,7 @@ void ProcessAimbot() {
         game_sdk->set_aim(LocalPlayer, TargetLook);
     }
 }
+
 void get_players() {
     ImDrawList *draw_list = ImGui::GetBackgroundDrawList();
     if (!draw_list) return;
@@ -631,7 +631,6 @@ void get_players() {
     if (!Vars.Enable) return;
     static int g_EnemyCount = 0;
     static int g_KnockedCount = 0;
-    ImVec2 disp = ImGui::GetIO().DisplaySize;
     
     try {
         if (Vars.Enable) {
@@ -724,12 +723,12 @@ void get_players() {
                 }
                 if (Vars.circlepos) Draw3DCircle(pos, 1.0f, 0.5f, ImColor(255, 0, 0), 36, false, 0.5f);
                 
-                // Skeleton (orange)
+                // Skeleton
                 if (Vars.skeleton) {
                     DrawSkeleton(closestEnemy, draw_list);
                 }
                 
-                // HEAD QUAD + INFO BOX (blue theme)
+                // HEAD QUAD + INFO BOX
                 Vector3 headPos = GetHeadPosition(closestEnemy);
                 bool w2sh;
                 ImVec2 hs = Camera$$WorldToScreen::Checker(headPos, w2sh);
@@ -771,18 +770,19 @@ void get_players() {
                     snprintf(hpBuf, sizeof(hpBuf), "HP: %d/%d", hp, maxHP);
                     draw_list->AddText(ImGui::GetFont(), 13.0f, {bx + 8.0f, by + 39.0f}, blueColor, hpBuf);
                 }
-            } // <-- ปิด if(w2sc) สำคัญมาก!!!
+            }
             
-            // OOF Indicator (อยู่นอก if(w2sc))
+            // OOF Indicator
             if (Vars.OOF) {
-                if ((pos_3.x < 0 || pos_3.x > disp.width) || (pos_3.y < 0 || pos_3.y > disp.height) || !w2sc) {
+                ImVec2 screenSize = ImGui::GetIO().DisplaySize;
+                if ((pos_3.x < 0 || pos_3.x > screenSize.x) || (pos_3.y < 0 || pos_3.y > screenSize.y) || !w2sc) {
                     constexpr int maxpixels = 150;
                     int pixels = maxpixels;
                     if (w2sc) {
                         if (pos_3.x < 0) pixels = clamp((int)-pos_3.x, 0, (int)maxpixels);
                         if (pos_3.y < 0) pixels = clamp((int)-pos_3.y, 0, (int)maxpixels);
-                        if (pos_3.x > disp.width) pixels = clamp((int)pos_3.x - (int)disp.width, 0, (int)maxpixels);
-                        if (pos_3.y > disp.height) pixels = clamp((int)pos_3.y - (int)disp.height, 0, (int)maxpixels);
+                        if (pos_3.x > screenSize.x) pixels = clamp((int)pos_3.x - (int)screenSize.x, 0, (int)maxpixels);
+                        if (pos_3.y > screenSize.y) pixels = clamp((int)pos_3.y - (int)screenSize.y, 0, (int)maxpixels);
                     }
                     float opacity = (float)pixels / (float)maxpixels;
                     float size = 3.5f;
@@ -802,7 +802,6 @@ void get_players() {
             }
         }
         
-        // Box for invisible enemies
         if (Vars.Box) {
             for (int u = 0; u < players->getSize(); u++) {
                 void *enemy = players->getValues()[u];
@@ -832,10 +831,9 @@ void get_players() {
             }
         }
         
-        // Enemy Counter
         if (Vars.ESPCount) {
             char ecBuf[64];
-            snprintf(ecBuf, sizeof(ecBuf), "ENEMIES: %d (Knocked: %d)", g_EnemyCount, g_KnockedCount);
+            snprintf(ecBuf, sizeof ecBuf, "ENEMIES: %d (Knocked: %d)", g_EnemyCount, g_KnockedCount);
             ImVec2 dispSz = ImGui::GetIO().DisplaySize;
             ImVec2 textSz = ImGui::GetFont()->CalcTextSizeA(16.0f, FLT_MAX, 0, ecBuf);
             float ex = dispSz.x * 0.5f - textSz.x * 0.5f;
@@ -848,8 +846,7 @@ void get_players() {
         }
         
     } catch (...) { return; }
-} // <-- ปิดฟังก์ชัน get_players()
-
+}
 
 struct UnityColor { float r, g, b, a; };
 static Vector3 g_MarkPos = Vector3::zero();
@@ -1033,30 +1030,23 @@ void old_AutoFire(void *_this, int32_t pFireStatus, int32_t pFireMode) {
     }
     return _AutoFire(_this, pFireStatus, pFireMode);
 }
- void aimbot()
-{
+
+void aimbot() {
     ImVec2 center = ImVec2(ImGui::GetIO().DisplaySize.x / 2, ImGui::GetIO().DisplaySize.y / 2);
     if (!Vars.Aimbot) return;
     
     ImDrawList *draw_list = ImGui::GetBackgroundDrawList();
     if (!draw_list) return;
 
-    if (Vars.isAimFov)
-    {
-        // 1. วาดวงกลมหลักสีดำ (Black FOV)
+    if (Vars.isAimFov) {
         draw_list->AddCircle(center, Vars.AimFov, IM_COL32(0, 0, 0, 255), 100, 2.5f);
-
-        // 2. เอฟเฟกต์แสงไหลเหมือนสายน้ำ (Water Flow Effect)
-        // ใช้ ImGui::GetTime() เพื่อให้สีขยับตามเวลา
         float time = ImGui::GetTime();
         for (int i = 0; i < 3; i++) {
-            // สร้างแสงสีน้ำเงินจางๆ ไหลวน (Cyan/Blue water glow)
             float glowAlpha = (sinf(time * 2.0f + (i * 1.5f)) * 0.5f + 0.5f) * 150.0f;
             draw_list->AddCircle(center, Vars.AimFov + (i * 1.2f), IM_COL32(0, 150, 255, (int)glowAlpha), 100, 1.0f);
-         }
+        }
     }
 
-    // ส่วนการวาด Line ไปหาศัตรู
     void *Match = game_sdk->Curent_Match();
     if (!Match) return;
     void *LocalPlayer = game_sdk->GetLocalPlayer(Match);
@@ -1065,9 +1055,7 @@ void old_AutoFire(void *_this, int32_t pFireStatus, int32_t pFireMode) {
     if (!playertarget) return;
 
     ImVec2 EnemyLocation = Camera$$WorldToScreen::Regular(GetHeadPosition(playertarget));
-    // ปรับเส้นยิงให้เป็นสีน้ำเงินนีออนให้เข้ากัน
     drawlineglow(draw_list, center, EnemyLocation, ImColor(0, 120, 255), 1, 3);
-    
 }
 
 void draw_watermark() {
