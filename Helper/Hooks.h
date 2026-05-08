@@ -1,4 +1,3 @@
-#pragma once
 
 #import "vinhtran.hpp"
 #import "loading.hxx"
