@@ -624,7 +624,6 @@ void ProcessAimbot() {
         game_sdk->set_aim(LocalPlayer, TargetLook);
     }
 }
-
 void get_players() {
     ImDrawList *draw_list = ImGui::GetBackgroundDrawList();
     if (!draw_list) return;
@@ -632,6 +631,8 @@ void get_players() {
     if (!Vars.Enable) return;
     static int g_EnemyCount = 0;
     static int g_KnockedCount = 0;
+    ImVec2 disp = ImGui::GetIO().DisplaySize;
+    
     try {
         if (Vars.Enable) {
             ProcessAimbot();
@@ -648,6 +649,7 @@ void get_players() {
         if (!camera) return;
         g_EnemyCount = 0;
         g_KnockedCount = 0;
+        
         for (int u = 0; u < players->getSize(); u++) {
             void *closestEnemy = players->getValues()[u];
             if (!closestEnemy) continue;
@@ -658,6 +660,7 @@ void get_players() {
             if (game_sdk->get_IsDieing(closestEnemy)) { g_KnockedCount++; continue; }
             if (!game_sdk->get_isVisible(closestEnemy)) continue;
             g_EnemyCount++;
+            
             Vector3 pos = getPosition(closestEnemy);
             Vector3 pos2 = getPosition(local_player);
             float distance = Vector3::Distance(pos, pos2);
@@ -674,8 +677,9 @@ void get_players() {
             float calculatedPosition = fabs((top_pos.y - bot_pos.y) * (0.0092f / 0.019f) / 2);
             ImRect rect(ImVec2(pmtXtop - calculatedPosition, top_pos.y), ImVec2(pmtXbottom + calculatedPosition, bot_pos.y));
             const auto &viewpos = game_sdk->get_position(game_sdk->Component_GetTransform(game_sdk->get_camera()));
+            
             if (w2sc) {
-                // ========== ESP LINE สีดำ เส้นประ หนา 2.5 ==========
+                // ESP LINE
                 if (Vars.lines) {
                     ImU32 blackColor = IM_COL32(0, 0, 0, 255);
                     ImVec2 startPoint = ImVec2(ImGui::GetIO().DisplaySize.x / 2, 0);
@@ -719,56 +723,57 @@ void get_players() {
                     AddText(pixel_smol, 8, false, true, distance_pos, ImColor(255, 255, 255), distancestr.c_str());
                 }
                 if (Vars.circlepos) Draw3DCircle(pos, 1.0f, 0.5f, ImColor(255, 0, 0), 36, false, 0.5f);
-                if (Vars.skeleton)
-{
-    DrawSkeleton(closestEnemy, draw_list);
-}
-
-// ดึงตำแหน่งหัว (ทำนอก if ก็ได้ หรือจะทำข้างในก็ได้)
-Vector3 headPos = GetHeadPosition(closestEnemy);
-bool w2sh;
-ImVec2 hs = Camera$$WorldToScreen::Checker(headPos, w2sh);
-if (w2sh)
-{
-    const float ds    = 24.0f;
-    const ImU32 blueColor = IM_COL32(0, 150, 255, 255);
-    const ImU32 blueFill  = IM_COL32(0, 150, 255, 50);
-
-    // Quad รอบหัว
-    ImVec2 dTop = {hs.x,       hs.y - ds};
-    ImVec2 dRgt = {hs.x + ds,  hs.y     };
-    ImVec2 dBot = {hs.x,       hs.y + ds};
-    ImVec2 dLft = {hs.x - ds,  hs.y     };
-    draw_list->AddQuad(dTop, dRgt, dBot, dLft, blueColor, 2.0f);
-    draw_list->AddQuadFilled(dTop, dRgt, dBot, dLft, blueFill);
-
-    // HP
-    int hp = game_sdk->GetHp(closestEnemy);
-    int maxHP = game_sdk->get_MaxHP(closestEnemy);
-    if (maxHP <= 0) maxHP = 200;
-
-    const float bx = hs.x + 32.0f;
-    const float by = hs.y - 28.0f;
-    const float bw = 114.0f, bh = 58.0f, rad = 5.0f;
-
-    draw_list->AddRectFilled({bx, by}, {bx + bw, by + bh}, IM_COL32(0, 0, 0, 230), rad);
-    draw_list->AddRect({bx, by}, {bx + bw, by + bh}, IM_COL32(0, 150, 255, 100), rad, 0, 1.0f);
-
-    char distBuf[32];
-    snprintf(distBuf, sizeof(distBuf), "DIST: %dm", (int)distance);
-    draw_list->AddText(ImGui::GetFont(), 13.0f, {bx + 8.0f, by + 7.0f}, blueColor, distBuf);
-
-    const float barX0 = bx + 6.0f, barY0 = by + 27.0f;
-    const float barW  = bw - 12.0f, barH  = 8.0f;
-    float hpFrac = (float)hp / (float)maxHP;
-    if (hpFrac > 1.0f) hpFrac = 1.0f;
-    draw_list->AddRectFilled({barX0, barY0}, {barX0 + barW, barY0 + barH}, IM_COL32(30, 30, 30, 255), 4.0f);
-    draw_list->AddRectFilled({barX0, barY0}, {barX0 + barW * hpFrac, barY0 + barH}, blueColor, 4.0f);
-
-    char hpBuf[32];
-    snprintf(hpBuf, sizeof(hpBuf), "HP: %d/%d", hp, maxHP);
-    draw_list->AddText(ImGui::GetFont(), 13.0f, {bx + 8.0f, by + 39.0f}, blueColor, hpBuf);
-}
+                
+                // Skeleton (orange)
+                if (Vars.skeleton) {
+                    DrawSkeleton(closestEnemy, draw_list);
+                }
+                
+                // HEAD QUAD + INFO BOX (blue theme)
+                Vector3 headPos = GetHeadPosition(closestEnemy);
+                bool w2sh;
+                ImVec2 hs = Camera$$WorldToScreen::Checker(headPos, w2sh);
+                if (w2sh) {
+                    const float ds = 24.0f;
+                    const ImU32 blueColor = IM_COL32(0, 150, 255, 255);
+                    const ImU32 blueFill  = IM_COL32(0, 150, 255, 50);
+                    
+                    ImVec2 dTop = {hs.x,       hs.y - ds};
+                    ImVec2 dRgt = {hs.x + ds,  hs.y     };
+                    ImVec2 dBot = {hs.x,       hs.y + ds};
+                    ImVec2 dLft = {hs.x - ds,  hs.y     };
+                    draw_list->AddQuad(dTop, dRgt, dBot, dLft, blueColor, 2.0f);
+                    draw_list->AddQuadFilled(dTop, dRgt, dBot, dLft, blueFill);
+                    
+                    int hp = game_sdk->GetHp(closestEnemy);
+                    int maxHP = game_sdk->get_MaxHP(closestEnemy);
+                    if (maxHP <= 0) maxHP = 200;
+                    
+                    const float bx = hs.x + 32.0f;
+                    const float by = hs.y - 28.0f;
+                    const float bw = 114.0f, bh = 58.0f, rad = 5.0f;
+                    
+                    draw_list->AddRectFilled({bx, by}, {bx + bw, by + bh}, IM_COL32(0, 0, 0, 230), rad);
+                    draw_list->AddRect({bx, by}, {bx + bw, by + bh}, IM_COL32(0, 150, 255, 100), rad, 0, 1.0f);
+                    
+                    char distBuf[32];
+                    snprintf(distBuf, sizeof(distBuf), "DIST: %dm", (int)distance);
+                    draw_list->AddText(ImGui::GetFont(), 13.0f, {bx + 8.0f, by + 7.0f}, blueColor, distBuf);
+                    
+                    const float barX0 = bx + 6.0f, barY0 = by + 27.0f;
+                    const float barW  = bw - 12.0f, barH  = 8.0f;
+                    float hpFrac = (float)hp / (float)maxHP;
+                    if (hpFrac > 1.0f) hpFrac = 1.0f;
+                    draw_list->AddRectFilled({barX0, barY0}, {barX0 + barW, barY0 + barH}, IM_COL32(30, 30, 30, 255), 4.0f);
+                    draw_list->AddRectFilled({barX0, barY0}, {barX0 + barW * hpFrac, barY0 + barH}, blueColor, 4.0f);
+                    
+                    char hpBuf[32];
+                    snprintf(hpBuf, sizeof(hpBuf), "HP: %d/%d", hp, maxHP);
+                    draw_list->AddText(ImGui::GetFont(), 13.0f, {bx + 8.0f, by + 39.0f}, blueColor, hpBuf);
+                }
+            } // <-- ปิด if(w2sc) สำคัญมาก!!!
+            
+            // OOF Indicator (อยู่นอก if(w2sc))
             if (Vars.OOF) {
                 if ((pos_3.x < 0 || pos_3.x > disp.width) || (pos_3.y < 0 || pos_3.y > disp.height) || !w2sc) {
                     constexpr int maxpixels = 150;
@@ -796,6 +801,8 @@ if (w2sh)
                 }
             }
         }
+        
+        // Box for invisible enemies
         if (Vars.Box) {
             for (int u = 0; u < players->getSize(); u++) {
                 void *enemy = players->getValues()[u];
@@ -824,9 +831,11 @@ if (w2sh)
                 draw_list->AddRect(r.Min, r.Max, ImColor(180, 0, 255, 255));
             }
         }
+        
+        // Enemy Counter
         if (Vars.ESPCount) {
             char ecBuf[64];
-            snprintf(ecBuf, sizeof ecBuf, "ENEMIES: %d (Knocked: %d)", g_EnemyCount, g_KnockedCount);
+            snprintf(ecBuf, sizeof(ecBuf), "ENEMIES: %d (Knocked: %d)", g_EnemyCount, g_KnockedCount);
             ImVec2 dispSz = ImGui::GetIO().DisplaySize;
             ImVec2 textSz = ImGui::GetFont()->CalcTextSizeA(16.0f, FLT_MAX, 0, ecBuf);
             float ex = dispSz.x * 0.5f - textSz.x * 0.5f;
@@ -837,8 +846,10 @@ if (w2sh)
             draw_list->AddText(ImGui::GetFont(), 16.0f, ImVec2(ex + 1.0f, ey + 1.0f), IM_COL32(0, 0, 0, 220), ecBuf);
             draw_list->AddText(ImGui::GetFont(), 16.0f, ImVec2(ex, ey), IM_COL32(255, 255, 255, 255), ecBuf);
         }
+        
     } catch (...) { return; }
-}
+} // <-- ปิดฟังก์ชัน get_players()
+
 
 struct UnityColor { float r, g, b, a; };
 static Vector3 g_MarkPos = Vector3::zero();
