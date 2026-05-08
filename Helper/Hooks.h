@@ -894,15 +894,20 @@ void get_players()
             if (w2sc)
             {
                 if (Vars.lines)
-                {
-                    if (game_sdk->get_IsDieing(closestEnemy))
-                    {
-                        draw_list->AddLine(ImVec2(ImGui::GetIO().DisplaySize.x / 2, 0), ImVec2(rect.GetCenter().x, rect.Min.y), ImColor(255, 0, 0));
-                    }
-                    else
-                    {
-                        draw_list->AddLine(ImVec2(ImGui::GetIO().DisplaySize.x / 2, 0), ImVec2(rect.GetCenter().x, rect.Min.y), line_color);
-                    }
+{
+    if (game_sdk->get_IsDieing(closestEnemy))
+    {
+        draw_list->AddLine(ImVec2(ImGui::GetIO().DisplaySize.x / 2, 0), 
+                           ImVec2(rect.GetCenter().x, rect.Min.y), 
+                           ImColor(0, 0, 0));      // ← แดง → ดำ
+    }
+    else
+    {
+        draw_list->AddLine(ImVec2(ImGui::GetIO().DisplaySize.x / 2, 0), 
+                           ImVec2(rect.GetCenter().x, rect.Min.y), 
+                           ImColor(0, 0, 0));      // ← ขาว → ดำ
+    }
+}
                 }
                 if (Vars.Box)
                 {
