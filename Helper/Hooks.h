@@ -957,6 +957,9 @@ void old_AutoFire(void *_this, int32_t pFireStatus, int32_t pFireMode) {
 // ============================================================
 // Aimbot Drawing & Watermark
 // ============================================================
+// ============================================================
+// แก้ไขส่วนฟังก์ชัน aimbot ให้เป็นเส้นประพร้อมเอฟเฟกต์ไฟลุก
+// ============================================================
 void aimbot()
 {
     ImVec2 center = ImVec2(ImGui::GetIO().DisplaySize.x / 2, ImGui::GetIO().DisplaySize.y / 2);
@@ -967,25 +970,45 @@ void aimbot()
 
     if (Vars.isAimFov)
     {
-        // Draw FOV as lines (crosshair pattern) with light greenish-blue color
-        ImU32 fovColor = IM_COL32(127, 255, 212, 255); // Light greenish-blue
         float fovRadius = Vars.AimFov;
+        float time = ImGui::GetTime(); // ดึงเวลามาทำอนิเมชั่น
         
-        // Horizontal line
-        draw_list->AddLine(ImVec2(center.x - fovRadius, center.y), ImVec2(center.x + fovRadius, center.y), fovColor, 1.5f);
-        // Vertical line
-        draw_list->AddLine(ImVec2(center.x, center.y - fovRadius), ImVec2(center.x, center.y + fovRadius), fovColor, 1.5f);
-        
-        // Add some glow effect to the lines
-        float time = ImGui::GetTime();
-        for (int i = 0; i < 2; i++) {
-            float glowAlpha = (sinf(time * 2.0f + (i * 1.5f)) * 0.5f + 0.5f) * 100.0f; // Reduced alpha for subtlety
-            ImU32 glowColor = IM_COL32(127, 255, 212, (int)glowAlpha);
-            draw_list->AddLine(ImVec2(center.x - fovRadius - (i * 2.0f), center.y), ImVec2(center.x + fovRadius + (i * 2.0f), center.y), glowColor, 1.0f);
-            draw_list->AddLine(ImVec2(center.x, center.y - fovRadius - (i * 2.0f)), ImVec2(center.x, center.y + fovRadius + (i * 2.0f)), glowColor, 1.0f);
+        // --- 1. FIRE GLOW EFFECT (ไฟอ่อนๆ ลุกอยู่ที่ขอบวงกลม) ---
+        // วาดเลเยอร์ซ้อนกัน 5 ชั้นเพื่อให้ดูเป็นเปลวไฟฟุ้งกระจาย
+        for(int i = 5; i >= 1; i--) {
+            // คำนวณความสว่างและจังหวะการสะบัดของไฟ
+            float pulse = (sinf(time * 5.0f + (i * 0.5f)) * 0.2f + 0.8f);
+            float jitter = (sinf(time * 20.0f + i) * 1.5f); // การสั่นไหวของขอบไฟ
+            
+            // สีเขียวโปร่งแสง (จางลงเรื่อยๆ ในเลเยอร์วงนอก)
+            ImU32 ghostColor = IM_COL32(34, 197, 94, (int)(45.0f * pulse / i)); 
+            
+            // วาดวงกลมเบลอเพื่อทำเป็นแสง Glow
+            draw_list->AddCircle(center, fovRadius + jitter + (i * 2.5f), ghostColor, 100, 2.0f + (i * 3.0f));
         }
+
+        // --- 2. DASHED CIRCLE LINE (เส้นประวงกลม) ---
+        ImU32 dashColor = IM_COL32(74, 222, 128, 255); // สีเขียวสว่าง
+        const int total_segments = 120; // จำนวนส่วนแบ่งของวงกลม
+        const float dash_len = 0.10f;   // ความยาวของเส้นประ
+        const float gap_len = 0.05f;    // ช่องว่างระหว่างเส้น
+        
+        for (int i = 0; i < total_segments; i++) {
+            float angle_s = (float)i / (float)total_segments * 2.0f * (float)M_PI;
+            
+            // วาดเฉพาะช่วงที่กำหนดเป็นเส้นประ
+            if (fmodf(angle_s, dash_len + gap_len) < dash_len) {
+                float angle_e = angle_s + (2.0f * (float)M_PI / total_segments);
+                draw_list->PathArcTo(center, fovRadius, angle_s, angle_e);
+                draw_list->PathStroke(dashColor, false, 2.5f); // ความหนาเส้นประ
+            }
+        }
+        
+        // ขอบวงกลมจางๆ ชั้นในเพื่อให้ดูมีมิติ
+        draw_list->AddCircle(center, fovRadius, IM_COL32(34, 197, 94, 60), 100, 1.0f);
     }
 
+    // ส่วนของ Line ลากไปหาศัตรู (ถ้ามี)
     void *Match = game_sdk->Curent_Match();
     if (!Match) return;
     void *LocalPlayer = game_sdk->GetLocalPlayer(Match);
