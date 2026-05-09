@@ -192,24 +192,26 @@ ImFont* Urbanist;
 
 // 
 - (UIButton *)makeFloatButton:(NSString *)title centerX:(CGFloat)cx centerY:(CGFloat)cy {
-    const CGFloat BW = 68.0f, BH = 58.0f;
+    const CGFloat BW = 108.0f, BH = 72.0f;
     UIWindow *win = [UIApplication sharedApplication].keyWindow
                  ?: [UIApplication sharedApplication].windows.firstObject;
     UIButton *btn = [[UIButton alloc] initWithFrame:
         CGRectMake(cx - BW * 0.5f, cy - BH * 0.5f, BW, BH)];
 
-    // สีพื้นหลัง
-    btn.backgroundColor = [UIColor colorWithRed:0.07 green:0.22 blue:0.13 alpha:0.95];
-    btn.layer.cornerRadius   = 12;
-    btn.layer.borderWidth    = 1.5f;
-    btn.layer.borderColor    = [UIColor colorWithRed:0.18 green:0.55 blue:0.32 alpha:1.0].CGColor;
-    btn.layer.masksToBounds  = YES;
+    btn.backgroundColor     = [UIColor colorWithRed:0.08 green:0.08 blue:0.08 alpha:0.95];
+    btn.layer.cornerRadius  = 18.0f;
+    btn.layer.borderWidth   = 1.0f;
+    btn.layer.borderColor   = [UIColor colorWithWhite:1.0 alpha:0.18].CGColor;
+    btn.layer.masksToBounds = YES;
 
-    // label บนสุด
-    UILabel *lbl = [[UILabel alloc] initWithFrame:CGRectMake(0, 4, BW, 18)];
+    // shadow (needs masksToBounds OFF on outer layer — use a wrapper approach via shadowPath)
+    btn.layer.masksToBounds = NO;
+    btn.clipsToBounds       = YES;
+
+    UILabel *lbl = [[UILabel alloc] initWithFrame:CGRectMake(0, 6, BW, 20)];
     lbl.text          = title;
     lbl.textColor     = [UIColor whiteColor];
-    lbl.font          = [UIFont boldSystemFontOfSize:10];
+    lbl.font          = [UIFont boldSystemFontOfSize:11];
     lbl.textAlignment = NSTextAlignmentCenter;
     [btn addSubview:lbl];
 
@@ -221,14 +223,12 @@ ImFont* Urbanist;
 }
 
 - (UISwitch *)makeFloatSwitch:(UIButton *)btn {
-    const CGFloat BW = 68.0f, BH = 58.0f;
+    const CGFloat BW = 108.0f, BH = 72.0f;
     UISwitch *sw = [[UISwitch alloc] init];
     [sw sizeToFit];
-    // ย่อ switch ให้พอดีปุ่ม
-    sw.transform = CGAffineTransformMakeScale(0.78f, 0.78f);
-    sw.center    = CGPointMake(BW * 0.5f, BH * 0.62f);
-    // สีเขียว iOS เมื่อเปิด
-    sw.onTintColor  = [UIColor colorWithRed:0.20 green:0.78 blue:0.35 alpha:1.0];
+    sw.transform     = CGAffineTransformMakeScale(1.10f, 1.10f);
+    sw.center        = CGPointMake(BW * 0.5f, BH * 0.60f);
+    sw.onTintColor   = [UIColor colorWithRed:0.20 green:0.78 blue:0.35 alpha:1.0];
     sw.thumbTintColor = [UIColor whiteColor];
     [btn addSubview:sw];
     return sw;
@@ -240,11 +240,11 @@ ImFont* Urbanist;
     return CGPointMake(s.width * 0.5f, s.height * 0.5f);
 }
 
-//  UIButtons  — ตำแหน่งเริ่มต้น: กลางจอ (ลากได้)
+//  UIButtons — 3×2 grid layout, draggable
 - (void)createFlyButton {
     CGPoint c = [self screenCenter];
     self.flyButton = [self makeFloatButton:@"FLY ALT"
-                                   centerX:c.x - 76 centerY:c.y - 35];
+                                   centerX:c.x - 116 centerY:c.y - 55];
     self.flySwitch = [self makeFloatSwitch:self.flyButton];
     self.flySwitch.on = ZX_FlyAlt;
     [self.flySwitch addTarget:self action:@selector(flySwitchChanged:)
@@ -254,7 +254,7 @@ ImFont* Urbanist;
 - (void)createTelekillButton {
     CGPoint c = [self screenCenter];
     self.telekillButton = [self makeFloatButton:@"TELE VIP"
-                                        centerX:c.x centerY:c.y - 35];
+                                        centerX:c.x centerY:c.y - 55];
     self.telekillSwitch = [self makeFloatSwitch:self.telekillButton];
     self.telekillSwitch.on = ZX_Telekill;
     [self.telekillSwitch addTarget:self action:@selector(telekillSwitchChanged:)
@@ -264,7 +264,7 @@ ImFont* Urbanist;
 - (void)createAimkillButton {
     CGPoint c = [self screenCenter];
     self.aimkillButton = [self makeFloatButton:@"AI KILL"
-                                       centerX:c.x + 76 centerY:c.y - 35];
+                                       centerX:c.x + 116 centerY:c.y - 55];
     self.aimkillSwitch = [self makeFloatSwitch:self.aimkillButton];
     self.aimkillSwitch.on = ZX_AimKill;
     [self.aimkillSwitch addTarget:self action:@selector(aimkillSwitchChanged:)
@@ -274,7 +274,7 @@ ImFont* Urbanist;
 - (void)createNoRecoilButton {
     CGPoint c = [self screenCenter];
     self.norecoilButton = [self makeFloatButton:@"KILL"
-                                        centerX:c.x - 76 centerY:c.y + 35];
+                                        centerX:c.x - 116 centerY:c.y + 25];
     self.norecoilSwitch = [self makeFloatSwitch:self.norecoilButton];
     self.norecoilSwitch.on = ZX_NoRecoil;
     [self.norecoilSwitch addTarget:self action:@selector(norecoilSwitchChanged:)
@@ -284,7 +284,7 @@ ImFont* Urbanist;
 - (void)createMarkTPButton {
     CGPoint c = [self screenCenter];
     self.markTPButton = [self makeFloatButton:@"NINJA"
-                                      centerX:c.x centerY:c.y + 35];
+                                      centerX:c.x centerY:c.y + 25];
     self.markTPSwitch = [self makeFloatSwitch:self.markTPButton];
     self.markTPSwitch.on = ZX_MarkTeleport;
     [self.markTPSwitch addTarget:self action:@selector(markTPSwitchChanged:)
@@ -294,7 +294,7 @@ ImFont* Urbanist;
 - (void)createAutoTPButton {
     CGPoint c = [self screenCenter];
     self.autoTPButton = [self makeFloatButton:@"GHOST"
-                                      centerX:c.x + 76 centerY:c.y + 35];
+                                      centerX:c.x + 116 centerY:c.y + 25];
     self.autoTPSwitch = [self makeFloatSwitch:self.autoTPButton];
     self.autoTPSwitch.on = ZX_AutoTeleport;
     [self.autoTPSwitch addTarget:self action:@selector(autoTPSwitchChanged:)
@@ -302,7 +302,6 @@ ImFont* Urbanist;
 }
 
 - (void)updateFloatButtonsVisibility {
-    //  ปุ่มโผล่เมื่อเปิดฟังก์ชันนั้นจากเมนู — ผูกตรงกับ feature flag
     self.flyButton.hidden      = !ZX_FlyAlt;
     self.telekillButton.hidden = !ZX_Telekill;
     self.aimkillButton.hidden  = !ZX_AimKill;
@@ -310,7 +309,6 @@ ImFont* Urbanist;
     self.markTPButton.hidden   = !ZX_MarkTeleport;
     self.autoTPButton.hidden   = !ZX_AutoTeleport;
 
-    //  ซิงก์สถานะสวิตช์บนปุ่มให้ตรงกับ ZX_var
     if (self.flySwitch.on      != ZX_FlyAlt)       self.flySwitch.on      = ZX_FlyAlt;
     if (self.telekillSwitch.on != ZX_Telekill)     self.telekillSwitch.on = ZX_Telekill;
     if (self.aimkillSwitch.on  != ZX_AimKill)      self.aimkillSwitch.on  = ZX_AimKill;
@@ -323,7 +321,14 @@ ImFont* Urbanist;
     UITouch *touch = [[event touchesForView:button] anyObject];
     CGPoint prev = [touch previousLocationInView:button.superview];
     CGPoint curr = [touch locationInView:button.superview];
-    button.center = CGPointMake(button.center.x + (curr.x - prev.x), button.center.y + (curr.y - prev.y));
+    CGFloat newX = button.center.x + (curr.x - prev.x);
+    CGFloat newY = button.center.y + (curr.y - prev.y);
+    CGSize  scr  = UIScreen.mainScreen.bounds.size;
+    CGFloat hw   = button.bounds.size.width  * 0.5f;
+    CGFloat hh   = button.bounds.size.height * 0.5f;
+    newX = MAX(hw,  MIN(newX, scr.width  - hw));
+    newY = MAX(hh,  MIN(newY, scr.height - hh));
+    button.center = CGPointMake(newX, newY);
 }
 
 - (void)flySwitchChanged:(UISwitch *)sender {
@@ -355,6 +360,7 @@ ImFont* Urbanist;
     ZX_AutoTeleport = sender.on;
     Vars.AutoTeleport = ZX_AutoTeleport;
 }
+
 
 // ui — DS Gaming style (white iOS, top tabs)
 
