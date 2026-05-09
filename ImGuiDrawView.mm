@@ -2086,7 +2086,7 @@ static bool ZX_BatMonInit  = false;
 // ══════════════════════════════════════════════════════════════════════════════
 
 // ─── COLORS ──────────────────────────────────────────────────────────────────
-#define IM_COL32(r,g,b,a) IM_COL32(r,g,b,a)
+
 static const ImU32 C_WIN_BG        = IM_COL32( 14,  14,  18, 255);
 static const ImU32 C_HEADER_BG     = IM_COL32(  8,   8,  10, 255);
 static const ImU32 C_SIDEBAR_BG    = IM_COL32( 11,  11,  14, 255);
