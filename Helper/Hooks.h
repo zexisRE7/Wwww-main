@@ -1,4 +1,3 @@
-
 #import "vinhtran.hpp"
 #import "loading.hxx"
 #include <fstream>
@@ -1166,18 +1165,23 @@ void get_players() {
             
             // OOF Indicator
             if (Vars.OOF) {
-                if ((pos_3.x < 0 || pos_3.x > disp.width) || (pos_3.y < 0 || pos_3.y > disp.height) || !w2sc) {
+                // Re-calculate w2sc and pos_3 for OOF indicator based on the enemy's position
+                bool oof_w2sc;
+                ImVec2 oof_pos_3 = Camera$$WorldToScreen::Checker(pos, oof_w2sc);
+                if ((oof_pos_3.x < 0 || oof_pos_3.x > disp.x) || (oof_pos_3.y < 0 || oof_pos_3.y > disp.y) || !oof_w2sc) {
                     constexpr int maxpixels = 150;
                     int pixels = maxpixels;
-                    if (w2sc) {
-                        if (pos_3.x < 0) pixels = std::clamp((int)-pos_3.x, 0, maxpixels);
-                        if (pos_3.y < 0) pixels = std::clamp((int)-pos_3.y, 0, maxpixels);
-                        if (pos_3.x > disp.width) pixels = std::clamp((int)pos_3.x - (int)disp.width, 0, maxpixels);
-                        if (pos_3.y > disp.height) pixels = std::clamp((int)pos_3.y - (int)disp.height, 0, maxpixels);
+                    if (oof_w2sc) {
+                        if (oof_pos_3.x < 0) pixels = std::clamp((int)-oof_pos_3.x, 0, maxpixels);
+                        if (oof_pos_3.y < 0) pixels = std::clamp((int)-oof_pos_3.y, 0, maxpixels);
+                        if (oof_pos_3.x > disp.x) pixels = std::clamp((int)oof_pos_3.x - (int)disp.x, 0, maxpixels);
+                        if (oof_pos_3.y > disp.y) pixels = std::clamp((int)oof_pos_3.y - (int)disp.y, 0, maxpixels);
                     }
                     float opacity = (float)pixels / (float)maxpixels;
                     float size = 3.5f;
                     Vector3 viewdir = game_sdk->GetForward(game_sdk->Component_GetTransform(game_sdk->get_camera()));
+                    // pos and viewpos are already declared and in scope from lines 1038 and 1053
+                    // pos and viewpos are already declared and in scope
                     Vector3 targetdir = Vector3::Normalized(pos - viewpos);
                     float viewangle = atan2(viewdir.z, viewdir.x) * Rad2Deg;
                     float targetangle = atan2(targetdir.z, targetdir.x) * Rad2Deg;
