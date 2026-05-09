@@ -50,6 +50,7 @@ ImFont* pixel_smol = {};
 #include "Other/dobby_defines.h"
 #import "Other/H5hook.h"
 #include "Other/Paste.h"
+#import <objc/runtime.h>
 
 #define Hook(x, y, z) \
 { \
