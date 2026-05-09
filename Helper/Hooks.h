@@ -1191,23 +1191,6 @@ void get_players() {
                     OtFovV1(ImGui::GetIO().DisplaySize.x / 2, ImGui::GetIO().DisplaySize.y / 2, 90 + targetDistance * 2, angle - size, angle + size, ImColor(1.f, 1.f, 1.f, 1.f * opacity), 1);
                 }
             }
-                    float opacity = (float)pixels / (float)maxpixels;
-                    float size = 3.5f;
-                    Vector3 viewdir = game_sdk->GetForward(game_sdk->Component_GetTransform(game_sdk->get_camera()));
-                    // pos and viewpos are already declared and in scope from lines 1038 and 1053
-                    Vector3 targetdir = Vector3::Normalized(pos - viewpos);
-                    float viewangle = atan2(viewdir.z, viewdir.x) * Rad2Deg;
-                    float targetangle = atan2(targetdir.z, targetdir.x) * Rad2Deg;
-                    if (viewangle < 0) viewangle += 360;
-                    if (targetangle < 0) targetangle += 360;
-                    float angle = targetangle - viewangle;
-                    while (angle < 0) angle += 360;
-                    while (angle > 360) angle -= 360;
-                    angle = 360 - angle;
-                    angle -= 90;
-                    OtFovV1(ImGui::GetIO().DisplaySize.x / 2, ImGui::GetIO().DisplaySize.y / 2, 90 + targetDistance * 2, angle - size, angle + size, ImColor(1.f, 1.f, 1.f, 1.f * opacity), 1);
-                }
-            }
         } // end for loop
         
         // Snowfall Effect
