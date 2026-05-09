@@ -98,7 +98,8 @@ BOOL isJailbroken() {
 @property (nonatomic, assign) BOOL ninjaRunButtonVisible;
 @property (nonatomic, strong) UIView *menu;
 
-// ✅ UIButtons ลอย
+//  UIButtons ลอย
+// UIButtons ลอย
 @property (nonatomic, strong) UIButton *flyButton;
 @property (nonatomic, strong) UIButton *telekillButton;
 @property (nonatomic, strong) UIButton *aimkillButton;
@@ -106,12 +107,13 @@ BOOL isJailbroken() {
 @property (nonatomic, strong) UIButton *markTPButton;
 @property (nonatomic, strong) UIButton *autoTPButton;
 
-@property (nonatomic, strong) UISwitch *flySwitch;
-@property (nonatomic, strong) UISwitch *telekillSwitch;
-@property (nonatomic, strong) UISwitch *aimkillSwitch;
-@property (nonatomic, strong) UISwitch *norecoilSwitch;
-@property (nonatomic, strong) UISwitch *markTPSwitch;
-@property (nonatomic, strong) UISwitch *autoTPSwitch;
+// Custom Switch Views
+@property (nonatomic, strong) UIView *flySwitch;
+@property (nonatomic, strong) UIView *telekillSwitch;
+@property (nonatomic, strong) UIView *aimkillSwitch;
+@property (nonatomic, strong) UIView *norecoilSwitch;
+@property (nonatomic, strong) UIView *markTPSwitch;
+@property (nonatomic, strong) UIView *autoTPSwitch;
 @end
 
 static __weak ImGuiDrawView *g_DrawView = nil;
