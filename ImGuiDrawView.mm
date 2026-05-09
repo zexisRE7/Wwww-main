@@ -52,6 +52,8 @@ ImFont* pixel_smol = {};
 #include "Other/Paste.h"
 #import <objc/runtime.h>
 
+static char kAccentKey;
+
 #define Hook(x, y, z) \
 { \
     NSString* result_##y = StaticInlineHookPatch(("Frameworks/UnityFramework.framework/UnityFramework"), x, nullptr); \
@@ -211,8 +213,6 @@ static UIColor *kAccentKill  = nil;
 static UIColor *kAccentNinja = nil;
 static UIColor *kAccentGhost = nil;
 
-static char kAccentKey;
-
 #pragma mark - Button Style
 
 - (void)updateButtonStyle:(UIButton *)btn
@@ -315,10 +315,10 @@ static char kAccentKey;
     [track addSubview:thumb];
 
     // กัน crash จาก accessibilityHint
-    objc_setAssociatedObject(track,
-                             &kAccentkey",
-                             accent,
-                             OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+  objc_setAssociatedObject(track,
+                         &kAccentKey,
+                         accent,
+                         OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 
     UITapGestureRecognizer *tap =
     [[UITapGestureRecognizer alloc]
@@ -340,9 +340,8 @@ static char kAccentKey;
 - (void)toggleCustomSwitch:(UIView *)track {
 
     UIColor *accent =
-    objc_getAssociatedObject(track, &kAccentkey");
-
-    UIView *thumb = track.subviews.firstObject;
+   objc_getAssociatedObject(track, &kAccentKey);
+   UIView *thumb = track.subviews.firstObject;
 
     BOOL isOn = thumb.frame.origin.x > 10;
 
