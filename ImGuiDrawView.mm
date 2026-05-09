@@ -204,56 +204,58 @@ static UIColor *kAccentNinja = nil;
 static UIColor *kAccentGhost = nil;
 
 // ── Visual style: always pure BLACK, no glow, no shadow ──────────────────────
+// ── Visual style: ปรับให้ดำสนิทและขอบบางลง ──────────────────────
 - (void)updateButtonStyle:(UIButton *)btn isActive:(BOOL)active accentColor:(UIColor *)color {
-    btn.backgroundColor     = [UIColor colorWithRed:0.0f green:0.0f blue:0.0f alpha:1.0f];
-    btn.layer.borderColor   = [UIColor colorWithWhite:1.0f alpha:0.08f].CGColor;
+    btn.backgroundColor     = [UIColor blackColor]; // ดำสนิท
+    btn.layer.borderColor   = [UIColor colorWithWhite:1.0f alpha:0.2f].CGColor; // ขอบขาวจางๆ
     btn.layer.borderWidth   = 1.0f;
-    btn.layer.shadowOpacity = 0.0f;
 }
 
-// ── Base button factory — 112×74, black, rounded ─────────────────────────────
+// ── Base button factory — ปรับขนาดให้พอดี ─────────────────────────────
 - (UIButton *)makeFloatButton:(NSString *)title centerX:(CGFloat)cx centerY:(CGFloat)cy {
-    const CGFloat BW = 112.0f, BH = 74.0f;
-    UIWindow *win = [UIApplication sharedApplication].keyWindow
-                 ?: [UIApplication sharedApplication].windows.firstObject;
+    const CGFloat BW = 100.0f, BH = 65.0f; // ปรับขนาดให้เล็กลงหน่อยเพื่อความสวยงาม
+    UIWindow *win = [UIApplication sharedApplication].keyWindow;
 
-    UIButton *btn = [[UIButton alloc] initWithFrame:
-        CGRectMake(cx - BW * 0.5f, cy - BH * 0.5f, BW, BH)];
-
-    btn.backgroundColor     = [UIColor colorWithRed:0.0f green:0.0f blue:0.0f alpha:1.0f];
-    btn.layer.cornerRadius  = 18.0f;
+    UIButton *btn = [[UIButton alloc] initWithFrame:CGRectMake(cx - BW * 0.5f, cy - BH * 0.5f, BW, BH)];
+    btn.backgroundColor     = [UIColor blackColor];
+    btn.layer.cornerRadius  = 12.0f; // โค้งกำลังดี
     btn.layer.borderWidth   = 1.0f;
-    btn.layer.borderColor   = [UIColor colorWithWhite:1.0f alpha:0.08f].CGColor;
+    btn.layer.borderColor   = [UIColor colorWithWhite:1.0f alpha:0.2f].CGColor;
     btn.layer.masksToBounds = YES;
-    btn.layer.shadowOpacity = 0.0f;
 
-    // Label (top)
-    UILabel *lbl = [[UILabel alloc] initWithFrame:CGRectMake(0.0f, 8.0f, BW, 18.0f)];
+    // Label (ชื่อฟีเจอร์)
+    UILabel *lbl = [[UILabel alloc] initWithFrame:CGRectMake(0.0f, 6.0f, BW, 15.0f)];
     lbl.text          = title;
-    lbl.textColor     = [UIColor colorWithWhite:1.0f alpha:0.92f];
-    lbl.font          = [UIFont boldSystemFontOfSize:11.0f];
+    lbl.textColor     = [UIColor whiteColor];
+    lbl.font          = [UIFont boldSystemFontOfSize:10.0f];
     lbl.textAlignment = NSTextAlignmentCenter;
     [btn addSubview:lbl];
 
-    [btn addTarget:self action:@selector(buttonDragged:withEvent:)
-        forControlEvents:UIControlEventTouchDragInside];
+    [btn addTarget:self action:@selector(buttonDragged:withEvent:) forControlEvents:UIControlEventTouchDragInside];
     [win addSubview:btn];
-    [win bringSubviewToFront:btn];
     return btn;
 }
 
-// ── Switch factory — accent color, always on black card ──────────────────────
+// ── Switch factory — ปรับสีให้ดูแพง ──────────────────────
 - (UISwitch *)makeFloatSwitch:(UIButton *)btn accentColor:(UIColor *)accent {
-    const CGFloat BW = 112.0f, BH = 74.0f;
+    const CGFloat BW = 100.0f, BH = 65.0f;
     UISwitch *sw = [[UISwitch alloc] init];
-    [sw sizeToFit];
-    sw.transform      = CGAffineTransformMakeScale(1.05f, 1.05f);
-    sw.center         = CGPointMake(BW * 0.5f, BH * 0.625f);
-    sw.onTintColor    = accent;
-    sw.thumbTintColor = [UIColor whiteColor];
+    
+    // ปรับขนาดสวิทช์ให้เล็กลงเพื่อให้เข้ากับปุ่ม
+    sw.transform = CGAffineTransformMakeScale(0.75f, 0.75f); 
+    sw.center    = CGPointMake(BW * 0.5f, BH * 0.65f);
+    
+    sw.onTintColor = accent; // สีตอนเปิด (ตามที่ส่งมา)
+    sw.tintColor   = [UIColor darkGrayColor]; // สีขอบตอนปิด
+    sw.backgroundColor = [UIColor blackColor]; // พื้นหลังสวิทช์ตอนปิดให้เป็นสีดำ
+    sw.layer.cornerRadius = 16.0f; // ต้องทำโค้งให้รับกับพื้นหลังดำ
+    
+    sw.thumbTintColor = [UIColor whiteColor]; // ปุ่มเลื่อนเป็นสีขาว
+    
     [btn addSubview:sw];
     return sw;
 }
+
 
 // ── Screen center helper ──────────────────────────────────────────────────────
 - (CGPoint)screenCenter {
