@@ -230,7 +230,7 @@ static UIColor *kAccentGhost = nil;
 }
 #pragma mark - Button Style (active = มีสีพื้นหลัง, inactive = ดำโปร่ง)
 
-- (void)updateButtonStyle:(UIButton *)btn
+- (void)updatebuttonStyle:(UIButton *)btn
                  isActive:(BOOL)active
               accentColor:(UIColor *)color {
     if (active) {
