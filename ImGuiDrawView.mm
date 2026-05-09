@@ -211,6 +211,8 @@ static UIColor *kAccentKill  = nil;
 static UIColor *kAccentNinja = nil;
 static UIColor *kAccentGhost = nil;
 
+static char kAccentKey;
+
 #pragma mark - Button Style
 
 - (void)updateButtonStyle:(UIButton *)btn
@@ -314,7 +316,7 @@ static UIColor *kAccentGhost = nil;
 
     // กัน crash จาก accessibilityHint
     objc_setAssociatedObject(track,
-                             @"accent",
+                             &kAccentkey",
                              accent,
                              OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 
@@ -338,7 +340,7 @@ static UIColor *kAccentGhost = nil;
 - (void)toggleCustomSwitch:(UIView *)track {
 
     UIColor *accent =
-    objc_getAssociatedObject(track, @"accent");
+    objc_getAssociatedObject(track, &kAccentkey");
 
     UIView *thumb = track.subviews.firstObject;
 
