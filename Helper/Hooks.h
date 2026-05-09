@@ -1037,8 +1037,8 @@ void get_players() {
             
             Vector3 pos = getPosition(closestEnemy);
             Vector3 pos2 = getPosition(local_player);
-            float distance = Vector3::Distance(pos, pos2);
-            if (distance > 200.0f) continue;
+            float targetDistance = Vector3::Distance(pos, pos2);
+            if (targetDistance > 200.0f) continue;
             
             bool w2sc;
             ImVec2 top_pos = Camera$$WorldToScreen::Regular(pos + Vector3(0, 1.6, 0));
@@ -1103,11 +1103,10 @@ void get_players() {
                 if (Vars.GongjakESP) {
                     DrawGongjakESP(draw_list, rect.GetCenter(), 20.0f, IM_COL32(127, 255, 212, 255), 1.5f);
                 }
-                }
                 
                 // Distance
                 if (Vars.Distance) {
-                    std::string distancestr = fmt::format(oxorany("{}M"), static_cast<int>(distance));
+                    std::string distancestr = fmt::format(oxorany("{}M"), static_cast<int>(targetDistance));
                     ImVec2 distance_pos = { rect.Max.x + 4, rect.Min.y };
                   AddText(pixel_smol, 8, true, false, distance_pos, ImColor(255, 255, 255), distancestr.c_str(), draw_list);
                 }
@@ -1147,7 +1146,7 @@ void get_players() {
                     draw_list->AddRect({bx, by}, {bx + bw, by + bh}, IM_COL32(0, 150, 255, 100), rad, 0, 1.0f);
                     
                     char distBuf[32];
-                    snprintf(distBuf, sizeof(distBuf), "DIST: %dm", (int)distance);
+                    snprintf(distBuf, sizeof(distBuf), "DIST: %dm", (int)targetDistance);
                     draw_list->AddText(ImGui::GetFont(), 13.0f, {bx + 8.0f, by + 7.0f}, blueColor, distBuf);
                     
                     const float barX0 = bx + 6.0f, barY0 = by + 27.0f;
@@ -1164,8 +1163,7 @@ void get_players() {
             } // <-- Close if(w2sc)
             
             // OOF Indicator
-            if (Vars.OOF) {
-                // Re-calculate w2sc and pos_3 for OOF indicator based on the enemy's position
+                        if (Vars.OOF) {
                 bool oof_w2sc;
                 ImVec2 oof_pos_3 = Camera$$WorldToScreen::Checker(pos, oof_w2sc);
                 if ((oof_pos_3.x < 0 || oof_pos_3.x > disp.x) || (oof_pos_3.y < 0 || oof_pos_3.y > disp.y) || !oof_w2sc) {
@@ -1180,8 +1178,6 @@ void get_players() {
                     float opacity = (float)pixels / (float)maxpixels;
                     float size = 3.5f;
                     Vector3 viewdir = game_sdk->GetForward(game_sdk->Component_GetTransform(game_sdk->get_camera()));
-                    // pos and viewpos are already declared and in scope from lines 1038 and 1053
-                    // pos and viewpos are already declared and in scope
                     Vector3 targetdir = Vector3::Normalized(pos - viewpos);
                     float viewangle = atan2(viewdir.z, viewdir.x) * Rad2Deg;
                     float targetangle = atan2(targetdir.z, targetdir.x) * Rad2Deg;
@@ -1192,7 +1188,24 @@ void get_players() {
                     while (angle > 360) angle -= 360;
                     angle = 360 - angle;
                     angle -= 90;
-                    OtFovV1(ImGui::GetIO().DisplaySize.x / 2, ImGui::GetIO().DisplaySize.y / 2, 90 + distance * 2, angle - size, angle + size, ImColor(1.f, 1.f, 1.f, 1.f * opacity), 1);
+                    OtFovV1(ImGui::GetIO().DisplaySize.x / 2, ImGui::GetIO().DisplaySize.y / 2, 90 + targetDistance * 2, angle - size, angle + size, ImColor(1.f, 1.f, 1.f, 1.f * opacity), 1);
+                }
+            }
+                    float opacity = (float)pixels / (float)maxpixels;
+                    float size = 3.5f;
+                    Vector3 viewdir = game_sdk->GetForward(game_sdk->Component_GetTransform(game_sdk->get_camera()));
+                    // pos and viewpos are already declared and in scope from lines 1038 and 1053
+                    Vector3 targetdir = Vector3::Normalized(pos - viewpos);
+                    float viewangle = atan2(viewdir.z, viewdir.x) * Rad2Deg;
+                    float targetangle = atan2(targetdir.z, targetdir.x) * Rad2Deg;
+                    if (viewangle < 0) viewangle += 360;
+                    if (targetangle < 0) targetangle += 360;
+                    float angle = targetangle - viewangle;
+                    while (angle < 0) angle += 360;
+                    while (angle > 360) angle -= 360;
+                    angle = 360 - angle;
+                    angle -= 90;
+                    OtFovV1(ImGui::GetIO().DisplaySize.x / 2, ImGui::GetIO().DisplaySize.y / 2, 90 + targetDistance * 2, angle - size, angle + size, ImColor(1.f, 1.f, 1.f, 1.f * opacity), 1);
                 }
             }
         } // end for loop
