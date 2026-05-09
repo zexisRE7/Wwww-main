@@ -192,31 +192,37 @@ ImFont* Urbanist;
 
 // 
 // ══════════════════════════════════════════════════════════════════════════════
-//  KILLER FLOAT BUTTONS — dark card, per-feature glow, 3×2 grid, draggable
+//  KILLER FLOAT BUTTONS v3 — pure black, always visible, per-feature glow
 // ══════════════════════════════════════════════════════════════════════════════
 
-// ── Apply visual style (active = glowing accent, inactive = pure dark) ────────
+// ── Accent colors ─────────────────────────────────────────────────────────────
+static UIColor *kAccentFly   = nil;
+static UIColor *kAccentTele  = nil;
+static UIColor *kAccentAimK  = nil;
+static UIColor *kAccentKill  = nil;
+static UIColor *kAccentNinja = nil;
+static UIColor *kAccentGhost = nil;
+
+// ── Visual style: always BLACK bg; glow border when active ───────────────────
 - (void)updateButtonStyle:(UIButton *)btn isActive:(BOOL)active accentColor:(UIColor *)color {
+    // Background always pure black
+    btn.backgroundColor = [UIColor colorWithRed:0.0f green:0.0f blue:0.0f alpha:0.96f];
+
     if (active) {
-        CGFloat r, g, b, a;
-        [color getRed:&r green:&g blue:&b alpha:&a];
-        btn.backgroundColor    = [UIColor colorWithRed:r * 0.22f
-                                                  green:g * 0.22f
-                                                   blue:b * 0.22f alpha:0.96f];
-        btn.layer.borderColor  = [color colorWithAlphaComponent:0.82f].CGColor;
-        btn.layer.borderWidth  = 2.0f;
-        btn.layer.shadowColor  = color.CGColor;
-        btn.layer.shadowOpacity = 0.60f;
+        btn.layer.borderColor   = [color colorWithAlphaComponent:0.85f].CGColor;
+        btn.layer.borderWidth   = 2.2f;
+        btn.layer.shadowColor   = color.CGColor;
+        btn.layer.shadowOpacity = 0.65f;
         btn.layer.shadowRadius  = 12.0f;
+        btn.layer.shadowOffset  = CGSizeMake(0.0f, 0.0f);
     } else {
-        btn.backgroundColor    = [UIColor colorWithRed:0.06f green:0.06f blue:0.07f alpha:0.97f];
-        btn.layer.borderColor  = [UIColor colorWithWhite:1.0f alpha:0.12f].CGColor;
-        btn.layer.borderWidth  = 1.5f;
+        btn.layer.borderColor   = [UIColor colorWithWhite:1.0f alpha:0.14f].CGColor;
+        btn.layer.borderWidth   = 1.5f;
         btn.layer.shadowOpacity = 0.0f;
     }
 }
 
-// ── Base button factory ───────────────────────────────────────────────────────
+// ── Base button factory — 112×74, black, rounded ─────────────────────────────
 - (UIButton *)makeFloatButton:(NSString *)title centerX:(CGFloat)cx centerY:(CGFloat)cy {
     const CGFloat BW = 112.0f, BH = 74.0f;
     UIWindow *win = [UIApplication sharedApplication].keyWindow
@@ -225,16 +231,17 @@ ImFont* Urbanist;
     UIButton *btn = [[UIButton alloc] initWithFrame:
         CGRectMake(cx - BW * 0.5f, cy - BH * 0.5f, BW, BH)];
 
-    btn.backgroundColor     = [UIColor colorWithRed:0.06f green:0.06f blue:0.07f alpha:0.97f];
+    btn.backgroundColor     = [UIColor colorWithRed:0.0f green:0.0f blue:0.0f alpha:0.96f];
     btn.layer.cornerRadius  = 18.0f;
     btn.layer.borderWidth   = 1.5f;
-    btn.layer.borderColor   = [UIColor colorWithWhite:1.0f alpha:0.12f].CGColor;
+    btn.layer.borderColor   = [UIColor colorWithWhite:1.0f alpha:0.14f].CGColor;
     btn.layer.masksToBounds = NO;
     btn.layer.shadowOffset  = CGSizeMake(0.0f, 0.0f);
     btn.layer.shadowRadius  = 12.0f;
     btn.layer.shadowOpacity = 0.0f;
+    btn.layer.shadowColor   = [UIColor whiteColor].CGColor;
 
-    // Label
+    // Label (top)
     UILabel *lbl = [[UILabel alloc] initWithFrame:CGRectMake(0.0f, 8.0f, BW, 18.0f)];
     lbl.text          = title;
     lbl.textColor     = [UIColor colorWithWhite:1.0f alpha:0.92f];
@@ -249,7 +256,7 @@ ImFont* Urbanist;
     return btn;
 }
 
-// ── Switch factory — accent color, full-size ──────────────────────────────────
+// ── Switch factory — accent color, always on black card ──────────────────────
 - (UISwitch *)makeFloatSwitch:(UIButton *)btn accentColor:(UIColor *)accent {
     const CGFloat BW = 112.0f, BH = 74.0f;
     UISwitch *sw = [[UISwitch alloc] init];
@@ -268,19 +275,11 @@ ImFont* Urbanist;
     return CGPointMake(s.width * 0.5f, s.height * 0.5f);
 }
 
-// ── Accent colors (stored as statics so updateFloatButtonsVisibility can use) ─
-static UIColor *kAccentFly    = nil;
-static UIColor *kAccentTele   = nil;
-static UIColor *kAccentAimK   = nil;
-static UIColor *kAccentKill   = nil;
-static UIColor *kAccentNinja  = nil;
-static UIColor *kAccentGhost  = nil;
-
-// ── Button creators — 3×2 grid (col gap 120, row gap 84) ─────────────────────
+// ── Button creators — 3×2 grid, always visible ───────────────────────────────
 - (void)createFlyButton {
     if (!kAccentFly) kAccentFly = [UIColor colorWithRed:0.0f green:0.478f blue:1.0f alpha:1.0f];
     CGPoint c = [self screenCenter];
-    self.flyButton = [self makeFloatButton:@"✈ FLY ALT"
+    self.flyButton = [self makeFloatButton:@"FLY ALT"
                                    centerX:c.x - 120.0f centerY:c.y - 50.0f];
     self.flySwitch = [self makeFloatSwitch:self.flyButton accentColor:kAccentFly];
     self.flySwitch.on = ZX_FlyAlt;
@@ -292,7 +291,7 @@ static UIColor *kAccentGhost  = nil;
 - (void)createTelekillButton {
     if (!kAccentTele) kAccentTele = [UIColor colorWithRed:0.686f green:0.322f blue:0.871f alpha:1.0f];
     CGPoint c = [self screenCenter];
-    self.telekillButton = [self makeFloatButton:@"⚡ TELE VIP"
+    self.telekillButton = [self makeFloatButton:@"TELE VIP"
                                         centerX:c.x centerY:c.y - 50.0f];
     self.telekillSwitch = [self makeFloatSwitch:self.telekillButton accentColor:kAccentTele];
     self.telekillSwitch.on = ZX_Telekill;
@@ -304,7 +303,7 @@ static UIColor *kAccentGhost  = nil;
 - (void)createAimkillButton {
     if (!kAccentAimK) kAccentAimK = [UIColor colorWithRed:1.0f green:0.231f blue:0.188f alpha:1.0f];
     CGPoint c = [self screenCenter];
-    self.aimkillButton = [self makeFloatButton:@"🎯 AI KILL"
+    self.aimkillButton = [self makeFloatButton:@"AI KILL"
                                        centerX:c.x + 120.0f centerY:c.y - 50.0f];
     self.aimkillSwitch = [self makeFloatSwitch:self.aimkillButton accentColor:kAccentAimK];
     self.aimkillSwitch.on = ZX_AimKill;
@@ -316,7 +315,7 @@ static UIColor *kAccentGhost  = nil;
 - (void)createNoRecoilButton {
     if (!kAccentKill) kAccentKill = [UIColor colorWithRed:1.0f green:0.584f blue:0.0f alpha:1.0f];
     CGPoint c = [self screenCenter];
-    self.norecoilButton = [self makeFloatButton:@"💀 NO RECO"
+    self.norecoilButton = [self makeFloatButton:@"NO RECO"
                                         centerX:c.x - 120.0f centerY:c.y + 34.0f];
     self.norecoilSwitch = [self makeFloatSwitch:self.norecoilButton accentColor:kAccentKill];
     self.norecoilSwitch.on = ZX_NoRecoil;
@@ -328,7 +327,7 @@ static UIColor *kAccentGhost  = nil;
 - (void)createMarkTPButton {
     if (!kAccentNinja) kAccentNinja = [UIColor colorWithRed:0.0f green:0.780f blue:0.745f alpha:1.0f];
     CGPoint c = [self screenCenter];
-    self.markTPButton = [self makeFloatButton:@"🥷 NINJA"
+    self.markTPButton = [self makeFloatButton:@"NINJA"
                                       centerX:c.x centerY:c.y + 34.0f];
     self.markTPSwitch = [self makeFloatSwitch:self.markTPButton accentColor:kAccentNinja];
     self.markTPSwitch.on = ZX_MarkTeleport;
@@ -340,7 +339,7 @@ static UIColor *kAccentGhost  = nil;
 - (void)createAutoTPButton {
     if (!kAccentGhost) kAccentGhost = [UIColor colorWithRed:0.188f green:0.820f blue:0.345f alpha:1.0f];
     CGPoint c = [self screenCenter];
-    self.autoTPButton = [self makeFloatButton:@"👻 GHOST"
+    self.autoTPButton = [self makeFloatButton:@"GHOST"
                                       centerX:c.x + 120.0f centerY:c.y + 34.0f];
     self.autoTPSwitch = [self makeFloatSwitch:self.autoTPButton accentColor:kAccentGhost];
     self.autoTPSwitch.on = ZX_AutoTeleport;
@@ -349,39 +348,40 @@ static UIColor *kAccentGhost  = nil;
         forControlEvents:UIControlEventValueChanged];
 }
 
-// ── Update visibility + glow state every frame ────────────────────────────────
+// ── Update: buttons ALWAYS visible — only glow/border changes with state ──────
 - (void)updateFloatButtonsVisibility {
-    // Track previous states to avoid redundant CALayer updates
-    static BOOL _lFly = NO, _lTK = NO, _lAK = NO, _lNR = NO, _lMTP = NO, _lATP = NO;
+    static BOOL _lFly=2, _lTK=2, _lAK=2, _lNR=2, _lMTP=2, _lATP=2; // 2=unset
 
-    self.flyButton.hidden      = !ZX_FlyAlt;
-    self.telekillButton.hidden = !ZX_Telekill;
-    self.aimkillButton.hidden  = !ZX_AimKill;
-    self.norecoilButton.hidden = !ZX_NoRecoil;
-    self.markTPButton.hidden   = !ZX_MarkTeleport;
-    self.autoTPButton.hidden   = !ZX_AutoTeleport;
+    // ปุ่มโชว์ตลอด — ไม่หาย
+    self.flyButton.hidden      = NO;
+    self.telekillButton.hidden = NO;
+    self.aimkillButton.hidden  = NO;
+    self.norecoilButton.hidden = NO;
+    self.markTPButton.hidden   = NO;
+    self.autoTPButton.hidden   = NO;
 
-    if (_lFly  != ZX_FlyAlt)       { _lFly  = ZX_FlyAlt;
+    // อัปเดต glow เฉพาะตอนที่ state เปลี่ยน
+    if (_lFly  != (BOOL)ZX_FlyAlt)       { _lFly  = ZX_FlyAlt;
         self.flySwitch.on = ZX_FlyAlt;
         [self updateButtonStyle:self.flyButton isActive:ZX_FlyAlt accentColor:kAccentFly]; }
-    if (_lTK   != ZX_Telekill)     { _lTK   = ZX_Telekill;
+    if (_lTK   != (BOOL)ZX_Telekill)     { _lTK   = ZX_Telekill;
         self.telekillSwitch.on = ZX_Telekill;
         [self updateButtonStyle:self.telekillButton isActive:ZX_Telekill accentColor:kAccentTele]; }
-    if (_lAK   != ZX_AimKill)      { _lAK   = ZX_AimKill;
+    if (_lAK   != (BOOL)ZX_AimKill)      { _lAK   = ZX_AimKill;
         self.aimkillSwitch.on = ZX_AimKill;
         [self updateButtonStyle:self.aimkillButton isActive:ZX_AimKill accentColor:kAccentAimK]; }
-    if (_lNR   != ZX_NoRecoil)     { _lNR   = ZX_NoRecoil;
+    if (_lNR   != (BOOL)ZX_NoRecoil)     { _lNR   = ZX_NoRecoil;
         self.norecoilSwitch.on = ZX_NoRecoil;
         [self updateButtonStyle:self.norecoilButton isActive:ZX_NoRecoil accentColor:kAccentKill]; }
-    if (_lMTP  != ZX_MarkTeleport) { _lMTP  = ZX_MarkTeleport;
+    if (_lMTP  != (BOOL)ZX_MarkTeleport) { _lMTP  = ZX_MarkTeleport;
         self.markTPSwitch.on = ZX_MarkTeleport;
         [self updateButtonStyle:self.markTPButton isActive:ZX_MarkTeleport accentColor:kAccentNinja]; }
-    if (_lATP  != ZX_AutoTeleport) { _lATP  = ZX_AutoTeleport;
+    if (_lATP  != (BOOL)ZX_AutoTeleport) { _lATP  = ZX_AutoTeleport;
         self.autoTPSwitch.on = ZX_AutoTeleport;
         [self updateButtonStyle:self.autoTPButton isActive:ZX_AutoTeleport accentColor:kAccentGhost]; }
 }
 
-// ── Drag handler — clamped to screen bounds ───────────────────────────────────
+// ── Drag — clamped to screen bounds ──────────────────────────────────────────
 - (void)buttonDragged:(UIButton *)button withEvent:(UIEvent *)event {
     UITouch *touch = [[event touchesForView:button] anyObject];
     CGPoint prev = [touch previousLocationInView:button.superview];
@@ -396,7 +396,7 @@ static UIColor *kAccentGhost  = nil;
     button.center = CGPointMake(newX, newY);
 }
 
-// ── Switch callbacks ──────────────────────────────────────────────────────────
+// ── Switch callbacks — update glow immediately on tap ────────────────────────
 - (void)flySwitchChanged:(UISwitch *)sender {
     ZX_FlyAlt = sender.on;
     Vars.FlyUp = ZX_FlyAlt;
@@ -1891,35 +1891,35 @@ static void RenderMenu() {
     if (!MenDeal) return;
 
     // ══════════════════════════════════════════════════════════════════════
-    // WHITE iOS THEME — exact match to reference screenshots
+    // BLACK DARK THEME
     // ══════════════════════════════════════════════════════════════════════
-    const ImU32 W_WIN_BG      = IM_COL32(255, 255, 255, 250);  // white card
-    const ImU32 W_CONTENT_BG  = IM_COL32(242, 242, 247, 255);  // iOS system gray6
-    const ImU32 W_SEP         = IM_COL32(209, 209, 214, 255);  // iOS separator
-    const ImU32 W_TEXT        = IM_COL32(  0,   0,   0, 255);  // black
-    const ImU32 W_TEXT_DIM    = IM_COL32(142, 142, 147, 255);  // gray
+    const ImU32 W_WIN_BG      = IM_COL32( 12,  12,  14, 252);  // near-black card
+    const ImU32 W_CONTENT_BG  = IM_COL32(  6,   6,   8, 255);  // deeper black
+    const ImU32 W_SEP         = IM_COL32( 32,  32,  36, 255);  // dark separator
+    const ImU32 W_TEXT        = IM_COL32(220, 220, 222, 255);  // off-white
+    const ImU32 W_TEXT_DIM    = IM_COL32( 88,  88,  94, 255);  // dim gray
     const ImU32 W_ORANGE      = IM_COL32(255,  95,  30, 255);  // orange accent
     const ImU32 W_TGL_ON      = IM_COL32(255,  95,  30, 255);  // orange ON
-    const ImU32 W_TGL_OFF     = IM_COL32(209, 209, 214, 255);  // gray OFF
+    const ImU32 W_TGL_OFF     = IM_COL32( 38,  38,  42, 255);  // dark OFF
     const ImU32 W_KNOB        = IM_COL32(255, 255, 255, 255);  // white knob
-    const ImU32 W_HOVER       = IM_COL32(  0,   0,   0,   8);  // subtle hover
-    const ImU32 W_ICON_BTN_BG = IM_COL32(209, 209, 214, 255);  // header icon circle
+    const ImU32 W_HOVER       = IM_COL32(255, 255, 255,  10);  // subtle hover
+    const ImU32 W_ICON_BTN_BG = IM_COL32( 28,  28,  32, 255);  // header icon circle
 
     // ── Layout ─────────────────────────────────────────────────────────────
-    const float WIN_W  = 580.0f;
-    const float WIN_H  = 420.0f;
-    const float WIN_RAD = 20.0f;
-    const float SB_W   = 130.0f;   // sidebar
-    const float HDR_H  =  52.0f;   // content header
-    const float ROW_H  =  52.0f;   // row height
-    const float PAD    =  16.0f;
+    const float WIN_W  = 460.0f;
+    const float WIN_H  = 340.0f;
+    const float WIN_RAD = 18.0f;
+    const float SB_W   = 100.0f;   // sidebar
+    const float HDR_H  =  44.0f;   // content header
+    const float ROW_H  =  44.0f;   // row height
+    const float PAD    =  14.0f;
     const float TW     =  51.0f;   // toggle width
     const float TH     =  31.0f;   // toggle height
 
-    ImGui::PushStyleColor(ImGuiCol_WindowBg,      ImVec4(1.0f,1.0f,1.0f,0.98f));
+    ImGui::PushStyleColor(ImGuiCol_WindowBg,      ImVec4(0.047f, 0.047f, 0.055f, 0.99f));
     ImGui::PushStyleColor(ImGuiCol_Border,        ImVec4(0,0,0,0));
-    ImGui::PushStyleColor(ImGuiCol_ScrollbarBg,   ImVec4(0.95f,0.95f,0.97f,1.0f));
-    ImGui::PushStyleColor(ImGuiCol_ScrollbarGrab, ImVec4(0.82f,0.82f,0.84f,1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ScrollbarBg,   ImVec4(0.04f, 0.04f, 0.05f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ScrollbarGrab, ImVec4(0.20f, 0.20f, 0.22f, 1.0f));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding,   WIN_RAD);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,    ImVec2(0,0));
@@ -2078,7 +2078,7 @@ static void RenderMenu() {
             bool pressed = ImGui::ButtonBehavior(bb, id, &hov, &hld);
             if (pressed) *v = !*v;
             ImDrawList* dl = cw->DrawList;
-            dl->AddRectFilled(bb.Min, bb.Max, IM_COL32(255,255,255,255), 0.0f);
+            dl->AddRectFilled(bb.Min, bb.Max, IM_COL32(12, 12, 14, 255), 0.0f);
             if (hov) dl->AddRectFilled(bb.Min, bb.Max, hover, 0.0f);
             if (!last)
                 dl->AddLine(ImVec2(bb.Min.x + pad, bb.Max.y - 1.0f),
@@ -2122,20 +2122,20 @@ static void RenderMenu() {
             bool hov, hld;
             ImGui::ButtonBehavior(bb, id, &hov, &hld);
             ImDrawList* dl = cw->DrawList;
-            dl->AddRectFilled(bb.Min, bb.Max, IM_COL32(255,255,255,255), 0.0f);
+            dl->AddRectFilled(bb.Min, bb.Max, IM_COL32(12, 12, 14, 255), 0.0f);
             if (hov) dl->AddRectFilled(bb.Min, bb.Max, hover, 0.0f);
             dl->AddLine(ImVec2(bb.Min.x + pad, bb.Max.y - 1.0f),
                          ImVec2(bb.Max.x, bb.Max.y - 1.0f), sep, 1.0f);
             float cy = (bb.Min.y + bb.Max.y) * 0.5f;
             dl->AddText(ImVec2(bb.Min.x + pad, cy - ImGui::GetFontSize() * 0.5f), textC, label);
             // value pill
-            const float pillH = 34.0f, pillPad = 10.0f;
+            const float pillH = 28.0f, pillPad = 8.0f;
             ImVec2 vts = ImGui::CalcTextSize(value);
-            float pillW = vts.x + pillPad * 2.0f + 22.0f;
+            float pillW = vts.x + pillPad * 2.0f + 18.0f;
             float pX = bb.Max.x - pillW - pad;
             float pY = cy - pillH * 0.5f;
             dl->AddRectFilled(ImVec2(pX, pY), ImVec2(pX + pillW, pY + pillH),
-                              IM_COL32(242, 242, 247, 255), 8.0f);
+                              IM_COL32(28, 28, 32, 255), 8.0f);
             dl->AddRect(ImVec2(pX, pY), ImVec2(pX + pillW, pY + pillH),
                         sep, 8.0f, 0, 1.0f);
             dl->AddText(ImVec2(pX + pillPad, cy - ImGui::GetFontSize() * 0.5f), textC, value);
@@ -2193,7 +2193,7 @@ static void RenderMenu() {
             ImGui::ItemSize(ImVec2(aw, totalH), 0.0f);
             if (!ImGui::ItemAdd(bb, id)) return;
             ImDrawList* dl = cw->DrawList;
-            dl->AddRectFilled(bb.Min, bb.Max, IM_COL32(255,255,255,255));
+            dl->AddRectFilled(bb.Min, bb.Max, IM_COL32(12, 12, 14, 255));
             // Label top-left
             dl->AddText(ImVec2(pos.x + pad, pos.y + 10.0f), textC, label);
             // Value top-right orange
@@ -2220,7 +2220,7 @@ static void RenderMenu() {
                 ImGui::MarkItemEdited(id);
             }
             dl->AddRectFilled(ImVec2(tX0, tY - TH2 * 0.5f), ImVec2(tX1, tY + TH2 * 0.5f),
-                              IM_COL32(209,209,214,255), TH2);
+                              IM_COL32(38, 38, 42, 255), TH2);
             dl->AddRectFilled(ImVec2(tX0, tY - TH2 * 0.5f),
                               ImVec2(tX0 + (tX1 - tX0) * t, tY + TH2 * 0.5f), orange, TH2);
             float kX = tX0 + (tX1 - tX0) * t;
@@ -2383,7 +2383,7 @@ static void RenderMenu() {
                     ImGui::ItemSize(ImVec2(aw, rowH), 0.0f);
                     ImDrawList* dl = cw->DrawList;
                     dl->AddRectFilled(pos, ImVec2(pos.x + aw, pos.y + rowH),
-                                      IM_COL32(255,255,255,255));
+                                      IM_COL32(12, 12, 14, 255));
                     if (!last)
                         dl->AddLine(ImVec2(pos.x + pad, pos.y + rowH - 1.0f),
                                     ImVec2(pos.x + aw,  pos.y + rowH - 1.0f), sep, 1.0f);
@@ -2411,7 +2411,7 @@ static void RenderMenu() {
             float mY0 = cp.y + 8.0f, mY1 = mY0 + BTN_H2;
             // - KILL
             cdl2->AddRectFilled(ImVec2(mX0, mY0), ImVec2(mX1, mY1),
-                                IM_COL32(255,255,255,255), 10.0f);
+                                IM_COL32(28, 28, 32, 255), 10.0f);
             cdl2->AddRect(ImVec2(mX0, mY0), ImVec2(mX1, mY1), W_SEP, 10.0f, 0, 1.0f);
             ImVec2 mts2 = ImGui::CalcTextSize("- KILL");
             cdl2->AddText(ImVec2((mX0+mX1)*0.5f - mts2.x*0.5f,
@@ -2945,13 +2945,11 @@ void initAntiBanHook(void) {
             // White iOS theme — orange when open, white when closed
             ImU32 mColor = MenDeal
                          ? IM_COL32(255,  95,  30, 235)   // orange = open
-                         : IM_COL32(255, 255, 255, 235);   // white  = closed
+                         : IM_COL32(  0,   0,   0, 235);   // black  = closed
             ImU32 mBorder = MenDeal
                          ? IM_COL32(255, 120,  60, 180)
-                         : IM_COL32(209, 209, 214, 255);
-            ImU32 mTxtCol = MenDeal
-                         ? IM_COL32(255, 255, 255, 255)
-                         : IM_COL32(  0,   0,   0, 255);
+                         : IM_COL32( 60,  60,  64, 255);
+            ImU32 mTxtCol = IM_COL32(255, 255, 255, 255);
             if (mHov && !menuDragging) {
                 mColor   = IM_COL32(255,  75,  10, 245);
                 mTxtCol  = IM_COL32(255, 255, 255, 255);
