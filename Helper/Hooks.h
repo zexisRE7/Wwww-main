@@ -417,6 +417,34 @@ void AddDashedLine(ImDrawList* draw, ImVec2 p1, ImVec2 p2, ImU32 col, float thic
     }
 }
 
+void drawlineglow(ImDrawList* draw, ImVec2 p1, ImVec2 p2, ImColor col, float thickness, float glowSize) {
+    ImVec4 c = (ImVec4)col;
+    for (int i = (int)glowSize; i >= 1; i--) {
+        float alpha = c.w * (1.0f - (float)i / (glowSize + 1.0f));
+        ImColor glowCol = ImColor(c.x, c.y, c.z, alpha);
+        draw->AddLine(p1, p2, glowCol, thickness + (float)i * 2.0f);
+    }
+    draw->AddLine(p1, p2, col, thickness);
+}
+
+void Draw3DCircle(Vector3 pos, float radius, float width, ImColor color, int segments, bool outlined, float outlineWidth) {
+    ImDrawList* draw = ImGui::GetBackgroundDrawList();
+    if (!draw) return;
+    std::vector<ImVec2> points;
+    for (int i = 0; i <= segments; i++) {
+        float angle = (float)i / (float)segments * 2.0f * (float)M_PI;
+        Vector3 point = Vector3(pos.x + radius * cosf(angle), pos.y, pos.z + radius * sinf(angle));
+        ImVec2 screenPoint = Camera$$WorldToScreen::Regular(point);
+        points.push_back(screenPoint);
+    }
+    for (int i = 0; i < segments; i++) {
+        if (outlined) {
+            draw->AddLine(points[i], points[i + 1], ImColor(0, 0, 0, 200), width + outlineWidth * 2.0f);
+        }
+        drawlineglow(draw, points[i], points[i + 1], color, width, 3.0f);
+    }
+}
+
 void DrawSkeleton(void *player, ImDrawList *drawList) {
     if (!player || !drawList) return;
     bool isPlayerVisible = tanghinh::isVisible(player);
