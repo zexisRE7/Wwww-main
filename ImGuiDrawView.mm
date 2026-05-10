@@ -200,6 +200,15 @@ ImFont* Urbanist;
 // ไม่มีขอบดำ iOS
 // switch แบบในรูป
 // ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// FLOATING BLACK SWITCH UI (DRAGGABLE)
+// ไม่มีกรอบดำ iOS
+// ลากได้
+// สไตล์เหมือนในรูป
+// ─────────────────────────────────────────────────────────────
+
+#import <objc/runtime.h>
+
 static UIColor *kAccentFly   = nil;
 static UIColor *kAccentTele  = nil;
 static UIColor *kAccentAimK  = nil;
@@ -207,15 +216,7 @@ static UIColor *kAccentKill  = nil;
 static UIColor *kAccentNinja = nil;
 static UIColor *kAccentGhost = nil;
 
-#pragma mark - Button Style (ไม่ใช้งานแล้ว แต่เก็บไว้)
-
-- (void)updateButtonStyle:(UIButton *)btn
-                 isActive:(BOOL)active
-              accentColor:(UIColor *)color {
-    // ไม่ใช้งานแล้ว เพราะไม่มีปุ่ม
-}
-
-#pragma mark - Floating Switch Only (สวิตช์สีดำล้วน)
+#pragma mark - Floating Switch Only
 
 - (UISwitch *)makeFloatSwitchOnly:(NSString *)title
                           centerX:(CGFloat)cx
@@ -223,145 +224,236 @@ static UIColor *kAccentGhost = nil;
                                on:(BOOL)isOn
                            action:(SEL)selector
                               tag:(NSInteger)tag {
-    
+
     UISwitch *sw = [[UISwitch alloc] init];
+
     sw.center = CGPointMake(cx, cy);
-    
-    // ✅ สีดำทั้งหมด (ไม่มีสี accent)
-    sw.backgroundColor = [UIColor clearColor];
-    sw.tintColor = [UIColor darkGrayColor];      // ขอบตอน off
-    sw.thumbTintColor = [UIColor whiteColor];    // ลูกบอลสีขาว
-    sw.onTintColor = [UIColor blackColor];       // พื้นหลังตอน on = ดำ
+
+    // STYLE
+    sw.backgroundColor = UIColor.clearColor;
+    sw.tintColor = UIColor.darkGrayColor;
+    sw.onTintColor = UIColor.blackColor;
+    sw.thumbTintColor = UIColor.whiteColor;
+
     sw.layer.borderWidth = 0.0f;
     sw.clipsToBounds = NO;
-    
+
     sw.on = isOn;
     sw.tag = tag;
-    
-    [sw addTarget:self action:selector forControlEvents:UIControlEventValueChanged];
-    
-    // Label ข้อความด้านบน
-    UILabel *lbl = [[UILabel alloc] initWithFrame:CGRectMake(cx - 50, cy - 28, 100, 20)];
+
+    // ACTION
+    [sw addTarget:self
+           action:selector
+ forControlEvents:UIControlEventValueChanged];
+
+    // TITLE
+    UILabel *lbl =
+    [[UILabel alloc] initWithFrame:CGRectMake(cx - 50,
+                                              cy - 28,
+                                              100,
+                                              20)];
+
     lbl.text = title;
-    lbl.textColor = [UIColor whiteColor];
+    lbl.textColor = UIColor.whiteColor;
     lbl.font = [UIFont boldSystemFontOfSize:10];
     lbl.textAlignment = NSTextAlignmentCenter;
-    lbl.backgroundColor = [UIColor clearColor];
-    lbl.shadowColor = [UIColor blackColor];
+
+    lbl.backgroundColor = UIColor.clearColor;
+
+    lbl.shadowColor = UIColor.blackColor;
     lbl.shadowOffset = CGSizeMake(0, 1);
+
     [self.view addSubview:lbl];
-    
     [self.view addSubview:sw];
-    
-    // เก็บ label ไว้ใน associated object
-    objc_setAssociatedObject(sw, "titleLabel", lbl, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    
+
+    // SAVE LABEL
+    objc_setAssociatedObject(sw,
+                             @"titleLabel",
+                             lbl,
+                             OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+
+    // DRAG
+    UIPanGestureRecognizer *pan =
+    [[UIPanGestureRecognizer alloc]
+     initWithTarget:self
+     action:@selector(handleSwitchDrag:)];
+
+    [sw addGestureRecognizer:pan];
+
     return sw;
+}
+
+#pragma mark - Drag Floating Switch
+
+- (void)handleSwitchDrag:(UIPanGestureRecognizer *)pan {
+
+    UIView *view = pan.view;
+
+    CGPoint translation =
+    [pan translationInView:self.view];
+
+    CGPoint newCenter =
+    CGPointMake(view.center.x + translation.x,
+                view.center.y + translation.y);
+
+    CGSize scr = UIScreen.mainScreen.bounds.size;
+
+    CGFloat halfW = view.bounds.size.width * 0.5f;
+    CGFloat halfH = view.bounds.size.height * 0.5f;
+
+    newCenter.x =
+    MAX(halfW,
+    MIN(scr.width - halfW,
+        newCenter.x));
+
+    newCenter.y =
+    MAX(halfH,
+    MIN(scr.height - halfH,
+        newCenter.y));
+
+    view.center = newCenter;
+
+    // MOVE LABEL
+    UILabel *lbl =
+    objc_getAssociatedObject(view,
+                             @"titleLabel");
+
+    if (lbl) {
+
+        lbl.center =
+        CGPointMake(newCenter.x,
+                    newCenter.y - 28);
+    }
+
+    [pan setTranslation:CGPointZero
+                 inView:self.view];
 }
 
 #pragma mark - Helpers
 
 - (CGPoint)screenCenter {
-    CGSize s = UIScreen.mainScreen.bounds.size;
-    return CGPointMake(s.width * 0.5f, s.height * 0.5f);
+
+    CGSize s =
+    UIScreen.mainScreen.bounds.size;
+
+    return CGPointMake(s.width * 0.5f,
+                       s.height * 0.5f);
 }
 
-#pragma mark - CREATE FLOATING SWITCHES (สีดำล้วน)
+#pragma mark - CREATE SWITCHES
 
 - (void)createFlySwitch {
+
     CGPoint c = [self screenCenter];
-    self.flySwitch = [self makeFloatSwitchOnly:@"FLY ALT"
-                                       centerX:c.x - 110
-                                       centerY:c.y - 60
-                                            on:ZX_FlyAlt
-                                        action:@selector(flySwitchChanged:)
-                                           tag:1];
+
+    self.flySwitch =
+    [self makeFloatSwitchOnly:@"FLY ALT"
+                      centerX:c.x - 110
+                      centerY:c.y - 60
+                           on:ZX_FlyAlt
+                       action:@selector(flySwitchChanged:)
+                          tag:1];
 }
 
 - (void)createTeleSwitch {
+
     CGPoint c = [self screenCenter];
-    self.telekillSwitch = [self makeFloatSwitchOnly:@"TELE VIP"
-                                            centerX:c.x
-                                            centerY:c.y - 60
-                                                 on:ZX_Telekill
-                                             action:@selector(telekillSwitchChanged:)
-                                                tag:2];
+
+    self.telekillSwitch =
+    [self makeFloatSwitchOnly:@"TELE VIP"
+                      centerX:c.x
+                      centerY:c.y - 60
+                           on:ZX_Telekill
+                       action:@selector(telekillSwitchChanged:)
+                          tag:2];
 }
 
 - (void)createAimkillSwitch {
+
     CGPoint c = [self screenCenter];
-    self.aimkillSwitch = [self makeFloatSwitchOnly:@"AI KILL"
-                                           centerX:c.x + 110
-                                           centerY:c.y - 60
-                                                on:ZX_AimKill
-                                            action:@selector(aimkillSwitchChanged:)
-                                               tag:3];
+
+    self.aimkillSwitch =
+    [self makeFloatSwitchOnly:@"AI KILL"
+                      centerX:c.x + 110
+                      centerY:c.y - 60
+                           on:ZX_AimKill
+                       action:@selector(aimkillSwitchChanged:)
+                          tag:3];
 }
 
 - (void)createNoRecoilSwitch {
+
     CGPoint c = [self screenCenter];
-    self.norecoilSwitch = [self makeFloatSwitchOnly:@"NO RECO"
-                                            centerX:c.x - 110
-                                            centerY:c.y + 50
-                                                 on:ZX_NoRecoil
-                                             action:@selector(norecoilSwitchChanged:)
-                                                tag:4];
+
+    self.norecoilSwitch =
+    [self makeFloatSwitchOnly:@"NO RECO"
+                      centerX:c.x - 110
+                      centerY:c.y + 50
+                           on:ZX_NoRecoil
+                       action:@selector(norecoilSwitchChanged:)
+                          tag:4];
 }
 
 - (void)createMarkTPSwitch {
+
     CGPoint c = [self screenCenter];
-    self.markTPSwitch = [self makeFloatSwitchOnly:@"NINJA"
-                                          centerX:c.x
-                                          centerY:c.y + 50
-                                               on:ZX_MarkTeleport
-                                           action:@selector(markTPSwitchChanged:)
-                                              tag:5];
+
+    self.markTPSwitch =
+    [self makeFloatSwitchOnly:@"NINJA"
+                      centerX:c.x
+                      centerY:c.y + 50
+                           on:ZX_MarkTeleport
+                       action:@selector(markTPSwitchChanged:)
+                          tag:5];
 }
 
 - (void)createAutoTPSwitch {
+
     CGPoint c = [self screenCenter];
-    self.autoTPSwitch = [self makeFloatSwitchOnly:@"GHOST"
-                                          centerX:c.x + 110
-                                          centerY:c.y + 50
-                                               on:ZX_AutoTeleport
-                                           action:@selector(autoTPSwitchChanged:)
-                                              tag:6];
-}
 
-#pragma mark - UPDATE (ไม่ต้องใช้แล้ว)
-
-- (void)updateFloatButtonsVisibility {
-    // ไม่ต้องใช้อะไร เพราะไม่มีปุ่ม
+    self.autoTPSwitch =
+    [self makeFloatSwitchOnly:@"GHOST"
+                      centerX:c.x + 110
+                      centerY:c.y + 50
+                           on:ZX_AutoTeleport
+                       action:@selector(autoTPSwitchChanged:)
+                          tag:6];
 }
 
 #pragma mark - SWITCH EVENTS
 
 - (void)flySwitchChanged:(UISwitch *)sender {
+
     ZX_FlyAlt = sender.on;
     Vars.FlyUp = ZX_FlyAlt;
 }
 
 - (void)telekillSwitchChanged:(UISwitch *)sender {
+
     ZX_Telekill = sender.on;
     Vars.Telekill = ZX_Telekill;
 }
 
 - (void)aimkillSwitchChanged:(UISwitch *)sender {
+
     ZX_AimKill = sender.on;
     Vars.AimKill = ZX_AimKill;
 }
 
 - (void)norecoilSwitchChanged:(UISwitch *)sender {
+
     ZX_NoRecoil = sender.on;
     Vars.NoRecoil = ZX_NoRecoil;
 }
 
 - (void)markTPSwitchChanged:(UISwitch *)sender {
+
     ZX_MarkTeleport = sender.on;
     Vars.MarkTeleport = ZX_MarkTeleport;
 }
 
 - (void)autoTPSwitchChanged:(UISwitch *)sender {
+
     ZX_AutoTeleport = sender.on;
     Vars.AutoTeleport = ZX_AutoTeleport;
 }
