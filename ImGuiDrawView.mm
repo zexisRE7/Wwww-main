@@ -106,6 +106,10 @@ BOOL isJailbroken() {
 @property (nonatomic, strong) UISwitch *markTPSwitch;
 @property (nonatomic, strong) UISwitch *autoTPSwitch;
 
+// MENU UIKit button (lives in its own UIWindow — always above the game)
+@property (nonatomic, strong) UIWindow *menuWindow;
+@property (nonatomic, strong) UIButton *menuButton;
+
 @end
 
 static __weak ImGuiDrawView *g_DrawView = nil;
@@ -211,6 +215,7 @@ ImFont *Urbanist;
     [self createNoRecoilSwitch];
     [self createMarkTPSwitch];
     [self createAutoTPSwitch];
+    [self createMenuButton];
 }
 
 #pragma mark - Helpers
@@ -414,6 +419,68 @@ ImFont *Urbanist;
 - (void)autoTPSwitchChanged:(UISwitch *)sender {
 
     Vars.AutoTeleport = sender.on;
+}
+
+#pragma mark - UIKit MENU Button (always on top — own UIWindow)
+
+- (void)createMenuButton {
+    const CGFloat MW = 68.0f, MH = 34.0f;
+    CGSize scr = UIScreen.mainScreen.bounds.size;
+
+    // Dedicated UIWindow at alert level so it sits above the game at all times
+    self.menuWindow = [[UIWindow alloc] initWithFrame:
+        CGRectMake(20.0f, scr.height * 0.35f, MW, MH)];
+    self.menuWindow.backgroundColor    = UIColor.clearColor;
+    self.menuWindow.windowLevel        = UIWindowLevelAlert + 100;
+    self.menuWindow.hidden             = NO;
+    self.menuWindow.userInteractionEnabled = YES;
+
+    // Minimal root VC required by UIWindow
+    UIViewController *vc = [[UIViewController alloc] init];
+    vc.view.backgroundColor = UIColor.clearColor;
+    self.menuWindow.rootViewController = vc;
+
+    // Button
+    self.menuButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    self.menuButton.frame = CGRectMake(0, 0, MW, MH);
+    self.menuButton.backgroundColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:0.92f];
+    self.menuButton.layer.cornerRadius  = MH * 0.5f;
+    self.menuButton.layer.masksToBounds = YES;
+    [self.menuButton setTitle:@"MENU" forState:UIControlStateNormal];
+    [self.menuButton setTitleColor:UIColor.whiteColor forState:UIControlStateNormal];
+    self.menuButton.titleLabel.font = [UIFont boldSystemFontOfSize:13.0f];
+
+    [self.menuButton addTarget:self
+                        action:@selector(menuButtonTapped:)
+              forControlEvents:UIControlEventTouchUpInside];
+
+    UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc]
+        initWithTarget:self action:@selector(menuButtonDragged:)];
+    [self.menuButton addGestureRecognizer:pan];
+
+    [self.menuWindow addSubview:self.menuButton];
+}
+
+- (void)menuButtonTapped:(UIButton *)btn {
+    MenDeal = !MenDeal;
+    [btn setTitle:(MenDeal ? @"CLOSE" : @"MENU") forState:UIControlStateNormal];
+    UIColor *bg = MenDeal
+        ? [UIColor colorWithRed:1.0f green:0.373f blue:0.118f alpha:0.92f]
+        : [UIColor colorWithRed:0.0f green:0.0f   blue:0.0f   alpha:0.92f];
+    btn.backgroundColor = bg;
+}
+
+- (void)menuButtonDragged:(UIPanGestureRecognizer *)pan {
+    UIWindow *win = (UIWindow *)pan.view.window;
+    CGPoint t     = [pan translationInView:win];
+    CGSize scr    = UIScreen.mainScreen.bounds.size;
+
+    CGRect f = win.frame;
+    f.origin.x = MAX(0.0f, MIN(scr.width  - f.size.width,  f.origin.x + t.x));
+    f.origin.y = MAX(0.0f, MIN(scr.height - f.size.height, f.origin.y + t.y));
+    win.frame = f;
+
+    [pan setTranslation:CGPointZero inView:win];
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -3346,58 +3413,7 @@ void initAntiBanHook(void) {
         ImGui::SetNextWindowPos(ImVec2((screenW - ZX_WIN_W) * 0.5f, (screenH - ZX_WIN_H) * 0.5f), ImGuiCond_FirstUseEver);
         if (MenDeal) { RenderMenu(); }
 
-        // ── Floating MENU Button — โชว์ตลอด กด = เปิด/ปิดเมนู ค้าง = ลาก ──
-        {
-            static ImVec2 menuBtnPos(20.0f, screenH * 0.35f);
-            static bool   menuDragging   = false;
-            static ImVec2 menuDragOffset(0.0f, 0.0f);
-
-            const float MW = 68.0f, MH = 34.0f, MR = 17.0f;
-            ImVec2 mMin = menuBtnPos;
-            ImVec2 mMax = ImVec2(mMin.x + MW, mMin.y + MH);
-
-            ImGuiIO& mio = ImGui::GetIO();
-            bool mHov = mio.MousePos.x >= mMin.x && mio.MousePos.x <= mMax.x &&
-                        mio.MousePos.y >= mMin.y && mio.MousePos.y <= mMax.y;
-
-            if (mHov && ImGui::IsMouseClicked(0))
-                menuDragOffset = ImVec2(mio.MousePos.x - mMin.x, mio.MousePos.y - mMin.y);
-            if (ImGui::IsMouseDown(0) && mHov && mio.MouseDownDuration[0] > 0.3f)
-                menuDragging = true;
-            if (menuDragging)
-                menuBtnPos = ImVec2(mio.MousePos.x - menuDragOffset.x,
-                                    mio.MousePos.y - menuDragOffset.y);
-            if (!ImGui::IsMouseDown(0)) menuDragging = false;
-
-            if (mHov && ImGui::IsMouseReleased(0) && !menuDragging)
-                MenDeal = !MenDeal;
-
-            ImDrawList* mdl = ImGui::GetForegroundDrawList();
-            // White iOS theme — orange when open, white when closed
-            ImU32 mColor = MenDeal
-                         ? IM_COL32(255,  95,  30, 235)   // orange = open
-                         : IM_COL32(  0,   0,   0, 235);   // black  = closed
-            ImU32 mBorder = MenDeal
-                         ? IM_COL32(255, 120,  60, 180)
-                         : IM_COL32( 60,  60,  64, 255);
-            ImU32 mTxtCol = IM_COL32(255, 255, 255, 255);
-            if (mHov && !menuDragging) {
-                mColor   = IM_COL32(255,  75,  10, 245);
-                mTxtCol  = IM_COL32(255, 255, 255, 255);
-            }
-            // Drop shadow for floating button
-            mdl->AddRectFilled(ImVec2(mMin.x - 1, mMin.y + 2),
-                               ImVec2(mMax.x + 1, mMax.y + 4),
-                               IM_COL32(0,0,0,22), MR + 1.0f);
-            mdl->AddRectFilled(mMin, mMax, mColor, MR);
-            mdl->AddRect(mMin, mMax, mBorder, MR, 0, 1.2f);
-
-            const char* mtxt = MenDeal ? "CLOSE" : "MENU";
-            ImVec2 mts = ImGui::CalcTextSize(mtxt);
-            mdl->AddText(ImVec2(mMin.x + (MW - mts.x) * 0.5f,
-                                mMin.y + (MH - mts.y) * 0.5f),
-                         mTxtCol, mtxt);
-        }
+        // ── MENU button is now a UIKit UIButton (see createMenuButton) ──────────
 
         // ── Floating KILL Button — ลอยบนหน้าจอตลอด (กด = kill, ค้าง+ลาก = ย้าย) ──
         if (Vars.Enable) {
