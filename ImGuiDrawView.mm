@@ -212,8 +212,6 @@ ImFont *Urbanist;
     [self createMarkTPSwitch];
     [self createAutoTPSwitch];
 }
-- (void)drawInMTKView:(MTKView *)view {
-}
 
 #pragma mark - Helpers
 
