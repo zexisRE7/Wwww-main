@@ -91,97 +91,116 @@ BOOL isJailbroken() {
     }
     return NO;
 }
+#import <objc/runtime.h>
 
 @interface ImGuiDrawView () <MTKViewDelegate>
-@property (nonatomic, strong) id <MTLDevice> device;
-@property (nonatomic, strong) id <MTLCommandQueue> commandQueue;
-@property (nonatomic, assign) CGRect menuBounds;
-@property (nonatomic, strong) UIButton *ninjaRunButtonView;
-@property (nonatomic, strong) UISwitch *ninjaRunSwitch;
-@property (nonatomic, assign) BOOL ninjaRunButtonVisible;
-@property (nonatomic, strong) UIView *menu;
 
-//  UIButtons ลอย
-// UIButtons ลอย
-@property (nonatomic, strong) UIButton *flyButton;
-@property (nonatomic, strong) UIButton *telekillButton;
-@property (nonatomic, strong) UIButton *aimkillButton;
-@property (nonatomic, strong) UIButton *norecoilButton;
-@property (nonatomic, strong) UIButton *markTPButton;
-@property (nonatomic, strong) UIButton *autoTPButton;
+@property (nonatomic, strong) id<MTLDevice> device;
+@property (nonatomic, strong) id<MTLCommandQueue> commandQueue;
 
-// Custom Switch Views
-@property (nonatomic, strong) UIView *flySwitch;
-@property (nonatomic, strong) UIView *telekillSwitch;
-@property (nonatomic, strong) UIView *aimkillSwitch;
-@property (nonatomic, strong) UIView *norecoilSwitch;
-@property (nonatomic, strong) UIView *markTPSwitch;
-@property (nonatomic, strong) UIView *autoTPSwitch;
+// FLOAT SWITCHES
+@property (nonatomic, strong) UISwitch *flySwitch;
+@property (nonatomic, strong) UISwitch *telekillSwitch;
+@property (nonatomic, strong) UISwitch *aimkillSwitch;
+@property (nonatomic, strong) UISwitch *norecoilSwitch;
+@property (nonatomic, strong) UISwitch *markTPSwitch;
+@property (nonatomic, strong) UISwitch *autoTPSwitch;
+
 @end
 
 static __weak ImGuiDrawView *g_DrawView = nil;
 
 @implementation ImGuiDrawView
+
 ImFont *_espFont;
-ImFont* verdanab;
-ImFont* icons;
-ImFont* interb;
-ImFont* Urbanist;
+ImFont *verdanab;
+ImFont *icons;
+ImFont *interb;
+ImFont *Urbanist;
 
-- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil
-{
-    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
-    g_DrawView = self;
-    _device = MTLCreateSystemDefaultDevice();
-    _commandQueue = [_device newCommandQueue];
-    if (!self.device) abort();
+#pragma mark - INIT
 
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    ImGui::StyleColorsDark();
+- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil
+                         bundle:(nullable NSBundle *)nibBundleOrNil {
 
-    auto& s = ImGui::GetStyle();
-    s.WindowPadding     = ImVec2(0, 0);
-    s.ItemSpacing       = ImVec2(0, 0);
-    s.WindowRounding    = 8.0f;
-    s.ChildRounding     = 0.0f;
-    s.FrameRounding     = 4.0f;
-    s.ScrollbarRounding = 4.0f;
-    s.WindowBorderSize  = 0.0f;
+    self = [super initWithNibName:nibNameOrNil
+                           bundle:nibBundleOrNil];
 
-    ImVec4* c = s.Colors;
-    c[ImGuiCol_WindowBg]             = ImVec4(0.118f, 0.118f, 0.125f, 1.00f);
-    c[ImGuiCol_ChildBg]              = ImVec4(0.000f, 0.000f, 0.000f, 0.00f);
-    c[ImGuiCol_Border]               = ImVec4(0.000f, 0.000f, 0.000f, 0.00f);
-    c[ImGuiCol_ScrollbarBg]          = ImVec4(0.000f, 0.000f, 0.000f, 0.00f);
-    c[ImGuiCol_ScrollbarGrab]        = ImVec4(0.55f, 0.20f, 0.22f, 0.85f);
-    c[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.75f, 0.28f, 0.30f, 1.00f);
-    c[ImGuiCol_ScrollbarGrabActive]  = ImVec4(0.45f, 0.16f, 0.18f, 1.00f);
+    if (self) {
 
-    ImFont* font = io.Fonts->AddFontFromMemoryTTF(sansbold, sizeof(sansbold), 18.0f, NULL, io.Fonts->GetGlyphRangesCyrillic());
-    verdana_smol = io.Fonts->AddFontFromMemoryTTF(verdana, sizeof verdana, 40, NULL, io.Fonts->GetGlyphRangesCyrillic());
-    pixel_big    = io.Fonts->AddFontFromMemoryTTF((void*)smallestpixel, sizeof smallestpixel, 128, NULL, io.Fonts->GetGlyphRangesCyrillic());
-    pixel_smol   = io.Fonts->AddFontFromMemoryTTF((void*)smallestpixel, sizeof smallestpixel, 20,  NULL, io.Fonts->GetGlyphRangesCyrillic());
-    ImGui_ImplMetal_Init(_device);
+        g_DrawView = self;
+
+        _device = MTLCreateSystemDefaultDevice();
+        _commandQueue = [_device newCommandQueue];
+
+        if (!self.device) abort();
+
+        IMGUI_CHECKVERSION();
+
+        ImGui::CreateContext();
+
+        ImGuiIO &io = ImGui::GetIO();
+
+        ImGui::StyleColorsDark();
+
+        auto &s = ImGui::GetStyle();
+
+        s.WindowPadding     = ImVec2(0, 0);
+        s.ItemSpacing       = ImVec2(0, 0);
+        s.WindowRounding    = 8.0f;
+        s.ChildRounding     = 0.0f;
+        s.FrameRounding     = 4.0f;
+        s.ScrollbarRounding = 4.0f;
+        s.WindowBorderSize  = 0.0f;
+
+        ImVec4 *c = s.Colors;
+
+        c[ImGuiCol_WindowBg] = ImVec4(0.118f, 0.118f, 0.125f, 1.00f);
+
+        io.Fonts->AddFontFromMemoryTTF(
+            sansbold,
+            sizeof(sansbold),
+            18.0f
+        );
+
+        ImGui_ImplMetal_Init(_device);
+    }
+
     return self;
 }
 
-+ (void)showChange:(BOOL)open { MenDeal = open; }
-- (MTKView *)mtkView { return (MTKView *)self.view; }
++ (void)showChange:(BOOL)open {
+    MenDeal = open;
+}
+
+#pragma mark - VIEW
+
+- (MTKView *)mtkView {
+    return (MTKView *)self.view;
+}
 
 - (void)loadView {
-    CGFloat w = [UIApplication sharedApplication].windows[0].rootViewController.view.frame.size.width;
-    CGFloat h = [UIApplication sharedApplication].windows[0].rootViewController.view.frame.size.height;
-    self.view = [[MTKView alloc] initWithFrame:CGRectMake(0, 0, w, h)];
+
+    CGFloat w =
+    UIScreen.mainScreen.bounds.size.width;
+
+    CGFloat h =
+    UIScreen.mainScreen.bounds.size.height;
+
+    self.view =
+    [[MTKView alloc]
+     initWithFrame:CGRectMake(0, 0, w, h)];
 }
+
 - (void)viewDidLoad {
+
     [super viewDidLoad];
-    
-    // ✅ ไม่ต้องมี Metal setup เพราะใช้ UIKit
-    self.view.backgroundColor = [UIColor clearColor];
-    
-    // ✅ สร้างปุ่มลอย
+
+    self.view.backgroundColor =
+    UIColor.clearColor;
+
+    self.view.userInteractionEnabled = YES;
+
     [self createFlySwitch];
     [self createTeleSwitch];
     [self createAimkillSwitch];
@@ -189,31 +208,27 @@ ImFont* Urbanist;
     [self createMarkTPSwitch];
     [self createAutoTPSwitch];
 }
-// 
-// ══════════════════════════════════════════════════════════════════════════════
-//  KILLER FLOAT BUTTONS v3 — pure black, always visible, per-feature glow
-// ══════════════════════════════════════════════════════════════════════════════
-@interface ImGuiDrawView ()
 
-- (void)createFlySwitch;
-- (void)createTeleSwitch;
-- (void)createAimkillSwitch;
-- (void)createNoRecoilSwitch;
-- (void)createMarkTPSwitch;
-- (void)createAutoTPSwitch;
+#pragma mark - MTKViewDelegate
 
-@end
+- (void)mtkView:(MTKView *)view
+drawableSizeWillChange:(CGSize)size {
+}
 
-#import <objc/runtime.h>
+- (void)drawInMTKView:(MTKView *)view {
+}
 
-static UIColor *kAccentFly   = nil;
-static UIColor *kAccentTele  = nil;
-static UIColor *kAccentAimK  = nil;
-static UIColor *kAccentKill  = nil;
-static UIColor *kAccentNinja = nil;
-static UIColor *kAccentGhost = nil;
+#pragma mark - Helpers
 
-#pragma mark - Floating Switch Only
+- (CGPoint)screenCenter {
+
+    CGSize s = UIScreen.mainScreen.bounds.size;
+
+    return CGPointMake(s.width * 0.5f,
+                       s.height * 0.5f);
+}
+
+#pragma mark - Create Switch
 
 - (UISwitch *)makeFloatSwitchOnly:(NSString *)title
                           centerX:(CGFloat)cx
@@ -226,50 +241,48 @@ static UIColor *kAccentGhost = nil;
 
     sw.center = CGPointMake(cx, cy);
 
-    // STYLE
     sw.backgroundColor = UIColor.clearColor;
-    sw.tintColor = UIColor.darkGrayColor;
-    sw.onTintColor = UIColor.blackColor;
-    sw.thumbTintColor = UIColor.whiteColor;
+    sw.tintColor       = UIColor.darkGrayColor;
+    sw.onTintColor     = UIColor.blackColor;
+    sw.thumbTintColor  = UIColor.whiteColor;
 
-    sw.layer.borderWidth = 0.0f;
-    sw.clipsToBounds = NO;
-
-    sw.on = isOn;
+    sw.on  = isOn;
     sw.tag = tag;
 
-    // ACTION
     [sw addTarget:self
            action:selector
  forControlEvents:UIControlEventValueChanged];
 
-    // TITLE
     UILabel *lbl =
-    [[UILabel alloc] initWithFrame:CGRectMake(cx - 50,
-                                              cy - 28,
-                                              100,
-                                              20)];
+    [[UILabel alloc]
+     initWithFrame:CGRectMake(cx - 50,
+                              cy - 28,
+                              100,
+                              20)];
 
     lbl.text = title;
+
     lbl.textColor = UIColor.whiteColor;
-    lbl.font = [UIFont boldSystemFontOfSize:10];
-    lbl.textAlignment = NSTextAlignmentCenter;
 
-    lbl.backgroundColor = UIColor.clearColor;
+    lbl.font =
+    [UIFont boldSystemFontOfSize:10];
 
-    lbl.shadowColor = UIColor.blackColor;
-    lbl.shadowOffset = CGSizeMake(0, 1);
+    lbl.textAlignment =
+    NSTextAlignmentCenter;
+
+    lbl.backgroundColor =
+    UIColor.clearColor;
 
     [self.view addSubview:lbl];
     [self.view addSubview:sw];
 
-    // SAVE LABEL
-    objc_setAssociatedObject(sw,
-                             @"titleLabel",
-                             lbl,
-                             OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    objc_setAssociatedObject(
+        sw,
+        @selector(handleSwitchDrag:),
+        lbl,
+        OBJC_ASSOCIATION_RETAIN_NONATOMIC
+    );
 
-    // DRAG
     UIPanGestureRecognizer *pan =
     [[UIPanGestureRecognizer alloc]
      initWithTarget:self
@@ -280,7 +293,7 @@ static UIColor *kAccentGhost = nil;
     return sw;
 }
 
-#pragma mark - Drag Floating Switch
+#pragma mark - Drag
 
 - (void)handleSwitchDrag:(UIPanGestureRecognizer *)pan {
 
@@ -293,10 +306,14 @@ static UIColor *kAccentGhost = nil;
     CGPointMake(view.center.x + translation.x,
                 view.center.y + translation.y);
 
-    CGSize scr = UIScreen.mainScreen.bounds.size;
+    CGSize scr =
+    UIScreen.mainScreen.bounds.size;
 
-    CGFloat halfW = view.bounds.size.width * 0.5f;
-    CGFloat halfH = view.bounds.size.height * 0.5f;
+    CGFloat halfW =
+    view.bounds.size.width * 0.5f;
+
+    CGFloat halfH =
+    view.bounds.size.height * 0.5f;
 
     newCenter.x =
     MAX(halfW,
@@ -310,10 +327,11 @@ static UIColor *kAccentGhost = nil;
 
     view.center = newCenter;
 
-    // MOVE LABEL
     UILabel *lbl =
-    objc_getAssociatedObject(view,
-                             @"titleLabel");
+    objc_getAssociatedObject(
+        view,
+        @selector(handleSwitchDrag:)
+    );
 
     if (lbl) {
 
@@ -324,17 +342,6 @@ static UIColor *kAccentGhost = nil;
 
     [pan setTranslation:CGPointZero
                  inView:self.view];
-}
-
-#pragma mark - Helpers
-
-- (CGPoint)screenCenter {
-
-    CGSize s =
-    UIScreen.mainScreen.bounds.size;
-
-    return CGPointMake(s.width * 0.5f,
-                       s.height * 0.5f);
 }
 
 #pragma mark - CREATE SWITCHES
@@ -417,43 +424,46 @@ static UIColor *kAccentGhost = nil;
                           tag:6];
 }
 
-#pragma mark - SWITCH EVENTS
+#pragma mark - EVENTS
 
 - (void)flySwitchChanged:(UISwitch *)sender {
 
     ZX_FlyAlt = sender.on;
-    Vars.FlyUp = ZX_FlyAlt;
+    Vars.FlyUp = sender.on;
 }
 
 - (void)telekillSwitchChanged:(UISwitch *)sender {
 
     ZX_Telekill = sender.on;
-    Vars.Telekill = ZX_Telekill;
+    Vars.Telekill = sender.on;
 }
 
 - (void)aimkillSwitchChanged:(UISwitch *)sender {
 
     ZX_AimKill = sender.on;
-    Vars.AimKill = ZX_AimKill;
+    Vars.AimKill = sender.on;
 }
 
 - (void)norecoilSwitchChanged:(UISwitch *)sender {
 
     ZX_NoRecoil = sender.on;
-    Vars.NoRecoil = ZX_NoRecoil;
+    Vars.NoRecoil = sender.on;
 }
 
 - (void)markTPSwitchChanged:(UISwitch *)sender {
 
     ZX_MarkTeleport = sender.on;
-    Vars.MarkTeleport = ZX_MarkTeleport;
+    Vars.MarkTeleport = sender.on;
 }
 
 - (void)autoTPSwitchChanged:(UISwitch *)sender {
 
     ZX_AutoTeleport = sender.on;
-    Vars.AutoTeleport = ZX_AutoTeleport;
+    Vars.AutoTeleport = sender.on;
 }
+
+@end
+
 // ui — DS Gaming style (white iOS, top tabs)
 
 // ui
