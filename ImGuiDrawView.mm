@@ -110,6 +110,12 @@ BOOL isJailbroken() {
 
 static __weak ImGuiDrawView *g_DrawView = nil;
 
+// ── ZX bool flags (synced from Vars.*) ───────────────────────────────────────
+static bool ZX_FlyAlt    = false;
+static bool ZX_Telekill  = false;
+static bool ZX_AimKill   = false;
+static bool ZX_NoRecoil  = false;
+
 @implementation ImGuiDrawView
 
 ImFont *_espFont;
@@ -452,13 +458,11 @@ drawableSizeWillChange:(CGSize)size {
 
 - (void)markTPSwitchChanged:(UISwitch *)sender {
 
-    ZX_MarkTeleport = sender.on;
     Vars.MarkTeleport = sender.on;
 }
 
 - (void)autoTPSwitchChanged:(UISwitch *)sender {
 
-    ZX_AutoTeleport = sender.on;
     Vars.AutoTeleport = sender.on;
 }
 
@@ -3344,6 +3348,12 @@ void initAntiBanHook(void) {
     NSLog(@"[AntiBan] patch: %@", r ?: @"<nil>");
     void *orig = StaticInlineHookFunction(("Frameworks/UnityFramework.framework/UnityFramework"), 0x1186A50, (void*)hook_SyncPos);
     if (orig) *(void**)(&orig_SyncPos) = orig;
+}
+
+@implementation ImGuiDrawView (TouchAndDraw)
+
+- (void)updateFloatButtonsVisibility {
+    // switches ลอยอยู่บนหน้าจอตลอด — ไม่ต้องซ่อน/แสดงเพิ่มเติม
 }
 
 - (void)updateIOWithTouchEvent:(UIEvent *)event {
