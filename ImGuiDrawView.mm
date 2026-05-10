@@ -110,11 +110,9 @@ BOOL isJailbroken() {
 
 static __weak ImGuiDrawView *g_DrawView = nil;
 
-// ── ZX bool flags (synced from Vars.*) ───────────────────────────────────────
-static bool ZX_FlyAlt    = false;
-static bool ZX_Telekill  = false;
-static bool ZX_AimKill   = false;
-static bool ZX_NoRecoil  = false;
+// ── forward declare MarkTeleport / AutoTeleport (declared later in file) ─────
+static bool ZX_MarkTeleport = false;
+static bool ZX_AutoTeleport = false;
 
 @implementation ImGuiDrawView
 
@@ -466,8 +464,7 @@ drawableSizeWillChange:(CGSize)size {
     Vars.AutoTeleport = sender.on;
 }
 
-@end
-
+// ─────────────────────────────────────────────────────────────────────────────
 // ui — DS Gaming style (white iOS, top tabs)
 
 // ui
@@ -576,8 +573,6 @@ static bool  ZX_RUN            = false;
 static bool  ZX_FLYV2          = false;
 static bool  ZX_GHOSTVIP       = false;
 static bool  ZX_XMOVE          = false;
-static bool  ZX_MarkTeleport   = false;
-static bool  ZX_AutoTeleport   = false;
 static bool  ZX_AmmoSpeedFast  = false;
 static bool  ZX_BlueMap        = false;
 static bool  ZX_FastMedkit     = false;   // ใช้ยาเร็วขึ้น (FSModeUseMedikitFasterRate)
@@ -3349,8 +3344,6 @@ void initAntiBanHook(void) {
     void *orig = StaticInlineHookFunction(("Frameworks/UnityFramework.framework/UnityFramework"), 0x1186A50, (void*)hook_SyncPos);
     if (orig) *(void**)(&orig_SyncPos) = orig;
 }
-
-@implementation ImGuiDrawView (TouchAndDraw)
 
 - (void)updateFloatButtonsVisibility {
     // switches ลอยอยู่บนหน้าจอตลอด — ไม่ต้องซ่อน/แสดงเพิ่มเติม
