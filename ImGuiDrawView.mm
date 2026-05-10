@@ -213,12 +213,6 @@ ImFont *Urbanist;
     [self createAutoTPSwitch];
 }
 
-#pragma mark - MTKViewDelegate
-
-- (void)mtkView:(MTKView *)view
-drawableSizeWillChange:(CGSize)size {
-}
-
 - (void)drawInMTKView:(MTKView *)view {
 }
 
