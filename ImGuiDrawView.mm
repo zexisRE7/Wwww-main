@@ -115,8 +115,8 @@ BOOL isJailbroken() {
 static __weak ImGuiDrawView *g_DrawView = nil;
 
 // ── forward declare MarkTeleport / AutoTeleport (declared later in file) ─────
-static bool ZX_MarkTeleport = false;
-static bool ZX_AutoTeleport = false;
+//static bool ZX_MarkTeleport = false;
+//static bool ZX_AutoTeleport = false;
 
 @implementation ImGuiDrawView
 
@@ -584,24 +584,24 @@ static bool  ZX_FreeFly        = false;
 static float ZX_FreeFlySpeed   = 8.0f;
 static bool  ZX_AimKill        = false;
 static bool  ZX_NoRecoil       = false;
-static bool  ZX_NoReload       = false;
-static bool  ZX_AIPlayerAim    = false;
-static bool  ZX_FAKE           = false;
-static bool  ZX_UNDER          = false;
-static bool  ZX_RUN            = false;
-static bool  ZX_FLYV2          = false;
-static bool  ZX_GHOSTVIP       = false;
-static bool  ZX_XMOVE          = false;
-static bool  ZX_AmmoSpeedFast  = false;
-static bool  ZX_BlueMap        = false;
-static bool  ZX_FastMedkit     = false;   // ใช้ยาเร็วขึ้น (FSModeUseMedikitFasterRate)
-static bool  ZX_RealSpeed      = false;   // วิ่งเร็ว (hook GetMoveSpeedForFPP + write RunSpeedUpScale)
-static float ZX_SpeedMult      = 1.8f;   // ตัวคูณ speed (1.0 = ปกติ, สูงสุด 5.0)
-static bool  ZX_AntiBan        = false;  // Bypass anti-ban (clamp SyncPos speed ก่อนส่ง server)
-static bool  ZX_SetMark        = false;
-static bool  ZX_ResetAcc       = false;
-static bool  ZX_DashForward    = false;   // กดปุ่ม → พุ่งไปข้างหน้า 100m ทันที
-static float ZX_DashDistance   = 100.0f;  // ระยะ dash (เมตร)
+//static bool  ZX_NoReload       = false;
+//static bool  ZX_AIPlayerAim    = false;
+//static bool  ZX_FAKE           = false;
+//static bool  ZX_UNDER          = false;
+//static bool  ZX_RUN            = false;
+//static bool  ZX_FLYV2          = false;
+//static bool  ZX_GHOSTVIP       = false;
+//static bool  ZX_XMOVE          = false;
+//static bool  ZX_AmmoSpeedFast  = false;
+//static bool  ZX_BlueMap        = false;
+//static bool  ZX_FastMedkit     = false;   // ใช้ยาเร็วขึ้น (FSModeUseMedikitFasterRate)
+//static bool  ZX_RealSpeed      = false;   // วิ่งเร็ว (hook GetMoveSpeedForFPP + write RunSpeedUpScale)
+//static float ZX_SpeedMult      = 1.8f;   // ตัวคูณ speed (1.0 = ปกติ, สูงสุด 5.0)
+//static bool  ZX_AntiBan        = false;  // Bypass anti-ban (clamp SyncPos speed ก่อนส่ง server)
+//static bool  ZX_SetMark        = false;
+//static bool  ZX_ResetAcc       = false;
+//static bool  ZX_DashForward    = false;   // กดปุ่ม → พุ่งไปข้างหน้า 100m ทันที
+//static float ZX_DashDistance   = 100.0f;  // ระยะ dash (เมตร)
 static bool  ZX_HideModMenu    = false;
 static bool  ZX_Esp2DCorner    = false;
 static bool  ZX_Esp3DBox       = false;
@@ -1200,7 +1200,7 @@ static void ZX_ApplyAndRun() {
     if (ZX_ResetAcc) { DoResetAccount(); ZX_ResetAcc = false; }
     if (ZX_FastMedkit && Vars.Enable) RunFastMedkit();
     if (ZX_RealSpeed && Vars.Enable) {
-        ZX_SpeedMultiplier = ZX_SpeedMult;
+        ZX_SpeedMult = ZX_SpeedMult;
         RunRealSpeed();
         initRealSpeedHook();
     }
