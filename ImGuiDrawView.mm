@@ -271,11 +271,9 @@ ImFont *Urbanist;
     pan.maximumNumberOfTouches = 1;
     [card addGestureRecognizer:pan];
 
-    // Add to keyWindow so it's always on top
-    UIWindow *win = [UIApplication sharedApplication].keyWindow
-                 ?: [UIApplication sharedApplication].windows.firstObject;
-    [win addSubview:card];
-    [win bringSubviewToFront:card];
+    // Add to self.view — cards stay below ImGui overlay but above Metal content.
+    // Touches inside a card go to UIKit (switch/drag); touches outside go to MTKView → ImGui.
+    [self.view addSubview:card];
 
     return sw;
 }
