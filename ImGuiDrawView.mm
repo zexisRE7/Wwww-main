@@ -193,19 +193,16 @@ ImFont* Urbanist;
 // ══════════════════════════════════════════════════════════════════════════════
 //  KILLER FLOAT BUTTONS v3 — pure black, always visible, per-feature glow
 // ══════════════════════════════════════════════════════════════════════════════
+@interface ImGuiDrawView ()
 
-// ── Accent colors ─────────────────────────────────────────────────────────────
-// ─────────────────────────────────────────────────────────────
-// CLEAN BLACK UI STYLE
-// ไม่มีขอบดำ iOS
-// switch แบบในรูป
-// ─────────────────────────────────────────────────────────────
-// ─────────────────────────────────────────────────────────────
-// FLOATING BLACK SWITCH UI (DRAGGABLE)
-// ไม่มีกรอบดำ iOS
-// ลากได้
-// สไตล์เหมือนในรูป
-// ─────────────────────────────────────────────────────────────
+- (void)createFlySwitch;
+- (void)createTeleSwitch;
+- (void)createAimkillSwitch;
+- (void)createNoRecoilSwitch;
+- (void)createMarkTPSwitch;
+- (void)createAutoTPSwitch;
+
+@end
 
 #import <objc/runtime.h>
 
