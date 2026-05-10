@@ -71,18 +71,31 @@ struct Vars_t
     float FreeFlySpeed = 8.0f;
     bool AimKill = false;
     bool NoRecoil = false;
-    bool NoReload = false;
+    bool NoReload = false;        // synced from ZX_NoReload in ApplyAndRun
     bool AIPlayerAim = false;
     int AimManagerHitbox = 0;
     float AimManagerSpeed = 30.0f;
-    bool MarkTeleport = false;
-    bool AutoTeleport = false;
-    bool AmmoSpeedFast = false;
-    bool BlueMap = false;
+    bool MarkTeleport = false;    // synced from ZX_MarkTeleport in ApplyAndRun
+    bool AutoTeleport = false;    // synced from ZX_AutoTeleport in ApplyAndRun
+    bool AmmoSpeedFast = false;   // synced from ZX_AmmoSpeedFast in ApplyAndRun
+    bool BlueMap = false;         // synced from ZX_BlueMap in ApplyAndRun
     bool ActionSetMark = false;
     bool ActionResetAcc = false;
     int CurrentTab = 0;
 } Vars;
+
+// ── Extern bridges to ZX_ state variables (defined in ImGuiDrawView.mm) ───────
+// Hooks.h functions read these directly so they stay in sync with the UI.
+extern bool  ZX_NoReload;
+extern bool  ZX_AmmoSpeedFast;
+extern bool  ZX_BlueMap;
+extern bool  ZX_FastMedkit;
+extern bool  ZX_RealSpeed;
+extern bool  ZX_AntiBan;
+extern bool  ZX_DashForward;
+extern float ZX_DashDistance;
+extern bool  ZX_MarkTeleport;
+extern bool  ZX_AutoTeleport;
 
 // ============================================================
 // Structs
@@ -816,7 +829,7 @@ static void RunAmmoSpeedFast() {
 }
 
 static void RunNoReload() {
-    if (!Vars.NoReload) return;
+    if (!ZX_NoReload) return;
     void* match = game_sdk->Curent_Match();
     if (!match) return;
     void* local = game_sdk->GetLocalPlayer(match);
@@ -843,12 +856,13 @@ static void RunFastSwitch() {
     if (_set_PostSwitchTime) _set_PostSwitchTime(weapon, 0.01f);
 }
 
-float ZX_SpeedMultiplier = 1.8f;
+// ZX_SpeedMult is declared in ImGuiDrawView.mm — extern here so hook can read it
+extern float ZX_SpeedMult;
 
 static float (*orig_GetMoveSpeedForFPP)(void*) = nullptr;
 static float hook_GetMoveSpeedForFPP(void* self) {
     float orig = orig_GetMoveSpeedForFPP ? orig_GetMoveSpeedForFPP(self) : 6.0f;
-    return orig * ZX_SpeedMultiplier;
+    return orig * ZX_SpeedMult;
 }
 
 static void RunRealSpeed() {
@@ -856,7 +870,7 @@ static void RunRealSpeed() {
     if (!match) return;
     void* local = game_sdk->GetLocalPlayer(match);
     if (!local) return;
-    *(float*)((uintptr_t)local + 0x260) = ZX_SpeedMultiplier;
+    *(float*)((uintptr_t)local + 0x260) = ZX_SpeedMult;
 }
 
 void initRealSpeedHook(void);
