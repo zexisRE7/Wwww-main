@@ -175,26 +175,20 @@ ImFont* Urbanist;
     CGFloat h = [UIApplication sharedApplication].windows[0].rootViewController.view.frame.size.height;
     self.view = [[MTKView alloc] initWithFrame:CGRectMake(0, 0, w, h)];
 }
-
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.mtkView.device = self.device;
-    self.mtkView.delegate = self;
-    self.mtkView.clearColor = MTLClearColorMake(0, 0, 0, 0);
-    self.mtkView.backgroundColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:0];
-    self.mtkView.clipsToBounds = YES;
-    Hook(0x4EB3E88, BLAGCMCGEJG1, old_BLAGCMCGEJG1);
     
-    // สร้างปุ่มลอย 
-    [self createFlyButton];
-    [self createTelekillButton];
-    [self createAimkillButton];
-    [self createNoRecoilButton];
-    [self createMarkTPButton];
-    [self createAutoTPButton];
-    [self updateFloatButtonsVisibility];
+    // ✅ ไม่ต้องมี Metal setup เพราะใช้ UIKit
+    self.view.backgroundColor = [UIColor clearColor];
+    
+    // ✅ สร้างปุ่มลอย
+    [self createFlySwitch];
+    [self createTeleSwitch];
+    [self createAimkillSwitch];
+    [self createNoRecoilSwitch];
+    [self createMarkTPSwitch];
+    [self createAutoTPSwitch];
 }
-
 // 
 // ══════════════════════════════════════════════════════════════════════════════
 //  KILLER FLOAT BUTTONS v3 — pure black, always visible, per-feature glow
@@ -213,80 +207,31 @@ static UIColor *kAccentKill  = nil;
 static UIColor *kAccentNinja = nil;
 static UIColor *kAccentGhost = nil;
 
-#pragma mark - Button Style
+#pragma mark - Button Style (ไม่ใช้งานแล้ว แต่เก็บไว้)
 
 - (void)updateButtonStyle:(UIButton *)btn
                  isActive:(BOOL)active
               accentColor:(UIColor *)color {
-    if (active) {
-        btn.backgroundColor = [color colorWithAlphaComponent:0.85];
-    } else {
-        btn.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.45];
-    }
-    btn.layer.cornerRadius = 14.0f;
-    btn.layer.borderWidth = 0.0f;
-    btn.layer.borderColor = UIColor.clearColor.CGColor;
-    btn.layer.shadowOpacity = 0.0f;
-    btn.clipsToBounds = YES;
+    // ไม่ใช้งานแล้ว เพราะไม่มีปุ่ม
 }
 
-#pragma mark - Button
+#pragma mark - Floating Switch Only (สวิตช์สีดำล้วน)
 
-- (UIButton *)makeFloatButton:(NSString *)title
-                      centerX:(CGFloat)cx
-                      centerY:(CGFloat)cy {
-    const CGFloat BW = 110.0f;
-    const CGFloat BH = 70.0f;
-
-    UIWindow *win = UIApplication.sharedApplication.keyWindow;
-
-    UIButton *btn = [[UIButton alloc] initWithFrame:CGRectMake(cx - BW * 0.5f,
-                                                               cy - BH * 0.5f,
-                                                               BW,
-                                                               BH)];
-
-    btn.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.45];
-    btn.layer.cornerRadius = 14.0f;
-    btn.layer.borderWidth = 0.0f;
-    btn.layer.borderColor = UIColor.clearColor.CGColor;
-    btn.layer.shadowOpacity = 0.0f;
-    btn.clipsToBounds = YES;
-
-    UILabel *lbl = [[UILabel alloc] initWithFrame:CGRectMake(0, 8, BW, 18)];
-    lbl.text = title;
-    lbl.textColor = UIColor.whiteColor;
-    lbl.font = [UIFont boldSystemFontOfSize:11.0f];
-    lbl.textAlignment = NSTextAlignmentCenter;
-    lbl.backgroundColor = UIColor.clearColor;
-
-    [btn addSubview:lbl];
-
-    [btn addTarget:self
-            action:@selector(buttonDragged:withEvent:)
-  forControlEvents:UIControlEventTouchDragInside];
-
-    [win addSubview:btn];
-
-    return btn;
-}
-
-#pragma mark - CUSTOM SWITCH (UISwitch จริง ไม่มีขอบดำ)
-
-- (UISwitch *)makeFloatSwitch:(UIButton *)btn
-                  accentColor:(UIColor *)accent
-                           on:(BOOL)isOn
-                       action:(SEL)selector
-                          tag:(NSInteger)tag {
+- (UISwitch *)makeFloatSwitchOnly:(NSString *)title
+                          centerX:(CGFloat)cx
+                          centerY:(CGFloat)cy
+                               on:(BOOL)isOn
+                           action:(SEL)selector
+                              tag:(NSInteger)tag {
     
     UISwitch *sw = [[UISwitch alloc] init];
-    sw.transform = CGAffineTransformMakeScale(0.8, 0.8);
-    sw.center = CGPointMake(btn.bounds.size.width / 2, btn.bounds.size.height / 2 + 8);
+    sw.center = CGPointMake(cx, cy);
     
-    sw.backgroundColor = UIColor.clearColor;
-    sw.tintColor = UIColor.clearColor;
-    sw.thumbTintColor = UIColor.whiteColor;
-    sw.onTintColor = accent;
-    sw.layer.cornerRadius = 0.0f;
+    // ✅ สีดำทั้งหมด (ไม่มีสี accent)
+    sw.backgroundColor = [UIColor clearColor];
+    sw.tintColor = [UIColor darkGrayColor];      // ขอบตอน off
+    sw.thumbTintColor = [UIColor whiteColor];    // ลูกบอลสีขาว
+    sw.onTintColor = [UIColor blackColor];       // พื้นหลังตอน on = ดำ
     sw.layer.borderWidth = 0.0f;
     sw.clipsToBounds = NO;
     
@@ -295,7 +240,21 @@ static UIColor *kAccentGhost = nil;
     
     [sw addTarget:self action:selector forControlEvents:UIControlEventValueChanged];
     
-    [btn addSubview:sw];
+    // Label ข้อความด้านบน
+    UILabel *lbl = [[UILabel alloc] initWithFrame:CGRectMake(cx - 50, cy - 28, 100, 20)];
+    lbl.text = title;
+    lbl.textColor = [UIColor whiteColor];
+    lbl.font = [UIFont boldSystemFontOfSize:10];
+    lbl.textAlignment = NSTextAlignmentCenter;
+    lbl.backgroundColor = [UIColor clearColor];
+    lbl.shadowColor = [UIColor blackColor];
+    lbl.shadowOffset = CGSizeMake(0, 1);
+    [self.view addSubview:lbl];
+    
+    [self.view addSubview:sw];
+    
+    // เก็บ label ไว้ใน associated object
+    objc_setAssociatedObject(sw, "titleLabel", lbl, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     
     return sw;
 }
@@ -307,81 +266,72 @@ static UIColor *kAccentGhost = nil;
     return CGPointMake(s.width * 0.5f, s.height * 0.5f);
 }
 
-#pragma mark - CREATE BUTTONS
+#pragma mark - CREATE FLOATING SWITCHES (สีดำล้วน)
 
-- (void)createFlyButton {
-    if (!kAccentFly)
-        kAccentFly = [UIColor colorWithRed:0.0 green:0.5 blue:1.0 alpha:1.0];
+- (void)createFlySwitch {
     CGPoint c = [self screenCenter];
-    self.flyButton = [self makeFloatButton:@"✈ FLY ALT" centerX:c.x - 120 centerY:c.y - 50];
-    self.flySwitch = [self makeFloatSwitch:self.flyButton accentColor:kAccentFly on:ZX_FlyAlt action:@selector(flySwitchChanged:) tag:1];
+    self.flySwitch = [self makeFloatSwitchOnly:@"FLY ALT"
+                                       centerX:c.x - 110
+                                       centerY:c.y - 60
+                                            on:ZX_FlyAlt
+                                        action:@selector(flySwitchChanged:)
+                                           tag:1];
 }
 
-- (void)createTelekillButton {
-    if (!kAccentTele)
-        kAccentTele = [UIColor colorWithRed:0.7 green:0.3 blue:1.0 alpha:1.0];
+- (void)createTeleSwitch {
     CGPoint c = [self screenCenter];
-    self.telekillButton = [self makeFloatButton:@"TELE VIP" centerX:c.x centerY:c.y - 50];
-    self.telekillSwitch = [self makeFloatSwitch:self.telekillButton accentColor:kAccentTele on:ZX_Telekill action:@selector(telekillSwitchChanged:) tag:2];
+    self.telekillSwitch = [self makeFloatSwitchOnly:@"TELE VIP"
+                                            centerX:c.x
+                                            centerY:c.y - 60
+                                                 on:ZX_Telekill
+                                             action:@selector(telekillSwitchChanged:)
+                                                tag:2];
 }
 
-- (void)createAimkillButton {
-    if (!kAccentAimK)
-        kAccentAimK = [UIColor colorWithRed:1.0 green:0.2 blue:0.2 alpha:1.0];
+- (void)createAimkillSwitch {
     CGPoint c = [self screenCenter];
-    self.aimkillButton = [self makeFloatButton:@"AI KILL" centerX:c.x + 120 centerY:c.y - 50];
-    self.aimkillSwitch = [self makeFloatSwitch:self.aimkillButton accentColor:kAccentAimK on:ZX_AimKill action:@selector(aimkillSwitchChanged:) tag:3];
+    self.aimkillSwitch = [self makeFloatSwitchOnly:@"AI KILL"
+                                           centerX:c.x + 110
+                                           centerY:c.y - 60
+                                                on:ZX_AimKill
+                                            action:@selector(aimkillSwitchChanged:)
+                                               tag:3];
 }
 
-- (void)createNoRecoilButton {
-    if (!kAccentKill)
-        kAccentKill = [UIColor colorWithRed:1.0 green:0.6 blue:0.0 alpha:1.0];
+- (void)createNoRecoilSwitch {
     CGPoint c = [self screenCenter];
-    self.norecoilButton = [self makeFloatButton:@"NO RECO" centerX:c.x - 120 centerY:c.y + 40];
-    self.norecoilSwitch = [self makeFloatSwitch:self.norecoilButton accentColor:kAccentKill on:ZX_NoRecoil action:@selector(norecoilSwitchChanged:) tag:4];
+    self.norecoilSwitch = [self makeFloatSwitchOnly:@"NO RECO"
+                                            centerX:c.x - 110
+                                            centerY:c.y + 50
+                                                 on:ZX_NoRecoil
+                                             action:@selector(norecoilSwitchChanged:)
+                                                tag:4];
 }
 
-- (void)createMarkTPButton {
-    if (!kAccentNinja)
-        kAccentNinja = [UIColor colorWithRed:0.0 green:0.8 blue:0.7 alpha:1.0];
+- (void)createMarkTPSwitch {
     CGPoint c = [self screenCenter];
-    self.markTPButton = [self makeFloatButton:@"NINJA" centerX:c.x centerY:c.y + 40];
-    self.markTPSwitch = [self makeFloatSwitch:self.markTPButton accentColor:kAccentNinja on:ZX_MarkTeleport action:@selector(markTPSwitchChanged:) tag:5];
+    self.markTPSwitch = [self makeFloatSwitchOnly:@"NINJA"
+                                          centerX:c.x
+                                          centerY:c.y + 50
+                                               on:ZX_MarkTeleport
+                                           action:@selector(markTPSwitchChanged:)
+                                              tag:5];
 }
 
-- (void)createAutoTPButton {
-    if (!kAccentGhost)
-        kAccentGhost = [UIColor colorWithRed:0.2 green:0.9 blue:0.3 alpha:1.0];
+- (void)createAutoTPSwitch {
     CGPoint c = [self screenCenter];
-    self.autoTPButton = [self makeFloatButton:@"GHOST" centerX:c.x + 120 centerY:c.y + 40];
-    self.autoTPSwitch = [self makeFloatSwitch:self.autoTPButton accentColor:kAccentGhost on:ZX_AutoTeleport action:@selector(autoTPSwitchChanged:) tag:6];
+    self.autoTPSwitch = [self makeFloatSwitchOnly:@"GHOST"
+                                          centerX:c.x + 110
+                                          centerY:c.y + 50
+                                               on:ZX_AutoTeleport
+                                           action:@selector(autoTPSwitchChanged:)
+                                              tag:6];
 }
 
-#pragma mark - UPDATE
+#pragma mark - UPDATE (ไม่ต้องใช้แล้ว)
 
 - (void)updateFloatButtonsVisibility {
-    self.flyButton.hidden      = NO;
-    self.telekillButton.hidden = NO;
-    self.aimkillButton.hidden  = NO;
-    self.norecoilButton.hidden = NO;
-    self.markTPButton.hidden   = NO;
-    self.autoTPButton.hidden   = NO;
-}
-
-#pragma mark - Drag
-
-- (void)buttonDragged:(UIButton *)button withEvent:(UIEvent *)event {
-    UITouch *touch = [[event touchesForView:button] anyObject];
-    CGPoint prev = [touch previousLocationInView:button.superview];
-    CGPoint curr = [touch locationInView:button.superview];
-    CGFloat newX = button.center.x + (curr.x - prev.x);
-    CGFloat newY = button.center.y + (curr.y - prev.y);
-    CGSize scr = UIScreen.mainScreen.bounds.size;
-    CGFloat hw = button.bounds.size.width * 0.5f;
-    CGFloat hh = button.bounds.size.height * 0.5f;
-    newX = MAX(hw, MIN(newX, scr.width - hw));
-    newY = MAX(hh, MIN(newY, scr.height - hh));
-    button.center = CGPointMake(newX, newY);
+    // ไม่ต้องใช้อะไร เพราะไม่มีปุ่ม
 }
 
 #pragma mark - SWITCH EVENTS
@@ -389,39 +339,32 @@ static UIColor *kAccentGhost = nil;
 - (void)flySwitchChanged:(UISwitch *)sender {
     ZX_FlyAlt = sender.on;
     Vars.FlyUp = ZX_FlyAlt;
-    [self updateButtonStyle:self.flyButton isActive:ZX_FlyAlt accentColor:kAccentFly];
 }
 
 - (void)telekillSwitchChanged:(UISwitch *)sender {
     ZX_Telekill = sender.on;
     Vars.Telekill = ZX_Telekill;
-    [self updateButtonStyle:self.telekillButton isActive:ZX_Telekill accentColor:kAccentTele];
 }
 
 - (void)aimkillSwitchChanged:(UISwitch *)sender {
     ZX_AimKill = sender.on;
     Vars.AimKill = ZX_AimKill;
-    [self updateButtonStyle:self.aimkillButton isActive:ZX_AimKill accentColor:kAccentAimK];
 }
 
 - (void)norecoilSwitchChanged:(UISwitch *)sender {
     ZX_NoRecoil = sender.on;
     Vars.NoRecoil = ZX_NoRecoil;
-    [self updateButtonStyle:self.norecoilButton isActive:ZX_NoRecoil accentColor:kAccentKill];
 }
 
 - (void)markTPSwitchChanged:(UISwitch *)sender {
     ZX_MarkTeleport = sender.on;
     Vars.MarkTeleport = ZX_MarkTeleport;
-    [self updateButtonStyle:self.markTPButton isActive:ZX_MarkTeleport accentColor:kAccentNinja];
 }
 
 - (void)autoTPSwitchChanged:(UISwitch *)sender {
     ZX_AutoTeleport = sender.on;
     Vars.AutoTeleport = ZX_AutoTeleport;
-    [self updateButtonStyle:self.autoTPButton isActive:ZX_AutoTeleport accentColor:kAccentGhost];
 }
-
 // ui — DS Gaming style (white iOS, top tabs)
 
 // ui
