@@ -1096,7 +1096,7 @@ static void ZX_ApplyAndRun() {
     Vars.fovLineColor[2] = 0.24f;
     Vars.fovLineColor[3] = 1.00f;
     Vars.FastFire = ZX_FastFire;
-    FireDelay = ZX_FastFire ? 0.0f : 0.001f;
+    //FireDelay = ZX_FastFire ? 0.0f : 0.001f;
     if (ZX_FastFire && Vars.Enable) {
         Vars.AutoFire = true;   // บังคับ AutoFire hook ทำงาน
         void* _ff_match = game_sdk->Curent_Match();
@@ -1122,7 +1122,7 @@ static void ZX_ApplyAndRun() {
     Vars.AimKill = ZX_AimKill;
     Vars.NoRecoil = ZX_NoRecoil;
     Vars.NoReload = ZX_NoReload;
-    Vars.AIPlayerAim = ZX_AIPlayerAim;
+   // Vars.AIPlayerAim = ZX_AIPlayerAim;
     Vars.CurrentTab = ZX_Tab;
     Vars.MarkTeleport = ZX_MarkTeleport;
     Vars.AutoTeleport = ZX_AutoTeleport;
@@ -1154,8 +1154,8 @@ static void ZX_ApplyAndRun() {
         SilentAim           = ZX_BulletThru;
         CheckWall1          = !ZX_BulletThru;
         // Speed base
-        Vars.NinjaRun       = ZX_RUN;
-        Vars.NinjaRunSpeed  = ZX_GHOSTVIP ? 2.0f : 0.5f;
+      //  Vars.NinjaRun       = ZX_RUN;
+        //Vars.NinjaRunSpeed  = ZX_GHOSTVIP ? 2.0f : 0.5f;
         // Misc
         Vars.FreeFly        = ZX_FreeFly;
         Vars.FlyUp          = ZX_FlyAlt;
@@ -1196,11 +1196,11 @@ static void ZX_ApplyAndRun() {
     }
     // ════════════════════════════════════════════════════════════════════════
 
-    if (ZX_SetMark) { SetMarkAtCurrentPos(); ZX_SetMark = false; }
-    if (ZX_ResetAcc) { DoResetAccount(); ZX_ResetAcc = false; }
-    if (ZX_FastMedkit && Vars.Enable) RunFastMedkit();
-    if (ZX_RealSpeed && Vars.Enable) {
-        ZX_SpeedMult = ZX_SpeedMult;
+   // if (ZX_SetMark) { SetMarkAtCurrentPos(); ZX_SetMark = false; }
+    //if (ZX_ResetAcc) { DoResetAccount(); ZX_ResetAcc = false; }
+  //  if (ZX_FastMedkit && Vars.Enable) RunFastMedkit();
+  //  if (ZX_RealSpeed && Vars.Enable) {
+       // ZX_SpeedMult = ZX_SpeedMult;
         RunRealSpeed();
         initRealSpeedHook();
     }
@@ -1278,15 +1278,15 @@ static void ZX_ApplyAndRun() {
     if (ZX_FastSwitchAuto) {
         RunFastSwitch();
     }
-    if (ZX_AIPlayerAim && Vars.Enable) {
-        Vars.Aimbot = true;
-        Vars.AimMode = 0;
-        Vars.isAimFov = true;
-        Vars.AimSpeed = (Vars.AimSpeed > 20.0f) ? Vars.AimSpeed : 35.0f;
-        Vars.AimManagerHitbox = 0;
-        Vars.VisibleCheck = false;
-        if (Vars.AimFov < 400.0f) Vars.AimFov = 400.0f;
-        SilentAim = true;
+   // if (ZX_AIPlayerAim && Vars.Enable) {
+       // Vars.Aimbot = true;
+       // Vars.AimMode = 0;
+       // Vars.isAimFov = true;
+       // Vars.AimSpeed = (Vars.AimSpeed > 20.0f) ? Vars.AimSpeed : 35.0f;
+        //Vars.AimManagerHitbox = 0;
+        //Vars.VisibleCheck = false;
+        //if (Vars.AimFov < 400.0f) Vars.AimFov = 400.0f;
+        //SilentAim = true;
     }
     if (ZX_Telekill && Vars.Enable) {
         void* match = game_sdk->Curent_Match();
@@ -1333,9 +1333,9 @@ static void ZX_ApplyAndRun() {
         Vars.NinjaRun = true; Vars.NinjaRunSpeed = 50.0f;
     }
     // sync ZX_RUN → NinjaRun
-    if (ZX_RUN && Vars.Enable) {
-        Vars.NinjaRun = true;
-        if (Vars.NinjaRunSpeed < 0.5f) Vars.NinjaRunSpeed = 0.5f;
+    //if (ZX_RUN && Vars.Enable) {
+       // Vars.NinjaRun = true;
+       // if (Vars.NinjaRunSpeed < 0.5f) Vars.NinjaRunSpeed = 0.5f;
     }
 
     // ── Fly V2 — พุ่งขึ้นสูงทันทีทุกเฟรม ────────────────────────────────
@@ -2809,7 +2809,7 @@ static void RenderMenu() {
                 M_SliderRow("Free Fly Speed", &ZX_FreeFlySpeed, 1.0f, 30.0f, "%.1f");
             M_ToggleRow("Super Jump",      &ZX_SuperJump);
             M_ToggleRow("Ninja Run",       &ZX_RUN);
-            M_ToggleRow("Speed NinjaRun",  &ZX_GHOSTVIP);
+           // M_ToggleRow("Speed NinjaRun",  &ZX_GHOSTVIP);
             M_ToggleRow("Ghost Mode",      &ZX_GhostMode);
             M_ToggleRow("Telekill",        &ZX_Telekill);
             M_ToggleRow("Mark Teleport",   &ZX_MarkTeleport);
@@ -2833,9 +2833,9 @@ static void RenderMenu() {
             M_Section("MISC EXTRAS");
             M_ToggleRow("Spin Bot",      &ZX_SpinBot);
             M_ToggleRow("Fake Lag",      &ZX_FakeLag);
-            M_ToggleRow("Reveal Enemy",  &ZX_FAKE);
-            M_ToggleRow("Under Hack",    &ZX_UNDER);
-            M_ToggleRow("Reset Guest",   &ZX_ResetAcc);
+            //M_ToggleRow("Reveal Enemy",  &ZX_FAKE);
+           // M_ToggleRow("Under Hack",    &ZX_UNDER);
+            //M_ToggleRow("Reset Guest",   &ZX_ResetAcc);
 
             M_Section("FLOAT BUTTONS");
             M_ToggleRow("Float Buttons Enable", &ZX_FloatBtnEnabled);
@@ -3132,8 +3132,8 @@ static void RenderMenu_LEGACY_DARK() {
         }
         // ── BUTTON ───────────────────────────────────────────────────────
         case 3: {
-            TOGGLE_ROW("RevealEnemy",    &ZX_FAKE,      false);
-            TOGGLE_ROW("Under Hack",     &ZX_UNDER,     false);
+           // TOGGLE_ROW("RevealEnemy",    &ZX_FAKE,      false);
+            //TOGGLE_ROW("Under Hack",     &ZX_UNDER,     false);
             TOGGLE_ROW("Ninja Run",      &ZX_RUN,       false);
             TOGGLE_ROW("Speed NinjaRun", &ZX_GHOSTVIP,  false);
             // ── Speed Presets ─────────────────────────────────
