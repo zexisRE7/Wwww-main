@@ -232,58 +232,50 @@ ImFont *Urbanist;
                            action:(SEL)selector
                               tag:(NSInteger)tag {
 
+    // ── Container card (label + switch) ────────────────────────────────────
+    const CGFloat LW = 100.0f, LH = 20.0f, GAP = 4.0f;
+    const CGFloat swW = 51.0f, swH = 31.0f;
+    const CGFloat cardW = LW, cardH = LH + GAP + swH;
+
+    UIView *card = [[UIView alloc] initWithFrame:
+        CGRectMake(cx - cardW * 0.5f, cy - cardH * 0.5f, cardW, cardH)];
+    card.backgroundColor = UIColor.clearColor;
+    card.tag = tag;
+
+    // Label (black text, top)
+    UILabel *lbl = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, cardW, LH)];
+    lbl.text          = title;
+    lbl.textColor     = [UIColor blackColor];
+    lbl.font          = [UIFont boldSystemFontOfSize:10];
+    lbl.textAlignment = NSTextAlignmentCenter;
+    lbl.backgroundColor = UIColor.clearColor;
+    [card addSubview:lbl];
+
+    // Switch (centered, below label)
     UISwitch *sw = [[UISwitch alloc] init];
-
-    sw.center = CGPointMake(cx, cy);
-
+    [sw sizeToFit];
+    sw.frame = CGRectMake((cardW - swW) * 0.5f, LH + GAP, swW, swH);
     sw.backgroundColor = UIColor.clearColor;
     sw.tintColor       = UIColor.darkGrayColor;
     sw.onTintColor     = UIColor.blackColor;
     sw.thumbTintColor  = UIColor.whiteColor;
-
     sw.on  = isOn;
     sw.tag = tag;
+    [sw addTarget:self action:selector forControlEvents:UIControlEventValueChanged];
+    [card addSubview:sw];
 
-    [sw addTarget:self
-           action:selector
- forControlEvents:UIControlEventValueChanged];
+    // Pan gesture on the CARD (not the switch) — avoids UISwitch conflict
+    UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc]
+        initWithTarget:self action:@selector(handleSwitchDrag:)];
+    pan.minimumNumberOfTouches = 1;
+    pan.maximumNumberOfTouches = 1;
+    [card addGestureRecognizer:pan];
 
-    UILabel *lbl =
-    [[UILabel alloc]
-     initWithFrame:CGRectMake(cx - 50,
-                              cy - 28,
-                              100,
-                              20)];
-
-    lbl.text = title;
-
-    lbl.textColor = UIColor.whiteColor;
-
-    lbl.font =
-    [UIFont boldSystemFontOfSize:10];
-
-    lbl.textAlignment =
-    NSTextAlignmentCenter;
-
-    lbl.backgroundColor =
-    UIColor.clearColor;
-
-    [self.view addSubview:lbl];
-    [self.view addSubview:sw];
-
-    objc_setAssociatedObject(
-        sw,
-        @selector(handleSwitchDrag:),
-        lbl,
-        OBJC_ASSOCIATION_RETAIN_NONATOMIC
-    );
-
-    UIPanGestureRecognizer *pan =
-    [[UIPanGestureRecognizer alloc]
-     initWithTarget:self
-     action:@selector(handleSwitchDrag:)];
-
-    [sw addGestureRecognizer:pan];
+    // Add to keyWindow so it's always on top
+    UIWindow *win = [UIApplication sharedApplication].keyWindow
+                 ?: [UIApplication sharedApplication].windows.firstObject;
+    [win addSubview:card];
+    [win bringSubviewToFront:card];
 
     return sw;
 }
@@ -292,51 +284,22 @@ ImFont *Urbanist;
 
 - (void)handleSwitchDrag:(UIPanGestureRecognizer *)pan {
 
-    UIView *view = pan.view;
+    UIView *card = pan.view;
+    UIView *parent = card.superview ?: self.view;
 
-    CGPoint translation =
-    [pan translationInView:self.view];
+    CGPoint t = [pan translationInView:parent];
 
-    CGPoint newCenter =
-    CGPointMake(view.center.x + translation.x,
-                view.center.y + translation.y);
+    CGSize scr   = UIScreen.mainScreen.bounds.size;
+    CGFloat halfW = card.bounds.size.width  * 0.5f;
+    CGFloat halfH = card.bounds.size.height * 0.5f;
 
-    CGSize scr =
-    UIScreen.mainScreen.bounds.size;
+    CGPoint newCenter = CGPointMake(card.center.x + t.x,
+                                    card.center.y + t.y);
+    newCenter.x = MAX(halfW, MIN(scr.width  - halfW, newCenter.x));
+    newCenter.y = MAX(halfH, MIN(scr.height - halfH, newCenter.y));
 
-    CGFloat halfW =
-    view.bounds.size.width * 0.5f;
-
-    CGFloat halfH =
-    view.bounds.size.height * 0.5f;
-
-    newCenter.x =
-    MAX(halfW,
-    MIN(scr.width - halfW,
-        newCenter.x));
-
-    newCenter.y =
-    MAX(halfH,
-    MIN(scr.height - halfH,
-        newCenter.y));
-
-    view.center = newCenter;
-
-    UILabel *lbl =
-    objc_getAssociatedObject(
-        view,
-        @selector(handleSwitchDrag:)
-    );
-
-    if (lbl) {
-
-        lbl.center =
-        CGPointMake(newCenter.x,
-                    newCenter.y - 28);
-    }
-
-    [pan setTranslation:CGPointZero
-                 inView:self.view];
+    card.center = newCenter;
+    [pan setTranslation:CGPointZero inView:parent];
 }
 
 #pragma mark - CREATE SWITCHES
@@ -3373,7 +3336,7 @@ void initAntiBanHook(void) {
     io.DisplayFramebufferScale = ImVec2(fbScale, fbScale);
     io.DeltaTime = 1.0f / float(view.preferredFramesPerSecond ?: 60);
     id<MTLCommandBuffer> commandBuffer = [self.commandQueue commandBuffer];
-    [self.view setUserInteractionEnabled:MenDeal ? YES : NO];
+    [self.view setUserInteractionEnabled:YES];   // always on — MENU button must be tappable
     MTLRenderPassDescriptor* rpd = view.currentRenderPassDescriptor;
     if (rpd) {
         id<MTLRenderCommandEncoder> enc = [commandBuffer renderCommandEncoderWithDescriptor:rpd];
