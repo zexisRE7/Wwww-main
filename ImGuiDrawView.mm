@@ -1846,7 +1846,7 @@ static void RenderMenu() {
     const ImU32 W_ICON_BTN_BG = IM_COL32( 30,  70,  38, 255);  // header icon circle
 
     // ── Layout ─────────────────────────────────────────────────────────────
-    const float WIN_W  = 580.0f;
+    const float WIN_W  = 360.0f;
     const float WIN_H  = 420.0f;
     const float WIN_RAD = 20.0f;
     const float SB_W   = 130.0f;   // sidebar
