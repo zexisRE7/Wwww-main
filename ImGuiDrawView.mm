@@ -1092,7 +1092,7 @@ static void ZX_ApplyAndRun() {
     if (ZX_ResetAcc) { DoResetAccount(); ZX_ResetAcc = false; }
     if (ZX_FastMedkit && Vars.Enable) RunFastMedkit();
     if (ZX_RealSpeed && Vars.Enable) {
-        ZX_SpeedMultiplier = ZX_SpeedMult;
+        ZX_SpeedMult = ZX_SpeedMult;
         RunRealSpeed();
         initRealSpeedHook();
     }
