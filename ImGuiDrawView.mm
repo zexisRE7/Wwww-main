@@ -2945,9 +2945,8 @@ void initAntiBanHook(void) {
         [enc popDebugGroup];
         [enc endEncoding];
         [commandBuffer presentDrawable:view.currentDrawable];
-    
-         [commandBuffer commit];
-          }
+               [commandBuffer commit];
+            }
         }
 
 - (void)mtkView:(MTKView*)view drawableSizeWillChange:(CGSize)size {}
