@@ -2957,8 +2957,6 @@ ImGui_ImplMetal_RenderDrawData(
 
 [commandBuffer presentDrawable:view.currentDrawable];
 [commandBuffer commit];
-
-    }
 }
 
 - (void)mtkView:(MTKView*)view
