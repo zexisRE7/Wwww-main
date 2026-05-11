@@ -123,7 +123,10 @@ bool ZX_AutoTeleport = false;
 static ZXPanel          *g_zxPanel     = nil;
 static NSMutableArray   *g_zxMiniCards = nil;
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wprotocol"
 @implementation ImGuiDrawView
+#pragma clang diagnostic pop
 - (void)mtkView:(MTKView *)view drawableSizeWillChange:(CGSize)size {
     // ไม่ต้องทำอะไร (แต่ต้องมี)
 }
@@ -220,9 +223,10 @@ ImFont *Urbanist;
 - (void)motionEnded:(UIEventSubtype)motion withEvent:(UIEvent *)event {
     if (motion == UIEventSubtypeMotionShake) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            if (g_zxPanel && [g_zxPanel respondsToSelector:@selector(toggleAnimated)]) {
-    [g_zxPanel performSelector:@selector(toggleAnimated)];
-    }  
+            id panel = (id)g_zxPanel;
+            if (panel && [panel respondsToSelector:@selector(toggleAnimated)]) {
+                [panel performSelector:@selector(toggleAnimated)];
+            }
         });
     }
 }
@@ -409,6 +413,8 @@ static int   ZX_HitboxIdx      = 0;        // 0=Head
 //  ZX NATIVE PANEL — UIKit floating menu (เขย่าเปิด/ปิด, ลากได้, iOS 26 ✅)
 // ══════════════════════════════════════════════════════════════════════════════
 
+@end  // @implementation ImGuiDrawView — protocol methods are in (ZXNative) category below
+
 typedef void (^ZXOnChange)(BOOL on);
 
 // ── Feature descriptor ────────────────────────────────────────────────────────
@@ -448,7 +454,11 @@ typedef void (^ZXOnChange)(BOOL on);
     UILabel *lbl = [UILabel new];
     lbl.text = def.title;
     lbl.font = [UIFont systemFontOfSize:15 weight:UIFontWeightMedium];
-    lbl.textColor = [UIColor labelColor];
+    if (@available(iOS 13.0, *)) {
+        lbl.textColor = [UIColor labelColor];
+    } else {
+        lbl.textColor = [UIColor darkTextColor];
+    }
     lbl.frame = CGRectMake(50, (H - 20) * 0.5f, w - 50 - 68, 20);
     [self addSubview:lbl];
 
@@ -461,7 +471,11 @@ typedef void (^ZXOnChange)(BOOL on);
     [self addSubview:self.sw];
 
     UIView *sep = [[UIView alloc] initWithFrame:CGRectMake(50, H - 0.5f, w - 50, 0.5f)];
-    sep.backgroundColor = [UIColor separatorColor];
+    if (@available(iOS 13.0, *)) {
+        sep.backgroundColor = [UIColor separatorColor];
+    } else {
+        sep.backgroundColor = [UIColor colorWithWhite:0 alpha:0.12f];
+    }
     [self addSubview:sep];
     return self;
 }
@@ -477,7 +491,11 @@ typedef void (^ZXOnChange)(BOOL on);
 - (instancetype)initWithDef:(ZXFeatureDef *)def origin:(CGPoint)origin {
     const CGFloat W = 84.0f, H = 54.0f;
     self = [super initWithFrame:CGRectMake(origin.x, origin.y, W, H)];
-    self.backgroundColor = [UIColor systemBackgroundColor];
+    if (@available(iOS 13.0, *)) {
+        self.backgroundColor = [UIColor systemBackgroundColor];
+    } else {
+        self.backgroundColor = [UIColor whiteColor];
+    }
     self.layer.cornerRadius  = 12.0f;
     self.layer.shadowColor   = UIColor.blackColor.CGColor;
     self.layer.shadowOpacity = 0.20f;
@@ -488,7 +506,11 @@ typedef void (^ZXOnChange)(BOOL on);
     UILabel *t = [UILabel new];
     t.text = def.title;
     t.font = [UIFont systemFontOfSize:9 weight:UIFontWeightBold];
-    t.textColor = [UIColor secondaryLabelColor];
+    if (@available(iOS 13.0, *)) {
+        t.textColor = [UIColor secondaryLabelColor];
+    } else {
+        t.textColor = [UIColor grayColor];
+    }
     t.textAlignment = NSTextAlignmentCenter;
     t.frame = CGRectMake(0, 5, W, 13);
     [self addSubview:t];
@@ -550,7 +572,11 @@ static const CGFloat ZXRowH_    = 50.0f;
     _activeTab = 0;
     self.hidden = YES;
 
-    self.backgroundColor = [UIColor systemBackgroundColor];
+    if (@available(iOS 13.0, *)) {
+        self.backgroundColor = [UIColor systemBackgroundColor];
+    } else {
+        self.backgroundColor = [UIColor whiteColor];
+    }
     self.layer.cornerRadius  = 20.0f;
     self.layer.shadowColor   = UIColor.blackColor.CGColor;
     self.layer.shadowOpacity = 0.28f;
@@ -571,9 +597,15 @@ static const CGFloat ZXRowH_    = 50.0f;
 - (void)_buildTabBar:(NSArray<NSString*> *)names {
     // Rounded-top background
     UIView *bg = [[UIView alloc] initWithFrame:CGRectMake(0, 0, ZXPanelW_, ZXTabBarH_)];
-    bg.backgroundColor = [UIColor secondarySystemBackgroundColor];
+    if (@available(iOS 13.0, *)) {
+        bg.backgroundColor = [UIColor secondarySystemBackgroundColor];
+    } else {
+        bg.backgroundColor = [UIColor colorWithWhite:0.95f alpha:1.0f];
+    }
     bg.layer.cornerRadius = 20.0f;
-    bg.layer.maskedCorners = kCALayerMinXMinYCorner | kCALayerMaxXMinYCorner;
+    if (@available(iOS 11.0, *)) {
+        bg.layer.maskedCorners = kCALayerMinXMinYCorner | kCALayerMaxXMinYCorner;
+    }
     bg.clipsToBounds = YES;
     [self addSubview:bg];
 
@@ -601,17 +633,27 @@ static const CGFloat ZXRowH_    = 50.0f;
     [self _updateTabColors];
 
     UIView *sep = [[UIView alloc] initWithFrame:CGRectMake(0, ZXTabBarH_ - 0.5f, ZXPanelW_, 0.5f)];
-    sep.backgroundColor = [UIColor separatorColor];
+    if (@available(iOS 13.0, *)) {
+        sep.backgroundColor = [UIColor separatorColor];
+    } else {
+        sep.backgroundColor = [UIColor colorWithWhite:0 alpha:0.12f];
+    }
     [self addSubview:sep];
 }
 
 - (void)_buildScrollView {
     _sv = [[UIScrollView alloc] initWithFrame:
         CGRectMake(0, ZXTabBarH_, ZXPanelW_, ZXPanelH_ - ZXTabBarH_)];
-    _sv.backgroundColor = [UIColor systemBackgroundColor];
+    if (@available(iOS 13.0, *)) {
+        _sv.backgroundColor = [UIColor systemBackgroundColor];
+    } else {
+        _sv.backgroundColor = [UIColor whiteColor];
+    }
     _sv.alwaysBounceVertical = YES;
     _sv.layer.cornerRadius = 20.0f;
-    _sv.layer.maskedCorners = kCALayerMinXMaxYCorner | kCALayerMaxXMaxYCorner;
+    if (@available(iOS 11.0, *)) {
+        _sv.layer.maskedCorners = kCALayerMinXMaxYCorner | kCALayerMaxXMaxYCorner;
+    }
     _sv.clipsToBounds = YES;
     [self addSubview:_sv];
 }
@@ -679,6 +721,9 @@ static const CGFloat ZXRowH_    = 50.0f;
     [pan setTranslation:CGPointZero inView:sv];
 }
 @end
+
+// ── ImGuiDrawView methods that reference ZXPanel (must come after ZXPanel @end) ──
+@implementation ImGuiDrawView (ZXNative)
 
 // ─────────────────────────────────────────────────────────────────────────────
 static void ZX_DrawSidebarIcon(ImDrawList* dl, int idx, ImVec2 c, float s, ImU32 col) {
@@ -3609,7 +3654,5 @@ void initAntiBanHook(void) {
     [commandBuffer commit];
 
 }
-
-- (void)mtkView:(MTKView*)view drawableSizeWillChange:(CGSize)size {}
 
 @end
