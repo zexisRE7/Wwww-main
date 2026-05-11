@@ -115,8 +115,13 @@ BOOL isJailbroken() {
 static __weak ImGuiDrawView *g_DrawView = nil;
 
 // ── forward declare MarkTeleport / AutoTeleport (declared later in file) ─────
-//static bool ZX_MarkTeleport = false;
-//static bool ZX_AutoTeleport = false;
+static bool ZX_MarkTeleport = false;
+static bool ZX_AutoTeleport = false;
+
+// ── forward declare native panel (defined after all ZX_* variables) ──────────
+@class ZXPanel;
+static ZXPanel          *g_zxPanel     = nil;
+static NSMutableArray   *g_zxMiniCards = nil;
 
 @implementation ImGuiDrawView
 
@@ -201,287 +206,23 @@ ImFont *Urbanist;
 }
 
 - (void)viewDidLoad {
-
     [super viewDidLoad];
-
-    self.view.backgroundColor =
-    UIColor.clearColor;
-
+    self.view.backgroundColor = UIColor.clearColor;
     self.view.userInteractionEnabled = YES;
-
-    [self createFlySwitch];
-    [self createTeleSwitch];
-    [self createAimkillSwitch];
-    [self createNoRecoilSwitch];
-    [self createMarkTPSwitch];
-    [self createAutoTPSwitch];
-    [self createMenuButton];
+    [self becomeFirstResponder];  // เปิดรับ shake gesture
 }
 
-#pragma mark - Helpers
+// ── Shake gesture — เขย่าเปิด/ปิด panel ──────────────────────────────────────
+- (BOOL)canBecomeFirstResponder { return YES; }
 
-- (CGPoint)screenCenter {
-
-    CGSize s = UIScreen.mainScreen.bounds.size;
-
-    return CGPointMake(s.width * 0.5f,
-                       s.height * 0.5f);
+- (void)motionEnded:(UIEventSubtype)motion withEvent:(UIEvent *)event {
+    if (motion == UIEventSubtypeMotionShake) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (g_zxPanel) [g_zxPanel toggleAnimated];
+        });
+    }
 }
 
-#pragma mark - Create Switch
-
-- (UISwitch *)makeFloatSwitchOnly:(NSString *)title
-                          centerX:(CGFloat)cx
-                          centerY:(CGFloat)cy
-                               on:(BOOL)isOn
-                           action:(SEL)selector
-                              tag:(NSInteger)tag {
-
-    // ── Container card (label + switch) ────────────────────────────────────
-    const CGFloat LW = 100.0f, LH = 20.0f, GAP = 4.0f;
-    const CGFloat swW = 51.0f, swH = 31.0f;
-    const CGFloat cardW = LW, cardH = LH + GAP + swH;
-
-    UIView *card = [[UIView alloc] initWithFrame:
-        CGRectMake(cx - cardW * 0.5f, cy - cardH * 0.5f, cardW, cardH)];
-    card.backgroundColor = UIColor.clearColor;
-    card.tag = tag;
-
-    // Label (black text, top)
-    UILabel *lbl = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, cardW, LH)];
-    lbl.text          = title;
-    lbl.textColor     = [UIColor blackColor];
-    lbl.font          = [UIFont boldSystemFontOfSize:10];
-    lbl.textAlignment = NSTextAlignmentCenter;
-    lbl.backgroundColor = UIColor.clearColor;
-    [card addSubview:lbl];
-
-    // Switch (centered, below label)
-    UISwitch *sw = [[UISwitch alloc] init];
-    [sw sizeToFit];
-    sw.frame = CGRectMake((cardW - swW) * 0.5f, LH + GAP, swW, swH);
-    sw.backgroundColor = UIColor.clearColor;
-    sw.tintColor       = UIColor.darkGrayColor;
-    sw.onTintColor     = UIColor.blackColor;
-    sw.thumbTintColor  = UIColor.whiteColor;
-    sw.on  = isOn;
-    sw.tag = tag;
-    [sw addTarget:self action:selector forControlEvents:UIControlEventValueChanged];
-    [card addSubview:sw];
-
-    // Pan gesture on the CARD (not the switch) — avoids UISwitch conflict
-    UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc]
-        initWithTarget:self action:@selector(handleSwitchDrag:)];
-    pan.minimumNumberOfTouches = 1;
-    pan.maximumNumberOfTouches = 1;
-    [card addGestureRecognizer:pan];
-
-    // Add to self.view — cards stay below ImGui overlay but above Metal content.
-    // Touches inside a card go to UIKit (switch/drag); touches outside go to MTKView → ImGui.
-    [self.view addSubview:card];
-
-    return sw;
-}
-
-#pragma mark - Drag
-
-- (void)handleSwitchDrag:(UIPanGestureRecognizer *)pan {
-
-    UIView *card = pan.view;
-    UIView *parent = card.superview ?: self.view;
-
-    CGPoint t = [pan translationInView:parent];
-
-    CGSize scr   = UIScreen.mainScreen.bounds.size;
-    CGFloat halfW = card.bounds.size.width  * 0.5f;
-    CGFloat halfH = card.bounds.size.height * 0.5f;
-
-    CGPoint newCenter = CGPointMake(card.center.x + t.x,
-                                    card.center.y + t.y);
-    newCenter.x = MAX(halfW, MIN(scr.width  - halfW, newCenter.x));
-    newCenter.y = MAX(halfH, MIN(scr.height - halfH, newCenter.y));
-
-    card.center = newCenter;
-    [pan setTranslation:CGPointZero inView:parent];
-}
-
-#pragma mark - CREATE SWITCHES
-
-- (void)createFlySwitch {
-
-    CGPoint c = [self screenCenter];
-
-    self.flySwitch =
-    [self makeFloatSwitchOnly:@"FLY ALT"
-                      centerX:c.x - 110
-                      centerY:c.y - 60
-                           on:ZX_FlyAlt
-                       action:@selector(flySwitchChanged:)
-                          tag:1];
-}
-
-- (void)createTeleSwitch {
-
-    CGPoint c = [self screenCenter];
-
-    self.telekillSwitch =
-    [self makeFloatSwitchOnly:@"TELE VIP"
-                      centerX:c.x
-                      centerY:c.y - 60
-                           on:ZX_Telekill
-                       action:@selector(telekillSwitchChanged:)
-                          tag:2];
-}
-
-- (void)createAimkillSwitch {
-
-    CGPoint c = [self screenCenter];
-
-    self.aimkillSwitch =
-    [self makeFloatSwitchOnly:@"AI KILL"
-                      centerX:c.x + 110
-                      centerY:c.y - 60
-                           on:ZX_AimKill
-                       action:@selector(aimkillSwitchChanged:)
-                          tag:3];
-}
-
-- (void)createNoRecoilSwitch {
-
-    CGPoint c = [self screenCenter];
-
-    self.norecoilSwitch =
-    [self makeFloatSwitchOnly:@"NO RECO"
-                      centerX:c.x - 110
-                      centerY:c.y + 50
-                           on:ZX_NoRecoil
-                       action:@selector(norecoilSwitchChanged:)
-                          tag:4];
-}
-
-- (void)createMarkTPSwitch {
-
-    CGPoint c = [self screenCenter];
-
-    self.markTPSwitch =
-    [self makeFloatSwitchOnly:@"NINJA"
-                      centerX:c.x
-                      centerY:c.y + 50
-                           on:ZX_MarkTeleport
-                       action:@selector(markTPSwitchChanged:)
-                          tag:5];
-}
-
-- (void)createAutoTPSwitch {
-
-    CGPoint c = [self screenCenter];
-
-    self.autoTPSwitch =
-    [self makeFloatSwitchOnly:@"GHOST"
-                      centerX:c.x + 110
-                      centerY:c.y + 50
-                           on:ZX_AutoTeleport
-                       action:@selector(autoTPSwitchChanged:)
-                          tag:6];
-}
-
-#pragma mark - EVENTS
-
-- (void)flySwitchChanged:(UISwitch *)sender {
-
-    ZX_FlyAlt = sender.on;
-    Vars.FlyUp = sender.on;
-}
-
-- (void)telekillSwitchChanged:(UISwitch *)sender {
-
-    ZX_Telekill = sender.on;
-    Vars.Telekill = sender.on;
-}
-
-- (void)aimkillSwitchChanged:(UISwitch *)sender {
-
-    ZX_AimKill = sender.on;
-    Vars.AimKill = sender.on;
-}
-
-- (void)norecoilSwitchChanged:(UISwitch *)sender {
-
-    ZX_NoRecoil = sender.on;
-    Vars.NoRecoil = sender.on;
-}
-
-- (void)markTPSwitchChanged:(UISwitch *)sender {
-
-    Vars.MarkTeleport = sender.on;
-}
-
-- (void)autoTPSwitchChanged:(UISwitch *)sender {
-
-    Vars.AutoTeleport = sender.on;
-}
-
-#pragma mark - UIKit MENU Button (always on top — own UIWindow)
-
-- (void)createMenuButton {
-    const CGFloat MW = 68.0f, MH = 34.0f;
-    CGSize scr = UIScreen.mainScreen.bounds.size;
-
-    // Dedicated UIWindow at alert level so it sits above the game at all times
-    self.menuWindow = [[UIWindow alloc] initWithFrame:
-        CGRectMake(20.0f, scr.height * 0.35f, MW, MH)];
-    self.menuWindow.backgroundColor    = UIColor.clearColor;
-    self.menuWindow.windowLevel        = UIWindowLevelAlert + 100;
-    self.menuWindow.hidden             = NO;
-    self.menuWindow.userInteractionEnabled = YES;
-
-    // Minimal root VC required by UIWindow
-    UIViewController *vc = [[UIViewController alloc] init];
-    vc.view.backgroundColor = UIColor.clearColor;
-    self.menuWindow.rootViewController = vc;
-
-    // Button
-    self.menuButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    self.menuButton.frame = CGRectMake(0, 0, MW, MH);
-    self.menuButton.backgroundColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:0.92f];
-    self.menuButton.layer.cornerRadius  = MH * 0.5f;
-    self.menuButton.layer.masksToBounds = YES;
-    [self.menuButton setTitle:@"MENU" forState:UIControlStateNormal];
-    [self.menuButton setTitleColor:UIColor.whiteColor forState:UIControlStateNormal];
-    self.menuButton.titleLabel.font = [UIFont boldSystemFontOfSize:13.0f];
-
-    [self.menuButton addTarget:self
-                        action:@selector(menuButtonTapped:)
-              forControlEvents:UIControlEventTouchUpInside];
-
-    UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc]
-        initWithTarget:self action:@selector(menuButtonDragged:)];
-    [self.menuButton addGestureRecognizer:pan];
-
-    [self.menuWindow addSubview:self.menuButton];
-}
-
-- (void)menuButtonTapped:(UIButton *)btn {
-    MenDeal = !MenDeal;
-    [btn setTitle:(MenDeal ? @"CLOSE" : @"MENU") forState:UIControlStateNormal];
-    UIColor *bg = MenDeal
-        ? [UIColor colorWithRed:1.0f green:0.373f blue:0.118f alpha:0.92f]
-        : [UIColor colorWithRed:0.0f green:0.0f   blue:0.0f   alpha:0.92f];
-    btn.backgroundColor = bg;
-}
-
-- (void)menuButtonDragged:(UIPanGestureRecognizer *)pan {
-    UIWindow *win = (UIWindow *)pan.view.window;
-    CGPoint t     = [pan translationInView:win];
-    CGSize scr    = UIScreen.mainScreen.bounds.size;
-
-    CGRect f = win.frame;
-    f.origin.x = MAX(0.0f, MIN(scr.width  - f.size.width,  f.origin.x + t.x));
-    f.origin.y = MAX(0.0f, MIN(scr.height - f.size.height, f.origin.y + t.y));
-    win.frame = f;
-
-    [pan setTranslation:CGPointZero inView:win];
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ui — DS Gaming style (white iOS, top tabs)
@@ -584,24 +325,24 @@ static bool  ZX_FreeFly        = false;
 static float ZX_FreeFlySpeed   = 8.0f;
 static bool  ZX_AimKill        = false;
 static bool  ZX_NoRecoil       = false;
-//static bool  ZX_NoReload       = false;
-//static bool  ZX_AIPlayerAim    = false;
-//static bool  ZX_FAKE           = false;
-//static bool  ZX_UNDER          = false;
-//static bool  ZX_RUN            = false;
-//static bool  ZX_FLYV2          = false;
-//static bool  ZX_GHOSTVIP       = false;
-//static bool  ZX_XMOVE          = false;
-//static bool  ZX_AmmoSpeedFast  = false;
-//static bool  ZX_BlueMap        = false;
-//static bool  ZX_FastMedkit     = false;   // ใช้ยาเร็วขึ้น (FSModeUseMedikitFasterRate)
-//static bool  ZX_RealSpeed      = false;   // วิ่งเร็ว (hook GetMoveSpeedForFPP + write RunSpeedUpScale)
-//static float ZX_SpeedMult      = 1.8f;   // ตัวคูณ speed (1.0 = ปกติ, สูงสุด 5.0)
-//static bool  ZX_AntiBan        = false;  // Bypass anti-ban (clamp SyncPos speed ก่อนส่ง server)
-//static bool  ZX_SetMark        = false;
-//static bool  ZX_ResetAcc       = false;
-//static bool  ZX_DashForward    = false;   // กดปุ่ม → พุ่งไปข้างหน้า 100m ทันที
-//static float ZX_DashDistance   = 100.0f;  // ระยะ dash (เมตร)
+static bool  ZX_NoReload       = false;
+static bool  ZX_AIPlayerAim    = false;
+static bool  ZX_FAKE           = false;
+static bool  ZX_UNDER          = false;
+static bool  ZX_RUN            = false;
+static bool  ZX_FLYV2          = false;
+static bool  ZX_GHOSTVIP       = false;
+static bool  ZX_XMOVE          = false;
+static bool  ZX_AmmoSpeedFast  = false;
+static bool  ZX_BlueMap        = false;
+static bool  ZX_FastMedkit     = false;   // ใช้ยาเร็วขึ้น (FSModeUseMedikitFasterRate)
+static bool  ZX_RealSpeed      = false;   // วิ่งเร็ว (hook GetMoveSpeedForFPP + write RunSpeedUpScale)
+static float ZX_SpeedMult      = 1.8f;   // ตัวคูณ speed (1.0 = ปกติ, สูงสุด 5.0)
+static bool  ZX_AntiBan        = false;  // Bypass anti-ban (clamp SyncPos speed ก่อนส่ง server)
+static bool  ZX_SetMark        = false;
+static bool  ZX_ResetAcc       = false;
+static bool  ZX_DashForward    = false;   // กดปุ่ม → พุ่งไปข้างหน้า 100m ทันที
+static float ZX_DashDistance   = 100.0f;  // ระยะ dash (เมตร)
 static bool  ZX_HideModMenu    = false;
 static bool  ZX_Esp2DCorner    = false;
 static bool  ZX_Esp3DBox       = false;
@@ -660,6 +401,282 @@ static bool  ZX_AimRadius360   = false;
 static int   ZX_WhenShootIdx   = 0;        // 0=When Shoot and Scope
 static int   ZX_HitboxIdx      = 0;        // 0=Head
 
+// ══════════════════════════════════════════════════════════════════════════════
+//  ZX NATIVE PANEL — UIKit floating menu (เขย่าเปิด/ปิด, ลากได้, iOS 26 ✅)
+// ══════════════════════════════════════════════════════════════════════════════
+
+typedef void (^ZXOnChange)(BOOL on);
+
+// ── Feature descriptor ────────────────────────────────────────────────────────
+@interface ZXFeatureDef : NSObject
+@property (nonatomic, copy)   NSString   *title;
+@property (nonatomic, copy)   NSString   *icon;
+@property (nonatomic, assign) BOOL        initial;
+@property (nonatomic, copy)   ZXOnChange  onChange;
++ (instancetype)title:(NSString *)t icon:(NSString *)i initial:(BOOL)v onChange:(ZXOnChange)cb;
+@end
+@implementation ZXFeatureDef
++ (instancetype)title:(NSString *)t icon:(NSString *)i initial:(BOOL)v onChange:(ZXOnChange)cb {
+    ZXFeatureDef *d = [ZXFeatureDef new];
+    d.title = t; d.icon = i; d.initial = v; d.onChange = cb;
+    return d;
+}
+@end
+
+// ── Single toggle row (icon + label + UISwitch) ────────────────────────────────
+@interface ZXToggleRow : UIView
+@property (nonatomic, strong) UISwitch   *sw;
+@property (nonatomic, copy)   ZXOnChange  onChange;
+@end
+@implementation ZXToggleRow
+- (instancetype)initWithDef:(ZXFeatureDef *)def width:(CGFloat)w {
+    const CGFloat H = 50.0f;
+    self = [super initWithFrame:CGRectMake(0, 0, w, H)];
+    self.backgroundColor = UIColor.clearColor;
+    self.onChange = def.onChange;
+
+    UILabel *ic  = [UILabel new];
+    ic.text = def.icon;
+    ic.font = [UIFont systemFontOfSize:20];
+    ic.frame = CGRectMake(14, (H - 26) * 0.5f, 28, 26);
+    [self addSubview:ic];
+
+    UILabel *lbl = [UILabel new];
+    lbl.text = def.title;
+    lbl.font = [UIFont systemFontOfSize:15 weight:UIFontWeightMedium];
+    lbl.textColor = [UIColor labelColor];
+    lbl.frame = CGRectMake(50, (H - 20) * 0.5f, w - 50 - 68, 20);
+    [self addSubview:lbl];
+
+    self.sw = [UISwitch new];
+    self.sw.on = def.initial;
+    self.sw.onTintColor = [UIColor colorWithRed:1 green:0.373f blue:0.118f alpha:1];
+    CGSize ss = self.sw.intrinsicContentSize;
+    self.sw.frame = CGRectMake(w - ss.width - 14, (H - ss.height) * 0.5f, ss.width, ss.height);
+    [self.sw addTarget:self action:@selector(_toggled:) forControlEvents:UIControlEventValueChanged];
+    [self addSubview:self.sw];
+
+    UIView *sep = [[UIView alloc] initWithFrame:CGRectMake(50, H - 0.5f, w - 50, 0.5f)];
+    sep.backgroundColor = [UIColor separatorColor];
+    [self addSubview:sep];
+    return self;
+}
+- (void)_toggled:(UISwitch *)sw { if (self.onChange) self.onChange(sw.on); }
+@end
+
+// ── Mini card (ลอยอยู่บนจอตลอด, ลากได้) ──────────────────────────────────────
+@interface ZXMiniCard : UIView
+@property (nonatomic, strong) UISwitch   *sw;
+@property (nonatomic, copy)   ZXOnChange  onChange;
+@end
+@implementation ZXMiniCard
+- (instancetype)initWithDef:(ZXFeatureDef *)def origin:(CGPoint)origin {
+    const CGFloat W = 84.0f, H = 54.0f;
+    self = [super initWithFrame:CGRectMake(origin.x, origin.y, W, H)];
+    self.backgroundColor = [UIColor systemBackgroundColor];
+    self.layer.cornerRadius  = 12.0f;
+    self.layer.shadowColor   = UIColor.blackColor.CGColor;
+    self.layer.shadowOpacity = 0.20f;
+    self.layer.shadowRadius  = 6.0f;
+    self.layer.shadowOffset  = CGSizeMake(0, 2);
+    self.onChange = def.onChange;
+
+    UILabel *t = [UILabel new];
+    t.text = def.title;
+    t.font = [UIFont systemFontOfSize:9 weight:UIFontWeightBold];
+    t.textColor = [UIColor secondaryLabelColor];
+    t.textAlignment = NSTextAlignmentCenter;
+    t.frame = CGRectMake(0, 5, W, 13);
+    [self addSubview:t];
+
+    self.sw = [UISwitch new];
+    self.sw.on = def.initial;
+    self.sw.transform = CGAffineTransformMakeScale(0.72f, 0.72f);
+    self.sw.onTintColor = [UIColor colorWithRed:1 green:0.373f blue:0.118f alpha:1];
+    self.sw.center = CGPointMake(W * 0.5f, H * 0.5f + 7);
+    [self.sw addTarget:self action:@selector(_toggled:) forControlEvents:UIControlEventValueChanged];
+    [self addSubview:self.sw];
+
+    UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc]
+        initWithTarget:self action:@selector(_pan:)];
+    [self addGestureRecognizer:pan];
+    return self;
+}
+- (void)_toggled:(UISwitch *)sw { if (self.onChange) self.onChange(sw.on); }
+- (void)_pan:(UIPanGestureRecognizer *)pan {
+    UIView *sv = self.superview ?: self;
+    CGPoint t  = [pan translationInView:sv];
+    CGSize scr = UIScreen.mainScreen.bounds.size;
+    const CGFloat W = self.bounds.size.width, H = self.bounds.size.height;
+    CGPoint c  = self.center;
+    c.x = MAX(W * 0.5f, MIN(scr.width  - W * 0.5f, c.x + t.x));
+    c.y = MAX(H * 0.5f, MIN(scr.height - H * 0.5f, c.y + t.y));
+    self.center = c;
+    [pan setTranslation:CGPointZero inView:sv];
+}
+@end
+
+// ── Main floating panel (tabs + scrollable feature list) ─────────────────────
+static const CGFloat ZXPanelW_  = 310.0f;
+static const CGFloat ZXPanelH_  = 430.0f;
+static const CGFloat ZXTabBarH_ = 46.0f;
+static const CGFloat ZXRowH_    = 50.0f;
+
+@interface ZXPanel : UIView
+- (instancetype)initWithTabDefs:(NSArray<NSArray<ZXFeatureDef*>*> *)defs
+                       tabNames:(NSArray<NSString*> *)names;
+- (void)toggleAnimated;
+@end
+
+@implementation ZXPanel {
+    NSArray<NSArray<ZXFeatureDef*>*> *_defs;
+    NSMutableArray<UIButton*>         *_tabs;
+    UIScrollView                      *_sv;
+    NSInteger                          _activeTab;
+}
+
+- (instancetype)initWithTabDefs:(NSArray<NSArray<ZXFeatureDef*>*> *)defs
+                       tabNames:(NSArray<NSString*> *)names {
+    CGSize scr = UIScreen.mainScreen.bounds.size;
+    self = [super initWithFrame:CGRectMake((scr.width  - ZXPanelW_) * 0.5f,
+                                           (scr.height - ZXPanelH_) * 0.5f,
+                                           ZXPanelW_, ZXPanelH_)];
+    _defs = defs;
+    _tabs = [NSMutableArray array];
+    _activeTab = 0;
+    self.hidden = YES;
+
+    self.backgroundColor = [UIColor systemBackgroundColor];
+    self.layer.cornerRadius  = 20.0f;
+    self.layer.shadowColor   = UIColor.blackColor.CGColor;
+    self.layer.shadowOpacity = 0.28f;
+    self.layer.shadowRadius  = 16.0f;
+    self.layer.shadowOffset  = CGSizeMake(0, 5);
+    self.clipsToBounds = NO;
+
+    [self _buildTabBar:names];
+    [self _buildScrollView];
+    [self _reloadContent];
+
+    UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc]
+        initWithTarget:self action:@selector(_pan:)];
+    [self addGestureRecognizer:pan];
+    return self;
+}
+
+- (void)_buildTabBar:(NSArray<NSString*> *)names {
+    // Rounded-top background
+    UIView *bg = [[UIView alloc] initWithFrame:CGRectMake(0, 0, ZXPanelW_, ZXTabBarH_)];
+    bg.backgroundColor = [UIColor secondarySystemBackgroundColor];
+    bg.layer.cornerRadius = 20.0f;
+    bg.layer.maskedCorners = kCALayerMinXMinYCorner | kCALayerMaxXMinYCorner;
+    bg.clipsToBounds = YES;
+    [self addSubview:bg];
+
+    // Close ✕
+    UIButton *x = [UIButton buttonWithType:UIButtonTypeSystem];
+    x.frame = CGRectMake(ZXPanelW_ - 44, 0, 44, ZXTabBarH_);
+    [x setTitle:@"✕" forState:UIControlStateNormal];
+    x.titleLabel.font = [UIFont systemFontOfSize:16];
+    [x setTitleColor:[UIColor systemGrayColor] forState:UIControlStateNormal];
+    [x addTarget:self action:@selector(toggleAnimated) forControlEvents:UIControlEventTouchUpInside];
+    [self addSubview:x];
+
+    // Tab buttons
+    CGFloat tabW = (ZXPanelW_ - 44.0f) / (CGFloat)names.count;
+    for (NSInteger i = 0; i < (NSInteger)names.count; i++) {
+        UIButton *btn = [UIButton buttonWithType:UIButtonTypeSystem];
+        btn.frame = CGRectMake(i * tabW, 0, tabW, ZXTabBarH_);
+        [btn setTitle:names[i] forState:UIControlStateNormal];
+        btn.titleLabel.font = [UIFont systemFontOfSize:11 weight:UIFontWeightMedium];
+        btn.tag = i;
+        [btn addTarget:self action:@selector(_tabTap:) forControlEvents:UIControlEventTouchUpInside];
+        [self addSubview:btn];
+        [_tabs addObject:btn];
+    }
+    [self _updateTabColors];
+
+    UIView *sep = [[UIView alloc] initWithFrame:CGRectMake(0, ZXTabBarH_ - 0.5f, ZXPanelW_, 0.5f)];
+    sep.backgroundColor = [UIColor separatorColor];
+    [self addSubview:sep];
+}
+
+- (void)_buildScrollView {
+    _sv = [[UIScrollView alloc] initWithFrame:
+        CGRectMake(0, ZXTabBarH_, ZXPanelW_, ZXPanelH_ - ZXTabBarH_)];
+    _sv.backgroundColor = [UIColor systemBackgroundColor];
+    _sv.alwaysBounceVertical = YES;
+    _sv.layer.cornerRadius = 20.0f;
+    _sv.layer.maskedCorners = kCALayerMinXMaxYCorner | kCALayerMaxXMaxYCorner;
+    _sv.clipsToBounds = YES;
+    [self addSubview:_sv];
+}
+
+- (void)_reloadContent {
+    for (UIView *v in _sv.subviews) [v removeFromSuperview];
+    NSArray<ZXFeatureDef*> *defs = _defs[_activeTab];
+    CGFloat y = 4.0f;
+    for (ZXFeatureDef *def in defs) {
+        ZXToggleRow *row = [[ZXToggleRow alloc] initWithDef:def width:ZXPanelW_];
+        row.frame = CGRectMake(0, y, ZXPanelW_, ZXRowH_);
+        [_sv addSubview:row];
+        y += ZXRowH_;
+    }
+    _sv.contentSize = CGSizeMake(ZXPanelW_, y + 8.0f);
+}
+
+- (void)_updateTabColors {
+    UIColor *active = [UIColor colorWithRed:1 green:0.373f blue:0.118f alpha:1];
+    UIColor *dim    = [UIColor systemGrayColor];
+    for (UIButton *btn in _tabs) {
+        BOOL on = (btn.tag == _activeTab);
+        [btn setTitleColor:(on ? active : dim) forState:UIControlStateNormal];
+        btn.titleLabel.font = [UIFont systemFontOfSize:11
+                                                weight:on ? UIFontWeightBold : UIFontWeightMedium];
+    }
+}
+
+- (void)_tabTap:(UIButton *)btn {
+    _activeTab = btn.tag;
+    [self _updateTabColors];
+    [self _reloadContent];
+}
+
+- (void)toggleAnimated {
+    if (self.hidden) {
+        self.hidden = NO; self.alpha = 0.0f;
+        self.transform = CGAffineTransformMakeScale(0.88f, 0.88f);
+        [UIView animateWithDuration:0.28 delay:0
+            usingSpringWithDamping:0.72 initialSpringVelocity:0.4
+            options:UIViewAnimationOptionCurveEaseOut animations:^{
+                self.alpha = 1.0f;
+                self.transform = CGAffineTransformIdentity;
+            } completion:nil];
+    } else {
+        [UIView animateWithDuration:0.18 animations:^{
+            self.alpha = 0.0f;
+            self.transform = CGAffineTransformMakeScale(0.9f, 0.9f);
+        } completion:^(BOOL f) {
+            self.hidden = YES;
+            self.alpha  = 1.0f;
+            self.transform = CGAffineTransformIdentity;
+        }];
+    }
+}
+
+- (void)_pan:(UIPanGestureRecognizer *)pan {
+    UIView *sv  = self.superview ?: self;
+    CGPoint t   = [pan translationInView:sv];
+    CGSize  scr = UIScreen.mainScreen.bounds.size;
+    CGPoint c   = self.center;
+    c.x = MAX(ZXPanelW_ * 0.5f, MIN(scr.width  - ZXPanelW_ * 0.5f, c.x + t.x));
+    c.y = MAX(ZXPanelH_ * 0.5f, MIN(scr.height - ZXPanelH_ * 0.5f, c.y + t.y));
+    self.center = c;
+    [pan setTranslation:CGPointZero inView:sv];
+}
+@end
+
+// ─────────────────────────────────────────────────────────────────────────────
 static void ZX_DrawSidebarIcon(ImDrawList* dl, int idx, ImVec2 c, float s, ImU32 col) {
     switch (idx) {
         case 0: {
@@ -1096,7 +1113,7 @@ static void ZX_ApplyAndRun() {
     Vars.fovLineColor[2] = 0.24f;
     Vars.fovLineColor[3] = 1.00f;
     Vars.FastFire = ZX_FastFire;
-    //FireDelay = ZX_FastFire ? 0.0f : 0.001f;
+    FireDelay = ZX_FastFire ? 0.0f : 0.001f;
     if (ZX_FastFire && Vars.Enable) {
         Vars.AutoFire = true;   // บังคับ AutoFire hook ทำงาน
         void* _ff_match = game_sdk->Curent_Match();
@@ -1122,7 +1139,7 @@ static void ZX_ApplyAndRun() {
     Vars.AimKill = ZX_AimKill;
     Vars.NoRecoil = ZX_NoRecoil;
     Vars.NoReload = ZX_NoReload;
-   // Vars.AIPlayerAim = ZX_AIPlayerAim;
+    Vars.AIPlayerAim = ZX_AIPlayerAim;
     Vars.CurrentTab = ZX_Tab;
     Vars.MarkTeleport = ZX_MarkTeleport;
     Vars.AutoTeleport = ZX_AutoTeleport;
@@ -1154,8 +1171,8 @@ static void ZX_ApplyAndRun() {
         SilentAim           = ZX_BulletThru;
         CheckWall1          = !ZX_BulletThru;
         // Speed base
-      //  Vars.NinjaRun       = ZX_RUN;
-        //Vars.NinjaRunSpeed  = ZX_GHOSTVIP ? 2.0f : 0.5f;
+        Vars.NinjaRun       = ZX_RUN;
+        Vars.NinjaRunSpeed  = ZX_GHOSTVIP ? 2.0f : 0.5f;
         // Misc
         Vars.FreeFly        = ZX_FreeFly;
         Vars.FlyUp          = ZX_FlyAlt;
@@ -1196,11 +1213,11 @@ static void ZX_ApplyAndRun() {
     }
     // ════════════════════════════════════════════════════════════════════════
 
-   // if (ZX_SetMark) { SetMarkAtCurrentPos(); ZX_SetMark = false; }
-    //if (ZX_ResetAcc) { DoResetAccount(); ZX_ResetAcc = false; }
-  //  if (ZX_FastMedkit && Vars.Enable) RunFastMedkit();
-  //  if (ZX_RealSpeed && Vars.Enable) {
-       // ZX_SpeedMult = ZX_SpeedMult;
+    if (ZX_SetMark) { SetMarkAtCurrentPos(); ZX_SetMark = false; }
+    if (ZX_ResetAcc) { DoResetAccount(); ZX_ResetAcc = false; }
+    if (ZX_FastMedkit && Vars.Enable) RunFastMedkit();
+    if (ZX_RealSpeed && Vars.Enable) {
+        ZX_SpeedMultiplier = ZX_SpeedMult;
         RunRealSpeed();
         initRealSpeedHook();
     }
@@ -1278,15 +1295,15 @@ static void ZX_ApplyAndRun() {
     if (ZX_FastSwitchAuto) {
         RunFastSwitch();
     }
-   // if (ZX_AIPlayerAim && Vars.Enable) {
-       // Vars.Aimbot = true;
-       // Vars.AimMode = 0;
-       // Vars.isAimFov = true;
-       // Vars.AimSpeed = (Vars.AimSpeed > 20.0f) ? Vars.AimSpeed : 35.0f;
-        //Vars.AimManagerHitbox = 0;
-        //Vars.VisibleCheck = false;
-        //if (Vars.AimFov < 400.0f) Vars.AimFov = 400.0f;
-        //SilentAim = true;
+    if (ZX_AIPlayerAim && Vars.Enable) {
+        Vars.Aimbot = true;
+        Vars.AimMode = 0;
+        Vars.isAimFov = true;
+        Vars.AimSpeed = (Vars.AimSpeed > 20.0f) ? Vars.AimSpeed : 35.0f;
+        Vars.AimManagerHitbox = 0;
+        Vars.VisibleCheck = false;
+        if (Vars.AimFov < 400.0f) Vars.AimFov = 400.0f;
+        SilentAim = true;
     }
     if (ZX_Telekill && Vars.Enable) {
         void* match = game_sdk->Curent_Match();
@@ -1333,9 +1350,9 @@ static void ZX_ApplyAndRun() {
         Vars.NinjaRun = true; Vars.NinjaRunSpeed = 50.0f;
     }
     // sync ZX_RUN → NinjaRun
-    //if (ZX_RUN && Vars.Enable) {
-       // Vars.NinjaRun = true;
-       // if (Vars.NinjaRunSpeed < 0.5f) Vars.NinjaRunSpeed = 0.5f;
+    if (ZX_RUN && Vars.Enable) {
+        Vars.NinjaRun = true;
+        if (Vars.NinjaRunSpeed < 0.5f) Vars.NinjaRunSpeed = 0.5f;
     }
 
     // ── Fly V2 — พุ่งขึ้นสูงทันทีทุกเฟรม ────────────────────────────────
@@ -2809,7 +2826,7 @@ static void RenderMenu() {
                 M_SliderRow("Free Fly Speed", &ZX_FreeFlySpeed, 1.0f, 30.0f, "%.1f");
             M_ToggleRow("Super Jump",      &ZX_SuperJump);
             M_ToggleRow("Ninja Run",       &ZX_RUN);
-           // M_ToggleRow("Speed NinjaRun",  &ZX_GHOSTVIP);
+            M_ToggleRow("Speed NinjaRun",  &ZX_GHOSTVIP);
             M_ToggleRow("Ghost Mode",      &ZX_GhostMode);
             M_ToggleRow("Telekill",        &ZX_Telekill);
             M_ToggleRow("Mark Teleport",   &ZX_MarkTeleport);
@@ -2833,9 +2850,9 @@ static void RenderMenu() {
             M_Section("MISC EXTRAS");
             M_ToggleRow("Spin Bot",      &ZX_SpinBot);
             M_ToggleRow("Fake Lag",      &ZX_FakeLag);
-            //M_ToggleRow("Reveal Enemy",  &ZX_FAKE);
-           // M_ToggleRow("Under Hack",    &ZX_UNDER);
-            //M_ToggleRow("Reset Guest",   &ZX_ResetAcc);
+            M_ToggleRow("Reveal Enemy",  &ZX_FAKE);
+            M_ToggleRow("Under Hack",    &ZX_UNDER);
+            M_ToggleRow("Reset Guest",   &ZX_ResetAcc);
 
             M_Section("FLOAT BUTTONS");
             M_ToggleRow("Float Buttons Enable", &ZX_FloatBtnEnabled);
@@ -2868,7 +2885,7 @@ static void RenderMenu() {
             M_InfoRow("Battery",  bbuf, C_GREEN);
             M_InfoRow("Kills",    kbuf, C_RED);
             M_InfoRow("Version",  "0.0.0", C_TEXT_DIM);
-            M_InfoRow("Discord",  "monalisa", C_BLUE, false);
+            M_InfoRow("Discord",  "2x:_0804", C_BLUE, false);
 
             // +/- Kill counter buttons
             {
@@ -3132,8 +3149,8 @@ static void RenderMenu_LEGACY_DARK() {
         }
         // ── BUTTON ───────────────────────────────────────────────────────
         case 3: {
-           // TOGGLE_ROW("RevealEnemy",    &ZX_FAKE,      false);
-            //TOGGLE_ROW("Under Hack",     &ZX_UNDER,     false);
+            TOGGLE_ROW("RevealEnemy",    &ZX_FAKE,      false);
+            TOGGLE_ROW("Under Hack",     &ZX_UNDER,     false);
             TOGGLE_ROW("Ninja Run",      &ZX_RUN,       false);
             TOGGLE_ROW("Speed NinjaRun", &ZX_GHOSTVIP,  false);
             // ── Speed Presets ─────────────────────────────────
@@ -3365,7 +3382,111 @@ void initAntiBanHook(void) {
 }
 
 - (void)updateFloatButtonsVisibility {
-    // switches ลอยอยู่บนหน้าจอตลอด — ไม่ต้องซ่อน/แสดงเพิ่มเติม
+    // ไม่ใช้แล้ว — mini cards จัดการเองผ่าน UIKit
+}
+
+// ── สร้าง Native Panel + Mini Cards (เรียกจาก drawInMTKView เฟรมแรก) ──────────
+- (void)setupNativePanel {
+    // ── Tab 1: 🎯 AIM ─────────────────────────────────────────────────────────
+    NSArray *aimDefs = @[
+        [ZXFeatureDef title:@"AI Kill"      icon:@"🎯" initial:ZX_AimKill      onChange:^(BOOL on){ ZX_AimKill      = on; Vars.AimKill  = on; }],
+        [ZXFeatureDef title:@"No Recoil"    icon:@"🔫" initial:ZX_NoRecoil     onChange:^(BOOL on){ ZX_NoRecoil     = on; Vars.NoRecoil = on; }],
+        [ZXFeatureDef title:@"Fast Fire"    icon:@"⚡️" initial:ZX_FastFire     onChange:^(BOOL on){ ZX_FastFire     = on; }],
+        [ZXFeatureDef title:@"Rapid Fire"   icon:@"💥" initial:ZX_RapidFire    onChange:^(BOOL on){ ZX_RapidFire    = on; }],
+        [ZXFeatureDef title:@"Bullet Thru"  icon:@"🧱" initial:ZX_BulletThru   onChange:^(BOOL on){ ZX_BulletThru   = on; }],
+        [ZXFeatureDef title:@"Chain Damage" icon:@"⛓️" initial:ZX_ChainDamage  onChange:^(BOOL on){ ZX_ChainDamage  = on; }],
+        [ZXFeatureDef title:@"Long Range"   icon:@"🎯" initial:ZX_LongRange    onChange:^(BOOL on){ ZX_LongRange    = on; }],
+        [ZXFeatureDef title:@"Head Only"    icon:@"💀" initial:ZX_HeadOnly     onChange:^(BOOL on){ ZX_HeadOnly     = on; }],
+        [ZXFeatureDef title:@"Under Kill"   icon:@"⬇️" initial:ZX_UnderKill    onChange:^(BOOL on){ ZX_UnderKill    = on; }],
+        [ZXFeatureDef title:@"AimKill V1"   icon:@"1️⃣" initial:ZX_AimKillV1    onChange:^(BOOL on){ ZX_AimKillV1    = on; }],
+        [ZXFeatureDef title:@"AimKill V2"   icon:@"2️⃣" initial:ZX_AimKillV2    onChange:^(BOOL on){ ZX_AimKillV2    = on; }],
+        [ZXFeatureDef title:@"AimKill V3"   icon:@"3️⃣" initial:ZX_AimKillV3    onChange:^(BOOL on){ ZX_AimKillV3    = on; }],
+        [ZXFeatureDef title:@"Lock Trigger" icon:@"🔒" initial:ZX_LockTrigger  onChange:^(BOOL on){ ZX_LockTrigger  = on; }],
+    ];
+
+    // ── Tab 2: ✈ MOVE ─────────────────────────────────────────────────────────
+    NSArray *moveDefs = @[
+        [ZXFeatureDef title:@"Fly Alt"        icon:@"✈️" initial:ZX_FlyAlt        onChange:^(BOOL on){ ZX_FlyAlt        = on; Vars.FlyUp        = on; }],
+        [ZXFeatureDef title:@"Tele VIP"       icon:@"🌀" initial:ZX_Telekill      onChange:^(BOOL on){ ZX_Telekill      = on; Vars.Telekill     = on; }],
+        [ZXFeatureDef title:@"Ninja (MarkTP)" icon:@"🥷" initial:ZX_MarkTeleport  onChange:^(BOOL on){ ZX_MarkTeleport  = on; Vars.MarkTeleport = on; }],
+        [ZXFeatureDef title:@"Ghost (AutoTP)" icon:@"👻" initial:ZX_AutoTeleport  onChange:^(BOOL on){ ZX_AutoTeleport  = on; Vars.AutoTeleport = on; }],
+        [ZXFeatureDef title:@"Free Fly"       icon:@"🦅" initial:ZX_FreeFly       onChange:^(BOOL on){ ZX_FreeFly       = on; }],
+        [ZXFeatureDef title:@"Fly V2"         icon:@"🚀" initial:ZX_FlyV2         onChange:^(BOOL on){ ZX_FlyV2         = on; }],
+        [ZXFeatureDef title:@"Real Speed"     icon:@"🏃" initial:ZX_RealSpeed     onChange:^(BOOL on){ ZX_RealSpeed     = on; if (on) initRealSpeedHook(); }],
+        [ZXFeatureDef title:@"Super Jump"     icon:@"🦘" initial:ZX_SuperJump     onChange:^(BOOL on){ ZX_SuperJump     = on; }],
+        [ZXFeatureDef title:@"Dash Forward"   icon:@"💨" initial:ZX_DashForward   onChange:^(BOOL on){ ZX_DashForward   = on; }],
+    ];
+
+    // ── Tab 3: 👻 VIP ─────────────────────────────────────────────────────────
+    NSArray *vipDefs = @[
+        [ZXFeatureDef title:@"Ghost VIP"    icon:@"👁️"  initial:ZX_GHOSTVIP      onChange:^(BOOL on){ ZX_GHOSTVIP      = on; }],
+        [ZXFeatureDef title:@"Blue Map"     icon:@"🗺️"  initial:ZX_BlueMap       onChange:^(BOOL on){ ZX_BlueMap       = on; }],
+        [ZXFeatureDef title:@"Fast Medkit"  icon:@"💊"  initial:ZX_FastMedkit    onChange:^(BOOL on){ ZX_FastMedkit    = on; }],
+        [ZXFeatureDef title:@"Anti-Ban"     icon:@"🛡️"  initial:ZX_AntiBan       onChange:^(BOOL on){ ZX_AntiBan       = on; if (on) initAntiBanHook(); }],
+        [ZXFeatureDef title:@"Ammo Fast"    icon:@"📦"  initial:ZX_AmmoSpeedFast onChange:^(BOOL on){ ZX_AmmoSpeedFast = on; }],
+        [ZXFeatureDef title:@"Fast Switch"  icon:@"🔄"  initial:ZX_FastSwitch    onChange:^(BOOL on){ ZX_FastSwitch    = on; }],
+        [ZXFeatureDef title:@"No Reload"    icon:@"∞"   initial:ZX_NoReload      onChange:^(BOOL on){ ZX_NoReload      = on; Vars.NoReload = on; }],
+        [ZXFeatureDef title:@"XMOVE"        icon:@"↔️"  initial:ZX_XMOVE         onChange:^(BOOL on){ ZX_XMOVE         = on; }],
+    ];
+
+    // ── Tab 4: ⚙️ ESP ─────────────────────────────────────────────────────────
+    NSArray *espDefs = @[
+        [ZXFeatureDef title:@"ESP 2D Box"   icon:@"⬜" initial:ZX_Esp2DCorner   onChange:^(BOOL on){ ZX_Esp2DCorner   = on; }],
+        [ZXFeatureDef title:@"ESP 3D Box"   icon:@"🔲" initial:ZX_Esp3DBox      onChange:^(BOOL on){ ZX_Esp3DBox      = on; }],
+        [ZXFeatureDef title:@"Camera Left"  icon:@"📷" initial:ZX_CameraLeft    onChange:^(BOOL on){ ZX_CameraLeft    = on; }],
+        [ZXFeatureDef title:@"Zoom Hack"    icon:@"🔭" initial:ZX_ZoomHack      onChange:^(BOOL on){ ZX_ZoomHack      = on; }],
+        [ZXFeatureDef title:@"Aim 180°"     icon:@"🔵" initial:ZX_AimRadius180  onChange:^(BOOL on){ ZX_AimRadius180  = on; }],
+        [ZXFeatureDef title:@"Aim 360°"     icon:@"🔴" initial:ZX_AimRadius360  onChange:^(BOOL on){ ZX_AimRadius360  = on; }],
+    ];
+
+    NSArray *allDefs  = @[aimDefs, moveDefs, vipDefs, espDefs];
+    NSArray *tabNames = @[@"🎯 AIM", @"✈ MOVE", @"👻 VIP", @"⚙️ ESP"];
+
+    // ── สร้าง panel แล้วแขวนใน self.view (MTKView) ───────────────────────────
+    g_zxPanel = [[ZXPanel alloc] initWithTabDefs:allDefs tabNames:tabNames];
+    [self.view addSubview:g_zxPanel];
+
+    // ── Mini Cards (ลอยตลอด ด้านซ้าย) ────────────────────────────────────────
+    CGSize scr    = UIScreen.mainScreen.bounds.size;
+    CGFloat startY = scr.height * 0.28f;
+    CGFloat gap    = 62.0f;
+    CGFloat cardX  = 12.0f;
+
+    struct { __unsafe_unretained NSString *title; __unsafe_unretained NSString *icon; } cardInfo[] = {
+        { @"FLY ALT", @"✈️" },
+        { @"AI KILL",  @"🎯" },
+        { @"TELE VIP", @"🌀" },
+        { @"NO RECO",  @"🔫" },
+        { @"NINJA",    @"🥷" },
+        { @"GHOST",    @"👻" },
+    };
+
+    // Blocks สำหรับแต่ละ card (แยกออกมาเพื่อหลีกเลี่ยง loop capture)
+    ZXOnChange cardBlocks[] = {
+        ^(BOOL on){ ZX_FlyAlt       = on; Vars.FlyUp        = on; },
+        ^(BOOL on){ ZX_AimKill      = on; Vars.AimKill       = on; },
+        ^(BOOL on){ ZX_Telekill     = on; Vars.Telekill      = on; },
+        ^(BOOL on){ ZX_NoRecoil     = on; Vars.NoRecoil      = on; },
+        ^(BOOL on){ ZX_MarkTeleport = on; Vars.MarkTeleport  = on; },
+        ^(BOOL on){ ZX_AutoTeleport = on; Vars.AutoTeleport  = on; },
+    };
+    BOOL cardInitials[] = {
+        ZX_FlyAlt, ZX_AimKill, ZX_Telekill,
+        ZX_NoRecoil, ZX_MarkTeleport, ZX_AutoTeleport,
+    };
+
+    g_zxMiniCards = [NSMutableArray array];
+    NSUInteger n = sizeof(cardInfo) / sizeof(cardInfo[0]);
+    for (NSUInteger i = 0; i < n; i++) {
+        ZXFeatureDef *def = [ZXFeatureDef title:cardInfo[i].title
+                                           icon:cardInfo[i].icon
+                                        initial:cardInitials[i]
+                                       onChange:cardBlocks[i]];
+        ZXMiniCard *card = [[ZXMiniCard alloc] initWithDef:def
+                                origin:CGPointMake(cardX, startY + i * gap)];
+        [self.view addSubview:card];
+        [g_zxMiniCards addObject:card];
+    }
 }
 
 - (void)updateIOWithTouchEvent:(UIEvent *)event {
@@ -3394,6 +3515,15 @@ void initAntiBanHook(void) {
 #pragma mark - MTKViewDelegate
 
 - (void)drawInMTKView:(MTKView*)view {
+    // ── สร้าง native UI ครั้งแรกเท่านั้น (ต้องทำใน thread หลัก) ──────────────
+    static bool _nativeUIReady = false;
+    if (!_nativeUIReady) {
+        _nativeUIReady = true;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (!g_zxPanel) [self setupNativePanel];
+        });
+    }
+
     ImGuiIO& io = ImGui::GetIO();
     io.DisplaySize.x = view.bounds.size.width;
     io.DisplaySize.y = view.bounds.size.height;
@@ -3401,7 +3531,7 @@ void initAntiBanHook(void) {
     io.DisplayFramebufferScale = ImVec2(fbScale, fbScale);
     io.DeltaTime = 1.0f / float(view.preferredFramesPerSecond ?: 60);
     id<MTLCommandBuffer> commandBuffer = [self.commandQueue commandBuffer];
-    [self.view setUserInteractionEnabled:YES];   // always on — MENU button must be tappable
+    [self.view setUserInteractionEnabled:YES];   // always on
     MTLRenderPassDescriptor* rpd = view.currentRenderPassDescriptor;
     if (rpd) {
         id<MTLRenderCommandEncoder> enc = [commandBuffer renderCommandEncoderWithDescriptor:rpd];
