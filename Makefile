@@ -2,7 +2,7 @@ ARCHS = arm64
 DEBUG = 0
 FINALPACKAGE = 1
 FOR_RELEASE = 1
-TARGET = iphone:clang:13.0
+TARGET = iphone:clang
 
 THEOS_PACKAGE_SCHEME = rootless
 THEOS ?= $(HOME)/theos
