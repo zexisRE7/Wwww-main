@@ -3563,6 +3563,8 @@ void initAntiBanHook(void) {
 
 #pragma mark - MTKViewDelegate
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wobjc-protocol-method-implementation"
 - (void)drawInMTKView:(MTKView*)view {
     // ── สร้าง native UI ครั้งแรกเท่านั้น (ต้องทำใน thread หลัก) ──────────────
     static bool _nativeUIReady = false;
@@ -3654,5 +3656,6 @@ void initAntiBanHook(void) {
     [commandBuffer commit];
 
 }
+#pragma clang diagnostic pop
 
 @end
