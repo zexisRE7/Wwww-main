@@ -2931,24 +2931,38 @@ void initAntiBanHook(void) {
             if (hovered && ImGui::IsMouseReleased(0) && !
             }
         }
+        ZX_ApplyAndRun();   // ทำงานทุกเฟรม ไม่ต้องเปิดเมนูค้าง
+[self updateFloatButtonsVisibility];   // โชว์/ซ่อน + ซิงก์ปุ่มลอย
 
-        ZX_ApplyAndRun();   //  ทำงานทุกเฟรม ไม่ต้องเปิดเมนูค้าง
-        [self updateFloatButtonsVisibility];   //โชว์/ซ่อน + ซิงก์ปุ่มลอย
-        ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
-        get_players();
-        draw_watermark();
-        aimbot();
-        game_sdk->init();
-        Vars.isAimFov = (Vars.AimFov > 0);
-        ImGui::Render();
-        ImGui_ImplMetal_RenderDrawData(ImGui::GetDrawData(), commandBuffer, enc);
-        [enc popDebugGroup];
-        [enc endEncoding];
-        [commandBuffer presentDrawable:view.currentDrawable];
-               [commandBuffer commit];
-            }
-        }
+ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
 
-- (void)mtkView:(MTKView*)view drawableSizeWillChange:(CGSize)size {}
+get_players();
+draw_watermark();
+aimbot();
+
+game_sdk->init();
+
+Vars.isAimFov = (Vars.AimFov > 0);
+
+ImGui::Render();
+
+ImGui_ImplMetal_RenderDrawData(
+    ImGui::GetDrawData(),
+    commandBuffer,
+    enc
+);
+
+[enc popDebugGroup];
+[enc endEncoding];
+
+[commandBuffer presentDrawable:view.currentDrawable];
+[commandBuffer commit];
+
+    }
+}
+
+- (void)mtkView:(MTKView*)view
+drawableSizeWillChange:(CGSize)size {}
 
 @end
+        
