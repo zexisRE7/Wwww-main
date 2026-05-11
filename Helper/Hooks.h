@@ -96,7 +96,7 @@ extern bool  ZX_DashForward;
 extern float ZX_DashDistance;
 extern bool  ZX_MarkTeleport;
 extern bool  ZX_AutoTeleport;
-
+extern float ZX_SpeedMult;   // 
 // ============================================================
 // Structs
 // ============================================================
