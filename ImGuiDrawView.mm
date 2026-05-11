@@ -214,22 +214,10 @@ ImFont *Urbanist;
     [super viewDidLoad];
     self.view.backgroundColor = UIColor.clearColor;
     self.view.userInteractionEnabled = YES;
-    [self becomeFirstResponder];  // เปิดรับ shake gesture
 }
 
-// ── Shake gesture — เขย่าเปิด/ปิด panel ──────────────────────────────────────
-- (BOOL)canBecomeFirstResponder { return YES; }
-
-- (void)motionEnded:(UIEventSubtype)motion withEvent:(UIEvent *)event {
-    if (motion == UIEventSubtypeMotionShake) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            id panel = (id)g_zxPanel;
-            if (panel && [panel respondsToSelector:@selector(toggleAnimated)]) {
-                [panel performSelector:@selector(toggleAnimated)];
-            }
-        });
-    }
-}
+// ── ปุ่ม "A" ลอยบนจอ — กดเปิด/ปิดเมนู, ลากย้ายได้ ──────────────────────────
+- (BOOL)canBecomeFirstResponder { return NO; }
 
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -345,7 +333,7 @@ bool  ZX_AmmoSpeedFast  = false;
 bool  ZX_BlueMap        = false;
 bool  ZX_FastMedkit     = false;   // ใช้ยาเร็วขึ้น (FSModeUseMedikitFasterRate)
 bool  ZX_RealSpeed      = false;   // วิ่งเร็ว (hook GetMoveSpeedForFPP + write RunSpeedUpScale)
-float ZX_SpeedMult      = 1.8f;   // ตัวคูณ speed (1.0 = ปกติ, สูงสุด 5.0)
+float ZX_SpeedMult      = 1.8f;    // ตัวคูณ speed (1.0 = ปกติ, สูงสุด 5.0)
 bool  ZX_AntiBan        = false;  // Bypass anti-ban (clamp SyncPos speed ก่อนส่ง server)
 static bool  ZX_SetMark        = false;
 static bool  ZX_ResetAcc       = false;
@@ -3536,6 +3524,62 @@ void initAntiBanHook(void) {
         [self.view addSubview:card];
         [g_zxMiniCards addObject:card];
     }
+
+    // ── ปุ่ม "A" ลอยบนจอ — กดเปิด/ปิดเมนู, ลากย้ายได้ ─────────────────────────
+    const CGFloat ABW = 44.0f, ABH = 44.0f;
+    CGFloat abX = scr.width - ABW - 10.0f;
+    CGFloat abY = scr.height * 0.50f;
+
+    UIButton *aBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+    aBtn.frame = CGRectMake(abX, abY, ABW, ABH);
+
+    // ตกแต่งปุ่ม
+    aBtn.backgroundColor = [UIColor colorWithRed:1.0f green:0.373f blue:0.118f alpha:0.90f];
+    aBtn.layer.cornerRadius = ABW * 0.5f;
+    aBtn.layer.borderWidth  = 1.5f;
+    aBtn.layer.borderColor  = [UIColor colorWithWhite:1 alpha:0.35f].CGColor;
+    aBtn.layer.shadowColor  = UIColor.blackColor.CGColor;
+    aBtn.layer.shadowOpacity = 0.40f;
+    aBtn.layer.shadowRadius  = 6.0f;
+    aBtn.layer.shadowOffset  = CGSizeMake(0, 2);
+    aBtn.clipsToBounds = NO;
+
+    [aBtn setTitle:@"A" forState:UIControlStateNormal];
+    [aBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    aBtn.titleLabel.font = [UIFont systemFontOfSize:18 weight:UIFontWeightBold];
+
+    // กด = toggle เมนู
+    [aBtn addTarget:self action:@selector(_aBtnTapped) forControlEvents:UIControlEventTouchUpInside];
+
+    // ลาก = ย้ายปุ่ม
+    UIPanGestureRecognizer *abPan = [[UIPanGestureRecognizer alloc]
+        initWithTarget:self action:@selector(_aBtnPan:)];
+    [aBtn addGestureRecognizer:abPan];
+
+    [self.view addSubview:aBtn];
+    objc_setAssociatedObject(self, &kAccentKey, aBtn, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (void)_aBtnTapped {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        id panel = (id)g_zxPanel;
+        if (panel && [panel respondsToSelector:@selector(toggleAnimated)]) {
+            [panel performSelector:@selector(toggleAnimated)];
+        }
+    });
+}
+
+- (void)_aBtnPan:(UIPanGestureRecognizer *)pan {
+    UIView *btn = pan.view;
+    UIView *sv  = btn.superview ?: btn;
+    CGPoint t   = [pan translationInView:sv];
+    CGSize  scr = UIScreen.mainScreen.bounds.size;
+    const CGFloat HW = btn.bounds.size.width * 0.5f, HH = btn.bounds.size.height * 0.5f;
+    CGPoint c = btn.center;
+    c.x = MAX(HW, MIN(scr.width  - HW, c.x + t.x));
+    c.y = MAX(HH, MIN(scr.height - HH, c.y + t.y));
+    btn.center = c;
+    [pan setTranslation:CGPointZero inView:sv];
 }
 
 - (void)updateIOWithTouchEvent:(UIEvent *)event {
