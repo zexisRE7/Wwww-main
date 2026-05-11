@@ -124,7 +124,9 @@ static ZXPanel          *g_zxPanel     = nil;
 static NSMutableArray   *g_zxMiniCards = nil;
 
 @implementation ImGuiDrawView
-
+- (void)mtkView:(MTKView *)view drawableSizeWillChange:(CGSize)size {
+    // ไม่ต้องทำอะไร (แต่ต้องมี)
+}
 ImFont *_espFont;
 ImFont *verdanab;
 ImFont *icons;
@@ -218,7 +220,9 @@ ImFont *Urbanist;
 - (void)motionEnded:(UIEventSubtype)motion withEvent:(UIEvent *)event {
     if (motion == UIEventSubtypeMotionShake) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            if (g_zxPanel) [g_zxPanel toggleAnimated];
+            if (g_zxPanel && [g_zxPanel respondsToSelector:@selector(toggleAnimated)]) {
+    [g_zxPanel performSelector:@selector(toggleAnimated)];
+    }  
         });
     }
 }
@@ -1217,7 +1221,7 @@ static void ZX_ApplyAndRun() {
     if (ZX_ResetAcc) { DoResetAccount(); ZX_ResetAcc = false; }
     if (ZX_FastMedkit && Vars.Enable) RunFastMedkit();
     if (ZX_RealSpeed && Vars.Enable) {
-        ZX_SpeedMultiplier = ZX_SpeedMult;
+       // ZX_SpeedMultiplier = ZX_SpeedMult;
         RunRealSpeed();
         initRealSpeedHook();
     }
