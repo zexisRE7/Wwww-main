@@ -345,7 +345,7 @@ static bool  ZX_XMOVE          = false;
 //static bool  ZX_BlueMap        = false;
 //static bool  ZX_FastMedkit     = false;   // ใช้ยาเร็วขึ้น (FSModeUseMedikitFasterRate)
 bool  ZX_RealSpeed      = false;   // วิ่งเร็ว (hook GetMoveSpeedForFPP + write RunSpeedUpScale)
-//static float ZX_SpeedMult      = 1.8f;   // ตัวคูณ speed (1.0 = ปกติ, สูงสุด 5.0)
+float ZX_SpeedMult      = 1.8f;   // ตัวคูณ speed (1.0 = ปกติ, สูงสุด 5.0)
 bool  ZX_AntiBan        = false;  // Bypass anti-ban (clamp SyncPos speed ก่อนส่ง server)
 static bool  ZX_SetMark        = false;
 static bool  ZX_ResetAcc       = false;
