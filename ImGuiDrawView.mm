@@ -3525,39 +3525,61 @@ void initAntiBanHook(void) {
         [g_zxMiniCards addObject:card];
     }
 
-    // ── ปุ่ม "A" ลอยบนจอ — กดเปิด/ปิดเมนู, ลากย้ายได้ ─────────────────────────
-    const CGFloat ABW = 44.0f, ABH = 44.0f;
-    CGFloat abX = scr.width - ABW - 10.0f;
-    CGFloat abY = scr.height * 0.50f;
+    // ── ปุ่ม "A" ลอยบนจอ — อยู่ใน UIWindow แยก เหนือ MTKView ─────────────────
+    //   (ใส่ใน MTKView โดยตรงจะโดน ImGui ดัก touch ทำให้กดไม่ได้)
+    const CGFloat ABW = 54.0f, ABH = 54.0f;
+    CGFloat abX = scr.width - ABW - 14.0f;
+    CGFloat abY = scr.height * 0.48f;
+
+    // สร้าง UIWindow แยกสำหรับปุ่มนี้โดยเฉพาะ
+    UIWindow *btnWin = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
+    btnWin.windowLevel    = UIWindowLevelStatusBar + 100.0f;
+    btnWin.backgroundColor = [UIColor clearColor];
+    btnWin.userInteractionEnabled = YES;
+
+    // rootViewController โปร่งใส (จำเป็นต้องมีใน iOS 13+)
+    UIViewController *vc  = [[UIViewController alloc] init];
+    vc.view.backgroundColor = [UIColor clearColor];
+    btnWin.rootViewController = vc;
+    btnWin.hidden = NO;
 
     UIButton *aBtn = [UIButton buttonWithType:UIButtonTypeCustom];
     aBtn.frame = CGRectMake(abX, abY, ABW, ABH);
 
-    // ตกแต่งปุ่ม
-    aBtn.backgroundColor = [UIColor colorWithRed:1.0f green:0.373f blue:0.118f alpha:0.90f];
-    aBtn.layer.cornerRadius = ABW * 0.5f;
-    aBtn.layer.borderWidth  = 1.5f;
-    aBtn.layer.borderColor  = [UIColor colorWithWhite:1 alpha:0.35f].CGColor;
-    aBtn.layer.shadowColor  = UIColor.blackColor.CGColor;
-    aBtn.layer.shadowOpacity = 0.40f;
-    aBtn.layer.shadowRadius  = 6.0f;
-    aBtn.layer.shadowOffset  = CGSizeMake(0, 2);
+    // ตกแต่งปุ่ม — วงกลมสีส้ม + เงา
+    aBtn.backgroundColor    = [UIColor colorWithRed:1.0f green:0.373f blue:0.118f alpha:0.92f];
+    aBtn.layer.cornerRadius  = ABW * 0.5f;
+    aBtn.layer.borderWidth   = 2.0f;
+    aBtn.layer.borderColor   = [UIColor colorWithWhite:1.0f alpha:0.45f].CGColor;
+    aBtn.layer.shadowColor   = UIColor.blackColor.CGColor;
+    aBtn.layer.shadowOpacity = 0.50f;
+    aBtn.layer.shadowRadius  = 8.0f;
+    aBtn.layer.shadowOffset  = CGSizeMake(0, 3);
     aBtn.clipsToBounds = NO;
 
     [aBtn setTitle:@"A" forState:UIControlStateNormal];
     [aBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-    aBtn.titleLabel.font = [UIFont systemFontOfSize:18 weight:UIFontWeightBold];
+    aBtn.titleLabel.font = [UIFont systemFontOfSize:20 weight:UIFontWeightBold];
 
-    // กด = toggle เมนู
-    [aBtn addTarget:self action:@selector(_aBtnTapped) forControlEvents:UIControlEventTouchUpInside];
+    // กด = ไฮไลท์เล็กน้อย
+    [aBtn addTarget:self action:@selector(_aBtnTapped)
+        forControlEvents:UIControlEventTouchUpInside];
+    [aBtn addTarget:self action:@selector(_aBtnDown:)
+        forControlEvents:UIControlEventTouchDown];
+    [aBtn addTarget:self action:@selector(_aBtnUp:)
+        forControlEvents:UIControlEventTouchUpInside | UIControlEventTouchUpOutside | UIControlEventTouchCancel];
 
     // ลาก = ย้ายปุ่ม
     UIPanGestureRecognizer *abPan = [[UIPanGestureRecognizer alloc]
         initWithTarget:self action:@selector(_aBtnPan:)];
+    abPan.minimumNumberOfTouches = 1;
+    abPan.maximumNumberOfTouches = 1;
     [aBtn addGestureRecognizer:abPan];
 
-    [self.view addSubview:aBtn];
-    objc_setAssociatedObject(self, &kAccentKey, aBtn, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    [vc.view addSubview:aBtn];
+
+    // เก็บ window ไว้ไม่ให้ถูก dealloc
+    objc_setAssociatedObject(self, &kAccentKey, btnWin, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 - (void)_aBtnTapped {
@@ -3567,6 +3589,20 @@ void initAntiBanHook(void) {
             [panel performSelector:@selector(toggleAnimated)];
         }
     });
+}
+
+- (void)_aBtnDown:(UIButton *)btn {
+    [UIView animateWithDuration:0.10 animations:^{
+        btn.transform = CGAffineTransformMakeScale(0.88f, 0.88f);
+        btn.alpha = 0.80f;
+    }];
+}
+
+- (void)_aBtnUp:(UIButton *)btn {
+    [UIView animateWithDuration:0.15 animations:^{
+        btn.transform = CGAffineTransformIdentity;
+        btn.alpha = 1.0f;
+    }];
 }
 
 - (void)_aBtnPan:(UIPanGestureRecognizer *)pan {
