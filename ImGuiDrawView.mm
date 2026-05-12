@@ -1,4 +1,8 @@
-//Require standard library
+// ==================================================================================
+// VINRADIN MOD MENU - FULL SOURCE FILE
+// ==================================================================================
+
+// Require standard library
 #import <Metal/Metal.h>
 #import <MetalKit/MetalKit.h>
 #import <Foundation/Foundation.h>
@@ -22,7 +26,7 @@
 #include <cerrno>
 #include <cctype>
 
-//Imgui library
+// Imgui library
 #import "Esp/CaptainHook.h"
 #import "Esp/ImGuiDrawView.h"
 #import "IMGUI/imgui.h"
@@ -79,6 +83,66 @@ static const char* languages[] = { "English", "Thai", "Spanish" };
 #define kHeight [UIScreen mainScreen].bounds.size.height
 #define kScale [UIScreen mainScreen].scale
 
+// ==================================================================================
+// UI HELPER FUNCTIONS (C++ Style)
+// ==================================================================================
+
+// ฟังก์ชันวาด Checkbox สี่เหลี่ยมมน (แบบที่เห็นใน Mod Menu Pro)
+void DrawCustomCheckbox(const char* label, bool* value) {
+    ImGui::BeginGroup();
+    ImVec2 p = ImGui::GetCursorScreenPos();
+    float width = ImGui::GetContentRegionAvail().x;
+    float height = 38.0f; 
+
+    ImDrawList* dl = ImGui::GetWindowDrawList();
+
+    // 1. Row Background (สีดำเทา)
+    dl->AddRectFilled(p, ImVec2(p.x + width, p.y + height), IM_COL32(25, 27, 32, 255), 8.0f);
+
+    // 2. Label Text (สีขาวนวล)
+    dl->AddText(ImVec2(p.x + 15, p.y + 11), IM_COL32(200, 200, 200, 255), label);
+
+    // 3. Square Checkbox (สีส้มเมื่อเปิด / สีเทาเมื่อปิด)
+    ImVec2 cb_pos = ImVec2(p.x + width - 30, p.y + 10);
+    ImVec2 cb_size = ImVec2(20, 20);
+    ImU32 cb_col = *value ? IM_COL32(255, 85, 0, 255) : IM_COL32(45, 48, 55, 255);
+    dl->AddRectFilled(cb_pos, ImVec2(cb_pos.x + cb_size.x, cb_pos.y + cb_size.y), cb_col, 5.0f);
+
+    // Interaction
+    ImGui::SetCursorScreenPos(p);
+    ImGui::InvisibleButton("##cb", ImVec2(width, height));
+    if (ImGui::IsItemClicked()) {
+        *value = !(*value);
+    }
+    ImGui::EndGroup();
+    ImGui::Spacing();
+}
+
+// ฟังก์ชันวาด Header ของแท็บ (มีสัญลักษณ์และปุ่มควบคุม)
+void DrawCustomHeader(const char* symbol, const char* title) {
+    ImVec2 p = ImGui::GetCursorScreenPos();
+    ImDrawList* dl = ImGui::GetWindowDrawList();
+    float width = ImGui::GetContentRegionAvail().x;
+    float height = 45.0f;
+
+    // Header Background
+    dl->AddRectFilled(p, ImVec2(p.x + width, p.y + height), IM_COL32(15, 17, 22, 255), 8.0f);
+    
+    // Symbol & Title (สีส้ม)
+    dl->AddText(ImVec2(p.x + 15, p.y + 14), IM_COL32(255, 85, 0, 255), symbol);
+    dl->AddText(ImVec2(p.x + 45, p.y + 14), IM_COL32(255, 85, 0, 255), title);
+
+    // Top Right Controls (🌙 และ ✕)
+    dl->AddText(ImVec2(p.x + width - 55, p.y + 14), IM_COL32(150, 150, 150, 255), "☾");
+    dl->AddText(ImVec2(p.x + width - 30, p.y + 14), IM_COL32(150, 150, 150, 255), "✕");
+
+    ImGui::Dummy(ImVec2(0, height));
+}
+
+// ==================================================================================
+// IMGUI DRAW VIEW IMPLEMENTATION
+// ==================================================================================
+
 @interface ImGuiDrawView () <MTKViewDelegate>
 @property (nonatomic, strong) id <MTLDevice> device;
 @property (nonatomic, strong) id <MTLCommandQueue> commandQueue;
@@ -104,9 +168,8 @@ ImFont* Urbanist;
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
 
-    // ========== VINRADIN STYLE SETUP (DARK + ORANGE ACCENT) ==========
+    // ========== VINRADIN GLOBAL STYLE SETUP ==========
     ImGuiStyle& style = ImGui::GetStyle();
-    
     style.WindowRounding = 10.0f;
     style.ChildRounding = 8.0f;
     style.FrameRounding = 6.0f;
@@ -117,25 +180,16 @@ ImFont* Urbanist;
     style.FrameBorderSize = 0.0f;
 
     ImVec4* colors = style.Colors;
-    
-    ImVec4 color_bg = ImVec4(0.06f, 0.07f, 0.09f, 0.98f);
-    ImVec4 color_accent = ImVec4(1.00f, 0.33f, 0.00f, 1.00f);
-    ImVec4 color_frame = ImVec4(0.12f, 0.13f, 0.15f, 1.00f);
-    ImVec4 color_frame_hover = ImVec4(0.20f, 0.22f, 0.25f, 1.00f);
-    ImVec4 color_text = ImVec4(0.90f, 0.90f, 0.90f, 1.00f);
-
-    colors[ImGuiCol_WindowBg]       = color_bg;
+    colors[ImGuiCol_WindowBg]       = ImVec4(0.06f, 0.07f, 0.09f, 0.98f);
     colors[ImGuiCol_Border]         = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
-    colors[ImGuiCol_Text]           = color_text;
-    colors[ImGuiCol_Button]         = color_frame;
-    colors[ImGuiCol_ButtonHovered]  = color_frame_hover;
-    colors[ImGuiCol_ButtonActive]   = color_accent;
-    colors[ImGuiCol_FrameBg]        = color_frame;
-    colors[ImGuiCol_FrameBgHovered] = color_frame_hover;
-    colors[ImGuiCol_FrameBgActive]  = color_frame;
-    colors[ImGuiCol_CheckMark]      = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
-    colors[ImGuiCol_SliderGrab]     = color_accent;
-    colors[ImGuiCol_SliderGrabActive] = ImVec4(1.0f, 0.45f, 0.1f, 1.0f);
+    colors[ImGuiCol_Text]           = ImVec4(0.90f, 0.90f, 0.90f, 1.00f);
+    colors[ImGuiCol_Button]         = ImVec4(0.12f, 0.13f, 0.15f, 1.00f);
+    colors[ImGuiCol_ButtonHovered]  = ImVec4(0.20f, 0.22f, 0.25f, 1.00f);
+    colors[ImGuiCol_ButtonActive]   = ImVec4(1.00f, 0.33f, 0.00f, 1.00f);
+    colors[ImGuiCol_FrameBg]        = ImVec4(0.12f, 0.13f, 0.15f, 1.00f);
+    colors[ImGuiCol_FrameBgHovered] = ImVec4(0.20f, 0.22f, 0.25f, 1.00f);
+    colors[ImGuiCol_FrameBgActive]  = ImVec4(0.12f, 0.13f, 0.15f, 1.00f);
+    colors[ImGuiCol_CheckMark]      = ImVec4(1.0f, 1.0f, 1.0f, 1.00f);
 
     ImFont* font = io.Fonts->AddFontFromMemoryTTF(sansbold, sizeof(sansbold), 15.0f, NULL, io.Fonts->GetGlyphRangesCyrillic());
     verdana_smol = io.Fonts->AddFontFromMemoryTTF(verdana, sizeof verdana, 40, NULL, io.Fonts->GetGlyphRangesCyrillic());
@@ -166,7 +220,6 @@ ImFont* Urbanist;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
     self.mtkView.device = self.device;
     self.mtkView.delegate = self;
     self.mtkView.clearColor = MTLClearColorMake(0, 0, 0, 0);
@@ -175,8 +228,6 @@ ImFont* Urbanist;
 
     Hook(0x4EB3E88, BLAGCMCGEJG1, old_BLAGCMCGEJG1);
 }
-
-#pragma mark - Interaction
 
 - (void)updateIOWithTouchEvent:(UIEvent *)event
 {
@@ -202,8 +253,6 @@ ImFont* Urbanist;
 - (void)touchesCancelled:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event { [self updateIOWithTouchEvent:event]; }
 - (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event { [self updateIOWithTouchEvent:event]; }
 
-#pragma mark - MTKViewDelegate
-
 - (void)drawInMTKView:(MTKView*)view
 {
     ImGuiIO& io = ImGui::GetIO();
@@ -228,46 +277,47 @@ ImFont* Urbanist;
         
         if (MenDeal)
         {                
-            ImVec4 color_accent = ImVec4(1.00f, 0.33f, 0.00f, 1.00f);
-
-            ImGui::SetNextWindowSize(ImVec2(500, 350), ImGuiCond_FirstUseEver);
+            ImGui::SetNextWindowSize(ImVec2(520, 380), ImGuiCond_FirstUseEver);
             ImGui::Begin(oxorany("VINRADIN|MENU"), &MenDeal, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 
             // ==========================================
-            // SIDEBAR
+            // 1. SIDEBAR (Left Panel)
             // ==========================================
-            ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.04f, 0.05f, 0.06f, 1.00f));
-            ImGui::BeginChild("Sidebar", ImVec2(110, 0), false);
+            ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.04f, 0.04f, 0.05f, 1.00f));
+            ImGui::BeginChild("Sidebar", ImVec2(100, 0), false);
             ImGui::PopStyleColor();
             
             ImGui::SetCursorPosY(20); 
             
-            const char* tab_names[] = { "Aimbot", "Visuals", "Misc", "Settings" };
-            const char* tab_icons[] = { "(+)", "(O)", "[_]", "{S}" };
+            // สัญลักษณ์สไตล์ C++ / Dev แทน Emoji
+            const char* tab_names[] = { "Aimbot", "Visuals", "Misc", "Settings", "Account" };
+            const char* tab_icons[] = { "[ + ]", "( V )", "[ M ]", "{ S }", "< A >" };
             
-            for (int i = 0; i < 4; i++) {
+            for (int i = 0; i < 5; i++) {
                 bool is_selected = (current_tab == i);
                 ImGui::PushID(i);
                 
                 ImVec2 pos = ImGui::GetCursorScreenPos();
-                ImVec2 size = ImVec2(110, 75);
+                ImVec2 size = ImVec2(100, 70);
                 
                 ImGui::InvisibleButton("##tab", size);
                 if (ImGui::IsItemClicked()) current_tab = i;
                 
-                ImDrawList* draw_list = ImGui::GetWindowDrawList();
+                ImDrawList* dl = ImGui::GetWindowDrawList();
                 
                 if (is_selected) {
-                    draw_list->AddRectFilled(ImVec2(pos.x, pos.y), ImVec2(pos.x + size.x, pos.y + size.y), IM_COL32(20, 22, 26, 255));
-                    draw_list->AddRectFilled(ImVec2(pos.x + size.x - 3, pos.y + 15), ImVec2(pos.x + size.x, pos.y + size.y - 15), IM_COL32(255, 85, 0, 255), 2.0f);
+                    // Highlight background
+                    dl->AddRectFilled(ImVec2(pos.x, pos.y), ImVec2(pos.x + size.x, pos.y + size.y), IM_COL32(30, 32, 38, 255), 0.0f);
+                    // Right Accent Bar (สีส้ม)
+                    dl->AddRectFilled(ImVec2(pos.x + size.x - 3, pos.y + 10), ImVec2(pos.x + size.x, pos.y + size.y - 10), IM_COL32(255, 85, 0, 255), 2.0f);
                 }
 
                 ImVec2 text_size = ImGui::CalcTextSize(tab_names[i]);
                 ImVec2 icon_size = ImGui::CalcTextSize(tab_icons[i]);
-                ImU32 text_col = is_selected ? IM_COL32(255, 255, 255, 255) : IM_COL32(120, 125, 135, 255);
+                ImU32 col = is_selected ? IM_COL32(255, 255, 255, 255) : IM_COL32(120, 120, 130, 255);
                 
-                draw_list->AddText(ImVec2(pos.x + (size.x - icon_size.x) * 0.5f, pos.y + 15), text_col, tab_icons[i]);
-                draw_list->AddText(ImVec2(pos.x + (size.x - text_size.x) * 0.5f, pos.y + 40), text_col, tab_names[i]);
+                dl->AddText(ImVec2(pos.x + (size.x - icon_size.x) * 0.5f, pos.y + 15), col, tab_icons[i]);
+                dl->AddText(ImVec2(pos.x + (size.x - text_size.x) * 0.5f, pos.y + 40), col, tab_names[i]);
 
                 ImGui::PopID();
             }
@@ -275,107 +325,88 @@ ImFont* Urbanist;
 
             ImGui::SameLine(0, 0);
 
-            // ==========================================
-            // MAIN CONTENT
-            // ==========================================
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(20, 20));
+            // ==========================================================
+            // 2. MAIN CONTENT (Right Panel)
+            // ==========================================================
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(15, 15));
             ImGui::BeginChild("MainContent", ImVec2(0, 0), false, ImGuiWindowFlags_AlwaysUseWindowPadding);
             
-            auto DrawHeader = [&](const char* icon, const char* title, const char* desc) {
-                ImVec2 p = ImGui::GetCursorScreenPos();
-                ImDrawList* dl = ImGui::GetWindowDrawList();
-                dl->AddRectFilled(p, ImVec2(p.x + ImGui::GetContentRegionAvail().x, p.y + 40), IM_COL32(10, 12, 15, 255), 8.0f);
-                dl->AddText(ImVec2(p.x + 15, p.y + 12), IM_COL32(255, 85, 0, 255), icon);
-                dl->AddText(ImVec2(p.x + 40, p.y + 12), IM_COL32(255, 85, 0, 255), title);
-                dl->AddText(ImVec2(p.x + 115, p.y + 12), IM_COL32(80, 85, 95, 255), "|");
-                dl->AddText(ImVec2(p.x + 130, p.y + 12), IM_COL32(150, 155, 165, 255), desc);
-                ImGui::Dummy(ImVec2(0, 40));
-            };
-
-            auto DrawCheckbox = [&](const char* label, bool* v) {
-                ImGui::PushStyleColor(ImGuiCol_FrameBg, *v ? color_accent : ImGui::GetStyle().Colors[ImGuiCol_FrameBg]);
-                ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, *v ? ImVec4(1.0f, 0.45f, 0.1f, 1.0f) : ImGui::GetStyle().Colors[ImGuiCol_FrameBgHovered]);
-                ImGui::Checkbox(label, v);
-                ImGui::PopStyleColor(2);
-            };
-
             // TAB 0: AIMBOT
             if (current_tab == 0) {
-                DrawHeader("(+)", "AIMBOT", "Aim assist options.");
+                DrawCustomHeader("[ + ]", "AIMBOT");
                 ImGui::Spacing();
+                DrawCustomCheckbox("Enable Aimbot", &Vars.Aimbot);
+                DrawCustomCheckbox("Silent Aim", &SilentAim);
+                DrawCustomCheckbox("Visible Check", &Vars.VisibleCheck);
+                DrawCustomCheckbox("Ignore Knocked", &Vars.IgnoreKnocked); 
                 
-                DrawCheckbox("Enable Aimbot", &Vars.Aimbot);
-                DrawCheckbox("SilentAim", &SilentAim);
-                DrawCheckbox("Visible Check", &Vars.VisibleCheck);
-                DrawCheckbox("Ignore Knocked", &Vars.IgnoreKnocked); 
-                
-                ImGui::Separator();
-                ImGui::SetNextItemWidth(250);
-                ImGui::Combo("Aim Mode", &Vars.AimMode, Vars.aimModes, 3);
-                ImGui::SetNextItemWidth(250);
-                ImGui::SliderFloat("Aim FOV", &Vars.AimFov, 0.0f, 180.0f, "%.0f");
+                ImGui::Spacing();
+                ImGui::SetNextItemWidth(-1);
+                ImGui::Combo("##AimMode", &Vars.AimMode, Vars.aimModes, 3);
+                ImGui::SetNextItemWidth(-1);
+                ImGui::SliderFloat("##AimFov", &Vars.AimFov, 0.0f, 180.0f, "FOV: %.0f");
             }
             
             // TAB 1: VISUALS
             else if (current_tab == 1) {
-                DrawHeader("(O)", "VISUALS", "Visual improvements.");
+                DrawCustomHeader("( V )", "VISUALS");
                 ImGui::Spacing();
-
-                DrawCheckbox("Enemy ESP", &Vars.Enable);
-                DrawCheckbox("Line", &Vars.lines);
-                DrawCheckbox("Line fire material", &b_line_fire);
-                DrawCheckbox("Box", &Vars.Box);
-                DrawCheckbox("Health", &Vars.Health);
-                DrawCheckbox("Nickname", &Vars.Name);
-                DrawCheckbox("Distance", &b_distance);
-                DrawCheckbox("Skeleton", &Vars.skeleton);
-                DrawCheckbox("Nearby enemies count", &b_nearby);
+                DrawCustomCheckbox("Enemy ESP", &Vars.Enable);
+                DrawCustomCheckbox("Line ESP", &Vars.lines);
+                DrawCustomCheckbox("Line Fire Material", &b_line_fire);
+                DrawCustomCheckbox("Box ESP", &Vars.Box);
+                DrawCustomCheckbox("Health Bar", &Vars.Health);
+                DrawCustomCheckbox("Nickname", &Vars.Name);
+                DrawCustomCheckbox("Distance", &b_distance);
+                DrawCustomCheckbox("Skeleton", &Vars.skeleton);
+                DrawCustomCheckbox("Nearby Count", &b_nearby);
             }
             
             // TAB 2: MISC
             else if (current_tab == 2) {
-                DrawHeader("[_]", "MISC", "Game enhancements.");
+                DrawCustomHeader("[ M ]", "MISC");
                 ImGui::Spacing();
-                
-                ImGui::Text("These features are only for fun and may be unsafe.");
-                ImGui::Text("Use them at your own risk!");
-                ImGui::Spacing();
-
-                DrawCheckbox("No fog", &b_nofog);
-                DrawCheckbox("No weapon spread", &b_nospread);
-                DrawCheckbox("Instant loot", &b_instantloot);
-                DrawCheckbox("Inverted IceWall rotation", &b_icewall);
-                DrawCheckbox("Aspect ratio", &b_aspect);
-                DrawCheckbox("Auto-fire", &b_autofire);
-                DrawCheckbox("FPS unlocker", &b_fps);
-                DrawCheckbox("Spinbot", &b_spinbot);
+                DrawCustomCheckbox("No Fog", &b_nofog);
+                DrawCustomCheckbox("No Spread", &b_nospread);
+                DrawCustomCheckbox("Instant Loot", &b_instantloot);
+                DrawCustomCheckbox("IceWall Rotation", &b_icewall);
+                DrawCustomCheckbox("Aspect Ratio", &b_aspect);
+                DrawCustomCheckbox("Auto-Fire", &b_autofire);
+                DrawCustomCheckbox("FPS Unlocker", &b_fps);
+                DrawCustomCheckbox("Spin Bot", &b_spinbot);
             }
             
             // TAB 3: SETTINGS
             else if (current_tab == 3) {
-                DrawHeader("{S}", "SETTINGS", "Configure options.");
+                DrawCustomHeader("{ S }", "SETTINGS");
                 ImGui::Spacing();
-                
-                ImGui::Text("3.0 (608315a981a0f73) (null)");
+                DrawCustomCheckbox("Stream Proof", &b_streamproof);
                 ImGui::Spacing();
-                
-                DrawCheckbox("Streamproof", &b_streamproof);
-
-                ImGui::Text("Language");
-                ImGui::SetNextItemWidth(-1); 
+                ImGui::Text("Select Language");
+                ImGui::SetNextItemWidth(-1);
                 ImGui::Combo("##lang", &lang_current, languages, IM_ARRAYSIZE(languages));
+                ImGui::Spacing();
                 
-                ImGui::Spacing(); ImGui::Spacing();
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.33f, 0.0f, 1.0f));
+                if (ImGui::Button("Save Settings", ImVec2(-1, 35))) { /* Save logic */ }
+                ImGui::PopStyleColor();
+            }
+
+            // TAB 4: ACCOUNT
+            else if (current_tab == 4) {
+                DrawCustomHeader("< A >", "ACCOUNT");
+                ImGui::Spacing();
+                ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.0f, 1.0f), "SUBSCRIPTION: PRO");
+                ImGui::Text("Expiry: 29 Days, 20 Hours");
+                ImGui::Separator();
+                ImGui::Text("Build Ver: 1.4.4");
+                ImGui::Text("Game Ver: 1.123.X");
+                ImGui::Spacing();
                 
-                ImGui::PushStyleColor(ImGuiCol_Button, color_accent);
-                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.45f, 0.1f, 1.0f));
-                ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.8f, 0.25f, 0.0f, 1.0f));
-                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1,1,1,1));
-                
-                if (ImGui::Button("Save settings", ImVec2(-1, 35))) { /* Save action */ }
-                if (ImGui::Button("Load settings", ImVec2(-1, 35))) { /* Load action */ }
-                
-                ImGui::PopStyleColor(4);
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.15f, 0.16f, 0.20f, 1.0f));
+                if (ImGui::Button("Feedback", ImVec2(-1, 35))) { }
+                if (ImGui::Button("Logout", ImVec2(-1, 35))) { }
+                ImGui::PopStyleColor();
             }
 
             ImGui::EndChild();
@@ -383,7 +414,7 @@ ImFont* Urbanist;
             ImGui::End();
         }
         
-        // --- Game Functions ---
+        // Game Functions
         ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
         get_players();
         draw_watermark();
