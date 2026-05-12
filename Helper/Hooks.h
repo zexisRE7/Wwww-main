@@ -96,7 +96,8 @@ extern bool  ZX_DashForward;
 extern float ZX_DashDistance;
 extern bool  ZX_MarkTeleport;
 extern bool  ZX_AutoTeleport;
-extern float ZX_SpeedMult;   // 
+extern float ZX_SpeedMult;
+extern bool  ZX_MuteGunSound;   // ปิดเสียงปืนตัวเอง (PlayerAudioComponent OB53)
 // ============================================================
 // Structs
 // ============================================================
@@ -168,6 +169,7 @@ game_sdk_t *game_sdk = new game_sdk_t();
 void initAutoFireHook();
 void initRealSpeedHook(void);
 void initAntiBanHook(void);
+void initMuteGunSoundHook(void);
 void AddDashedLine(ImDrawList* draw, ImVec2 p1, ImVec2 p2, ImU32 col, float thickness, float dash_len, float gap_len);
 void DrawSkeleton(void *player, ImDrawList *drawList);
 void ProcessAimbot();
@@ -941,6 +943,33 @@ static void DoResetAccount() {
 }
 
 // ============================================================
+// Mute Gun Sound Hook
+// Class : PlayerAudioComponent (internal class : MonoBehaviour)
+// Method: PlayFireSoundInAnimationEvent — RVA: 0x49E3C94  (FF OB53)
+// ปิดเสียงปืนตัวเอง: set ZX_MuteGunSound = true จากเมนู
+// ============================================================
+void (*_PlayFireSoundInAnim)(void* self, void* soundName) = nullptr;
+static void hook_PlayFireSoundInAnim(void* self, void* soundName) {
+    if (ZX_MuteGunSound) return;   // ไม่เรียก orig = ไม่มีเสียงปืน
+    if (_PlayFireSoundInAnim) _PlayFireSoundInAnim(self, soundName);
+}
+
+void initMuteGunSoundHook(void) {
+    static bool hooked = false;
+    if (hooked) return;
+    hooked = true;
+    NSString* patch = StaticInlineHookPatch(
+        ("Frameworks/UnityFramework.framework/UnityFramework"),
+        0x49E3C94, nullptr);
+    if (patch) {
+        void* orig = StaticInlineHookFunction(
+            ("Frameworks/UnityFramework.framework/UnityFramework"),
+            0x49E3C94, (void*)hook_PlayFireSoundInAnim);
+        if (orig) *(void**)(&_PlayFireSoundInAnim) = orig;
+    }
+}
+
+// ============================================================
 // AutoFire Hook
 // ============================================================
 void (*_AutoFire)(void *_this, int32_t pFireStatus, int32_t pFireMode);
@@ -1062,6 +1091,7 @@ void get_players() {
     ImDrawList *draw_list = ImGui::GetBackgroundDrawList();
     if (!draw_list) return;
     initAutoFireHook();
+    initMuteGunSoundHook();
     if (!Vars.Enable) return;
     
     static int g_EnemyCount = 0;
