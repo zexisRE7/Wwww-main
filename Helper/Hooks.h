@@ -619,7 +619,7 @@ void aimbot() {
     
     // 🔴 AIMBOT LINE สีแดง
     ImVec2 EnemyLocation = Camera$$WorldToScreen::Regular(GetHeadPosition(playertarget));
-    drawlineglow(draw_list, center, EnemyLocation, ImColor(255, 0, 0), 1.5f, 3);
+    drawlineglow(draw_list, center, EnemyLocation, ImColor(255, 0, 0), 1,3);
 }
 
 void draw_watermark() {
