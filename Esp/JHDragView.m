@@ -33,7 +33,7 @@
         [self addSubview:avatar];
 
         // ดาวน์โหลดรูปจาก URL
-        NSURL *url = [NSURL URLWithString:@"https://www.google.com/imgres?imgurl=https://i.pinimg.com/236x/a2/21/e8/a221e85a81a16a8eadb2890303f3d871.jpg&imgrefurl=https://in.pinterest.com/egehankayawq/angievalentine/&h=220&w=236&tbnid=FyGBec2l3gOE_M&tbnh=217&tbnw=233&osm=1&hcb=1&source=lens-native&docid=pxyEBto_5OIcxM"];
+        NSURL *url = [NSURL URLWithString:@"https://i.postimg.cc/fR2mymsn/IMG-0612.jpg"];
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
             NSData *imageData = [NSData dataWithContentsOfURL:url];
             if (imageData) {
