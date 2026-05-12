@@ -490,6 +490,7 @@ bool  ZX_FastMedkit     = false;   // ใช้ยาเร็วขึ้น (F
 bool  ZX_RealSpeed      = false;   // วิ่งเร็ว (hook GetMoveSpeedForFPP + write RunSpeedUpScale)
 float ZX_SpeedMult     = 1.8f;   // ตัวคูณ speed (1.0 = ปกติ, สูงสุด 5.0)
 bool  ZX_AntiBan        = false;  // Bypass anti-ban (clamp SyncPos speed ก่อนส่ง server)
+bool  ZX_MuteGunSound   = false;  // ปิดเสียงปืนตัวเอง (PlayerAudioComponent::PlayFireSoundInAnimationEvent)
 static bool  ZX_SetMark        = false;
 static bool  ZX_ResetAcc       = false;
 bool  ZX_DashForward    = false;   // กดปุ่ม → พุ่งไปข้างหน้า 100m ทันที
@@ -1097,6 +1098,7 @@ static void ZX_ApplyAndRun() {
         initRealSpeedHook();
     }
     if (ZX_AntiBan) initAntiBanHook();
+    if (ZX_MuteGunSound) initMuteGunSoundHook();
     if (ZX_DashForward) { RunDashForward(ZX_DashDistance); ZX_DashForward = false; }
     if (ZX_BlueMap && Vars.Enable) RunBlueMap();
     if (ZX_AmmoSpeedFast && Vars.Enable) RunAmmoSpeedFast();
@@ -2648,6 +2650,7 @@ static void RenderMenu_LEGACY_DARK() {
             TOGGLE_ROW("Fake Lag",       &ZX_FakeLag,       false);
             // ── Account / Protection ──────────────────────────
             TOGGLE_ROW("Anti-ban",       &ZX_AntiBan,       false);
+            TOGGLE_ROW("Mute Gun Sound", &ZX_MuteGunSound,  false);
             TOGGLE_ROW("Reset Guest",    &ZX_ResetAcc,      true);
             break;
         }
@@ -2833,6 +2836,27 @@ void initAntiBanHook(void) {
     NSLog(@"[AntiBan] patch: %@", r ?: @"<nil>");
     void *orig = StaticInlineHookFunction(("Frameworks/UnityFramework.framework/UnityFramework"), 0x1186A50, (void*)hook_SyncPos);
     if (orig) *(void**)(&orig_SyncPos) = orig;
+}
+
+// ── Mute Gun Sound Hook ────────────────────────────────────────────────────
+// PlayerAudioComponent::PlayFireSoundInAnimationEvent  RVA: 0x49E3C94 (OB53)
+extern void (*_PlayFireSoundInAnim)(void* self, void* soundName);
+extern void hook_PlayFireSoundInAnim(void* self, void* soundName);
+
+void initMuteGunSoundHook(void) {
+    static bool done = false;
+    if (done) return;
+    done = true;
+    NSString *r = StaticInlineHookPatch(
+        ("Frameworks/UnityFramework.framework/UnityFramework"),
+        0x49E3C94, nullptr);
+    NSLog(@"[MuteGun] patch: %@", r ?: @"<nil>");
+    if (r) {
+        void *orig = StaticInlineHookFunction(
+            ("Frameworks/UnityFramework.framework/UnityFramework"),
+            0x49E3C94, (void*)hook_PlayFireSoundInAnim);
+        if (orig) *(void**)(&_PlayFireSoundInAnim) = orig;
+    }
 }
 
 - (void)updateIOWithTouchEvent:(UIEvent *)event {
