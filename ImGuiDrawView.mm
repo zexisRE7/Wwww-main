@@ -92,7 +92,7 @@ ImFont* Urbanist;
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
 
-    // ========== RED/ORANGE THEME (à¸ªà¸µà¹à¸à¸/à¸ªà¹à¸¡) ==========
+    // ========== DARK RED THEME (à¸ªà¸µà¹à¸à¸à¹à¸à¹à¸¡à¸à¸±à¸à¸à¸·à¹à¸à¸«à¸¥à¸±à¸à¸à¸³) ==========
     ImGuiStyle& style = ImGui::GetStyle();
     style.WindowPadding = ImVec2(10.0f, 10.0f);
     style.FramePadding = ImVec2(9.0f, 7.0f);
@@ -107,65 +107,65 @@ ImFont* Urbanist;
     
     ImVec4* colors = ImGui::GetStyle().Colors;
     
-    // ===== à¸à¸·à¹à¸à¸«à¸¥à¸±à¸à¸«à¸¥à¸±à¸ â à¹à¸à¸à¹à¸à¸à¹à¸à¹à¸¡ =====
-    colors[ImGuiCol_WindowBg]       = ImVec4(0.15f, 0.04f, 0.04f, 0.85f); // à¹à¸à¸à¹à¸à¹à¸¡à¹à¸à¸£à¹à¸à¹à¸ªà¸
-    colors[ImGuiCol_ChildBg]        = ImVec4(0.12f, 0.03f, 0.03f, 0.70f);
-    colors[ImGuiCol_PopupBg]        = ImVec4(0.18f, 0.05f, 0.05f, 0.90f);
+    // ===== à¸à¸·à¹à¸à¸«à¸¥à¸±à¸à¸«à¸¥à¸±à¸ â à¸ªà¸µà¸à¸³à¹à¸à¹à¸¡ =====
+    colors[ImGuiCol_WindowBg]       = ImVec4(0.05f, 0.05f, 0.05f, 0.95f); // à¸à¸³à¹à¸à¹à¸¡
+    colors[ImGuiCol_ChildBg]        = ImVec4(0.03f, 0.03f, 0.03f, 0.85f);
+    colors[ImGuiCol_PopupBg]        = ImVec4(0.08f, 0.08f, 0.08f, 0.95f);
     
     // ===== à¸à¹à¸­à¸à¸§à¸²à¸¡ =====
-    colors[ImGuiCol_Text]           = ImVec4(0.98f, 0.95f, 0.92f, 1.00f); // à¸à¸²à¸§à¸­à¸¡à¹à¸«à¸¥à¸·à¸­à¸
-    colors[ImGuiCol_TextDisabled]   = ImVec4(0.70f, 0.50f, 0.45f, 1.00f);
+    colors[ImGuiCol_Text]           = ImVec4(0.98f, 0.98f, 0.98f, 1.00f); // à¸à¸²à¸§à¸ªà¸à¹à¸ª
+    colors[ImGuiCol_TextDisabled]   = ImVec4(0.60f, 0.40f, 0.35f, 1.00f);
     
-    // ===== à¹à¸ªà¹à¸à¸à¸­à¸à¹à¸¥à¸° Separator (à¹à¸à¸à¸à¸²à¸) =====
-    colors[ImGuiCol_Border]         = ImVec4(0.85f, 0.35f, 0.25f, 0.50f);
-    colors[ImGuiCol_Separator]      = ImVec4(0.85f, 0.35f, 0.25f, 0.40f);
-    colors[ImGuiCol_SeparatorActive] = ImVec4(1.00f, 0.50f, 0.30f, 0.70f);
-    colors[ImGuiCol_SeparatorHovered] = ImVec4(0.95f, 0.45f, 0.28f, 0.60f);
+    // ===== à¹à¸ªà¹à¸à¸à¸­à¸à¹à¸¥à¸° Separator (à¹à¸à¸à¹à¸à¹à¸¡) =====
+    colors[ImGuiCol_Border]         = ImVec4(0.80f, 0.15f, 0.10f, 0.60f);
+    colors[ImGuiCol_Separator]      = ImVec4(0.80f, 0.15f, 0.10f, 0.50f);
+    colors[ImGuiCol_SeparatorActive] = ImVec4(1.00f, 0.35f, 0.20f, 0.80f);
+    colors[ImGuiCol_SeparatorHovered] = ImVec4(0.95f, 0.30f, 0.15f, 0.70f);
     
-    // ===== à¸à¸¸à¹à¸¡ (Red/Orange Scale) =====
-    colors[ImGuiCol_Button]         = ImVec4(0.80f, 0.25f, 0.15f, 0.75f); // à¹à¸à¸à¸ªà¹à¸¡
-    colors[ImGuiCol_ButtonHovered]  = ImVec4(0.95f, 0.40f, 0.20f, 0.90f); // à¸ªà¹à¸¡à¸ªà¸§à¹à¸²à¸
-    colors[ImGuiCol_ButtonActive]   = ImVec4(1.00f, 0.50f, 0.25f, 1.00f); // à¸ªà¹à¸¡à¸ªà¸à¹à¸ª
+    // ===== à¸à¸¸à¹à¸¡ (Deep Red) =====
+    colors[ImGuiCol_Button]         = ImVec4(0.70f, 0.10f, 0.05f, 0.80f); // à¹à¸à¸à¹à¸à¹à¸¡
+    colors[ImGuiCol_ButtonHovered]  = ImVec4(0.85f, 0.20f, 0.10f, 0.95f); // à¹à¸à¸à¸à¸²à¸à¸à¸¥à¸²à¸
+    colors[ImGuiCol_ButtonActive]   = ImVec4(1.00f, 0.35f, 0.20f, 1.00f); // à¹à¸à¸à¸ªà¸à¹à¸ª
     
     // ===== Checkmark =====
-    colors[ImGuiCol_CheckMark]      = ImVec4(1.00f, 0.60f, 0.30f, 1.00f); // à¸ªà¹à¸¡à¸ªà¸à¹à¸ª
+    colors[ImGuiCol_CheckMark]      = ImVec4(1.00f, 0.40f, 0.20f, 1.00f); // à¸ªà¹à¸¡à¹à¸à¸
     
     // ===== Slider =====
-    colors[ImGuiCol_SliderGrab]     = ImVec4(0.95f, 0.40f, 0.20f, 0.90f);
-    colors[ImGuiCol_SliderGrabActive] = ImVec4(1.00f, 0.55f, 0.30f, 1.00f);
+    colors[ImGuiCol_SliderGrab]     = ImVec4(0.85f, 0.20f, 0.10f, 0.95f);
+    colors[ImGuiCol_SliderGrabActive] = ImVec4(1.00f, 0.40f, 0.20f, 1.00f);
     
     // ===== Header (Tab) =====
-    colors[ImGuiCol_Header]         = ImVec4(0.75f, 0.20f, 0.10f, 0.65f);
-    colors[ImGuiCol_HeaderHovered]  = ImVec4(0.90f, 0.35f, 0.15f, 0.85f);
-    colors[ImGuiCol_HeaderActive]   = ImVec4(1.00f, 0.45f, 0.20f, 0.95f);
+    colors[ImGuiCol_Header]         = ImVec4(0.65f, 0.10f, 0.05f, 0.70f);
+    colors[ImGuiCol_HeaderHovered]  = ImVec4(0.80f, 0.18f, 0.08f, 0.90f);
+    colors[ImGuiCol_HeaderActive]   = ImVec4(0.95f, 0.30f, 0.15f, 0.98f);
     
-    // ===== Tab (à¹à¸à¸/à¸ªà¹à¸¡ à¸ªà¸³à¸«à¸£à¸±à¸à¹à¸à¹à¸) =====
-    colors[ImGuiCol_Tab]            = ImVec4(0.70f, 0.15f, 0.05f, 0.70f); // à¹à¸à¸à¹à¸à¹à¸¡
-    colors[ImGuiCol_TabHovered]     = ImVec4(0.85f, 0.30f, 0.12f, 0.85f); // à¹à¸à¸à¸à¸²à¸à¸à¸¥à¸²à¸
-    colors[ImGuiCol_TabActive]      = ImVec4(1.00f, 0.45f, 0.20f, 0.98f); // à¸ªà¹à¸¡à¸ªà¸à¹à¸ª (à¹à¸à¹à¸à¸à¸µà¹à¹à¸¥à¸·à¸­à¸)
+    // ===== Tab (à¹à¸à¸à¹à¸à¹à¸¡à¸¡à¸²à¸) =====
+    colors[ImGuiCol_Tab]            = ImVec4(0.55f, 0.08f, 0.03f, 0.75f); // à¹à¸à¸à¹à¸à¹à¸¡à¸¡à¸²à¸
+    colors[ImGuiCol_TabHovered]     = ImVec4(0.75f, 0.15f, 0.08f, 0.90f); // à¹à¸à¸à¸à¸²à¸à¸à¸¥à¸²à¸
+    colors[ImGuiCol_TabActive]      = ImVec4(0.95f, 0.30f, 0.15f, 1.00f); // à¹à¸à¸à¸ªà¸à¹à¸ª (à¹à¸à¹à¸à¸à¸µà¹à¹à¸¥à¸·à¸­à¸)
     
     // ===== Frame =====
-    colors[ImGuiCol_FrameBg]        = ImVec4(0.20f, 0.05f, 0.03f, 0.65f);
-    colors[ImGuiCol_FrameBgHovered] = ImVec4(0.35f, 0.12f, 0.06f, 0.80f);
-    colors[ImGuiCol_FrameBgActive]  = ImVec4(0.50f, 0.18f, 0.08f, 0.90f);
+    colors[ImGuiCol_FrameBg]        = ImVec4(0.12f, 0.03f, 0.02f, 0.70f);
+    colors[ImGuiCol_FrameBgHovered] = ImVec4(0.25f, 0.08f, 0.04f, 0.85f);
+    colors[ImGuiCol_FrameBgActive]  = ImVec4(0.40f, 0.12f, 0.06f, 0.95f);
     
-    // ===== Title Bar =====
-    colors[ImGuiCol_TitleBg]        = ImVec4(0.65f, 0.12f, 0.05f, 0.80f); // à¹à¸à¸à¹à¸à¹à¸¡
-    colors[ImGuiCol_TitleBgActive]  = ImVec4(0.85f, 0.25f, 0.10f, 0.95f); // à¹à¸à¸à¸à¸²à¸à¸à¸¥à¸²à¸
+    // ===== Title Bar (à¹à¸à¸à¹à¸à¹à¸¡à¸¡à¸²à¸à¹) =====
+    colors[ImGuiCol_TitleBg]        = ImVec4(0.55f, 0.08f, 0.03f, 0.95f); // à¹à¸à¸à¹à¸à¹à¸¡à¸¡à¸²à¸
+    colors[ImGuiCol_TitleBgActive]  = ImVec4(0.75f, 0.15f, 0.08f, 1.00f); // à¹à¸à¸à¸à¸²à¸à¸à¸¥à¸²à¸
     
     // ===== Scrollbar =====
-    colors[ImGuiCol_ScrollbarBg]    = ImVec4(0.12f, 0.03f, 0.02f, 0.60f);
-    colors[ImGuiCol_ScrollbarGrab]  = ImVec4(0.75f, 0.20f, 0.10f, 0.75f);
-    colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.90f, 0.35f, 0.15f, 0.85f);
-    colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(1.00f, 0.50f, 0.25f, 0.95f);
+    colors[ImGuiCol_ScrollbarBg]    = ImVec4(0.08f, 0.02f, 0.01f, 0.70f);
+    colors[ImGuiCol_ScrollbarGrab]  = ImVec4(0.65f, 0.10f, 0.05f, 0.80f);
+    colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.80f, 0.18f, 0.08f, 0.90f);
+    colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.95f, 0.30f, 0.15f, 1.00f);
     
     // ===== Resize Grip =====
-    colors[ImGuiCol_ResizeGrip]     = ImVec4(0.75f, 0.20f, 0.10f, 0.60f);
-    colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.90f, 0.35f, 0.15f, 0.75f);
-    colors[ImGuiCol_ResizeGripActive] = ImVec4(1.00f, 0.50f, 0.25f, 0.90f);
+    colors[ImGuiCol_ResizeGrip]     = ImVec4(0.65f, 0.10f, 0.05f, 0.70f);
+    colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.80f, 0.18f, 0.08f, 0.85f);
+    colors[ImGuiCol_ResizeGripActive] = ImVec4(0.95f, 0.30f, 0.15f, 0.95f);
     
     // ===== Modal Dim (à¸à¸·à¹à¸à¸«à¸¥à¸±à¸à¹à¸¡à¸à¸¹) =====
-    colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.0f, 0.0f, 0.0f, 0.40f); // à¸à¸³à¸à¸²à¸
+    colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.0f, 0.0f, 0.0f, 0.50f); // à¸à¸³à¸à¸²à¸
     
     // ==========================================================
     
@@ -280,10 +280,10 @@ ImFont* Urbanist;
         
         if (MenDeal == true)
         {                
-            ImGui::Begin(oxorany("SamwilXiter Mod New Update Free Fire"), &MenDeal);
+            ImGui::Begin(oxorany("tele@monalisa"), &MenDeal);
             if (ImGui::BeginTabBar(oxorany("Tab"), ImGuiTabBarFlags_FittingPolicyScroll)) {
-                // ===== TAB 1: ESP (Eye Icon) =====
-                if (ImGui::BeginTabItem(("ð ESP"))) {
+                // ===== TAB 1: ESP =====
+                if (ImGui::BeginTabItem(("Esp"))) {
                     ImGui::Checkbox(oxorany("Enable Esp"), &Vars.Enable);
                     if (ImGui::BeginTable("split", 2))
                     {
@@ -328,8 +328,8 @@ ImFont* Urbanist;
                     ImGui::EndTabItem();
                 }
                 
-                // ===== TAB 2: AIMBOT (Crosshair Icon) =====
-                if (ImGui::BeginTabItem(("ð¯ Aimbot"))) {
+                // ===== TAB 2: AIMBOT =====
+                if (ImGui::BeginTabItem(("Aimbot"))) {
                     ImGui::Spacing();
                     ImGui::Checkbox(oxorany("SilentAim"), &SilentAim);
                     ImGui::Checkbox(oxorany("CheckIsVisible"), &CheckWall1);
@@ -347,8 +347,8 @@ ImFont* Urbanist;
                     ImGui::EndTabItem();
                 }
                 
-                // ===== TAB 3: MISC (Gear Icon) =====
-                if (ImGui::BeginTabItem(("â Misc"))) {
+                // ===== TAB 3: MISC =====
+                if (ImGui::BeginTabItem(("Misc"))) {
                     ImGui::Spacing();
                     ImGui::TextDisabled("Miscellaneous Settings");
                     ImGui::Separator();
@@ -358,8 +358,8 @@ ImFont* Urbanist;
                     ImGui::EndTabItem();
                 }
                 
-                // ===== TAB 4: SETTING (Wrench Icon) =====
-                if (ImGui::BeginTabItem(("ð§ Setting"))) {
+                // ===== TAB 4: SETTING =====
+                if (ImGui::BeginTabItem(("Setting"))) {
                     ImGui::Spacing();
                     ImGui::TextDisabled("General Settings");
                     ImGui::Separator();
