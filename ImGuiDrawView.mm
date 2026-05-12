@@ -92,7 +92,7 @@ ImFont* Urbanist;
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
 
-    // ========== DARK GLASS THEME (โปร่งแสง + ดำ + แดง) ==========
+    // ========== DARK GRAY MONOCHROME THEME (โปร่งใสสุด) ==========
     ImGuiStyle& style = ImGui::GetStyle();
     style.WindowPadding = ImVec2(10.0f, 10.0f);
     style.FramePadding = ImVec2(9.0f, 7.0f);
@@ -103,71 +103,71 @@ ImFont* Urbanist;
     style.GrabRounding = 4.0f;
     style.PopupRounding = 8.0f;
     style.TabRounding = 6.0f;
-    style.WindowBorderSize = 1.0f;
+    style.WindowBorderSize = 0.5f;
     
     ImVec4* colors = ImGui::GetStyle().Colors;
     
-    // พื้นหลังหลัก (โปร่งแสง เห็นเกมด้านหลัง)
-    colors[ImGuiCol_WindowBg]       = ImVec4(0.06f, 0.06f, 0.08f, 0.88f);
-    colors[ImGuiCol_ChildBg]        = ImVec4(0.04f, 0.04f, 0.05f, 0.75f);
-    colors[ImGuiCol_PopupBg]        = ImVec4(0.06f, 0.06f, 0.08f, 0.92f);
+    // ===== พื้นหลังหลัก — โปร่งใสสุด! =====
+    colors[ImGuiCol_WindowBg]       = ImVec4(0.04f, 0.04f, 0.06f, 0.75f); // โปร่งแสง เห็นเกมชัด
+    colors[ImGuiCol_ChildBg]        = ImVec4(0.03f, 0.03f, 0.04f, 0.60f);
+    colors[ImGuiCol_PopupBg]        = ImVec4(0.05f, 0.05f, 0.07f, 0.85f);
     
-    // ข้อความ
-    colors[ImGuiCol_Text]           = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
-    colors[ImGuiCol_TextDisabled]   = ImVec4(0.60f, 0.60f, 0.65f, 1.00f);
+    // ===== ข้อความ =====
+    colors[ImGuiCol_Text]           = ImVec4(0.95f, 0.95f, 0.98f, 1.00f); // ขาวอมเทา
+    colors[ImGuiCol_TextDisabled]   = ImVec4(0.55f, 0.55f, 0.60f, 1.00f);
     
-    // ขอบและ Separator
-    colors[ImGuiCol_Border]         = ImVec4(0.90f, 0.20f, 0.20f, 0.60f);
-    colors[ImGuiCol_Separator]      = ImVec4(0.90f, 0.20f, 0.20f, 0.50f);
-    colors[ImGuiCol_SeparatorActive] = ImVec4(0.90f, 0.30f, 0.30f, 0.80f);
-    colors[ImGuiCol_SeparatorHovered] = ImVec4(0.90f, 0.20f, 0.20f, 0.70f);
+    // ===== เส้นขอบและ Separator (เทาจาง) =====
+    colors[ImGuiCol_Border]         = ImVec4(0.65f, 0.65f, 0.70f, 0.40f);
+    colors[ImGuiCol_Separator]      = ImVec4(0.65f, 0.65f, 0.70f, 0.35f);
+    colors[ImGuiCol_SeparatorActive] = ImVec4(0.80f, 0.80f, 0.85f, 0.60f);
+    colors[ImGuiCol_SeparatorHovered] = ImVec4(0.75f, 0.75f, 0.80f, 0.50f);
     
-    // ปุ่ม (Button)
-    colors[ImGuiCol_Button]         = ImVec4(0.80f, 0.15f, 0.15f, 0.60f);
-    colors[ImGuiCol_ButtonHovered]  = ImVec4(1.00f, 0.25f, 0.25f, 0.85f);
-    colors[ImGuiCol_ButtonActive]   = ImVec4(0.90f, 0.30f, 0.30f, 1.00f);
+    // ===== ปุ่ม (Gray Scale) =====
+    colors[ImGuiCol_Button]         = ImVec4(0.30f, 0.30f, 0.35f, 0.65f);
+    colors[ImGuiCol_ButtonHovered]  = ImVec4(0.50f, 0.50f, 0.55f, 0.85f);
+    colors[ImGuiCol_ButtonActive]   = ImVec4(0.65f, 0.65f, 0.70f, 0.95f);
     
-    // Checkbox
-    colors[ImGuiCol_CheckMark]      = ImVec4(1.00f, 0.30f, 0.30f, 1.00f);
+    // ===== Checkmark =====
+    colors[ImGuiCol_CheckMark]      = ImVec4(0.80f, 0.80f, 0.85f, 1.00f);
     
-    // Slider
-    colors[ImGuiCol_SliderGrab]     = ImVec4(1.00f, 0.30f, 0.30f, 0.90f);
-    colors[ImGuiCol_SliderGrabActive] = ImVec4(1.00f, 0.20f, 0.20f, 1.00f);
+    // ===== Slider =====
+    colors[ImGuiCol_SliderGrab]     = ImVec4(0.50f, 0.50f, 0.55f, 0.85f);
+    colors[ImGuiCol_SliderGrabActive] = ImVec4(0.70f, 0.70f, 0.75f, 1.00f);
     
-    // Header
-    colors[ImGuiCol_Header]         = ImVec4(0.70f, 0.10f, 0.10f, 0.50f);
-    colors[ImGuiCol_HeaderHovered]  = ImVec4(0.90f, 0.20f, 0.20f, 0.70f);
-    colors[ImGuiCol_HeaderActive]   = ImVec4(1.00f, 0.25f, 0.25f, 0.90f);
+    // ===== Header (Tab) =====
+    colors[ImGuiCol_Header]         = ImVec4(0.25f, 0.25f, 0.30f, 0.60f);
+    colors[ImGuiCol_HeaderHovered]  = ImVec4(0.45f, 0.45f, 0.50f, 0.80f);
+    colors[ImGuiCol_HeaderActive]   = ImVec4(0.60f, 0.60f, 0.65f, 0.90f);
     
-    // Tab
-    colors[ImGuiCol_Tab]            = ImVec4(0.60f, 0.08f, 0.08f, 0.70f);
-    colors[ImGuiCol_TabHovered]     = ImVec4(0.90f, 0.20f, 0.20f, 0.85f);
-    colors[ImGuiCol_TabActive]      = ImVec4(1.00f, 0.30f, 0.30f, 0.95f);
+    // ===== Tab =====
+    colors[ImGuiCol_Tab]            = ImVec4(0.20f, 0.20f, 0.25f, 0.65f);
+    colors[ImGuiCol_TabHovered]     = ImVec4(0.40f, 0.40f, 0.45f, 0.80f);
+    colors[ImGuiCol_TabActive]      = ImVec4(0.55f, 0.55f, 0.60f, 0.95f);
     
-    // Frame
-    colors[ImGuiCol_FrameBg]        = ImVec4(0.12f, 0.12f, 0.14f, 0.70f);
-    colors[ImGuiCol_FrameBgHovered] = ImVec4(0.20f, 0.20f, 0.24f, 0.80f);
-    colors[ImGuiCol_FrameBgActive]  = ImVec4(0.25f, 0.25f, 0.30f, 0.90f);
+    // ===== Frame =====
+    colors[ImGuiCol_FrameBg]        = ImVec4(0.15f, 0.15f, 0.18f, 0.55f);
+    colors[ImGuiCol_FrameBgHovered] = ImVec4(0.25f, 0.25f, 0.30f, 0.70f);
+    colors[ImGuiCol_FrameBgActive]  = ImVec4(0.35f, 0.35f, 0.40f, 0.85f);
     
-    // Title Bar
-    colors[ImGuiCol_TitleBg]        = ImVec4(0.70f, 0.10f, 0.10f, 0.80f);
-    colors[ImGuiCol_TitleBgActive]  = ImVec4(0.90f, 0.15f, 0.15f, 0.90f);
+    // ===== Title Bar =====
+    colors[ImGuiCol_TitleBg]        = ImVec4(0.20f, 0.20f, 0.25f, 0.70f);
+    colors[ImGuiCol_TitleBgActive]  = ImVec4(0.35f, 0.35f, 0.40f, 0.85f);
     
-    // Scrollbar
-    colors[ImGuiCol_ScrollbarBg]    = ImVec4(0.04f, 0.04f, 0.06f, 0.60f);
-    colors[ImGuiCol_ScrollbarGrab]  = ImVec4(0.70f, 0.12f, 0.12f, 0.70f);
-    colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.85f, 0.20f, 0.20f, 0.85f);
-    colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(1.00f, 0.25f, 0.25f, 1.00f);
+    // ===== Scrollbar =====
+    colors[ImGuiCol_ScrollbarBg]    = ImVec4(0.08f, 0.08f, 0.10f, 0.50f);
+    colors[ImGuiCol_ScrollbarGrab]  = ImVec4(0.35f, 0.35f, 0.40f, 0.65f);
+    colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.50f, 0.50f, 0.55f, 0.80f);
+    colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.65f, 0.65f, 0.70f, 1.00f);
     
-    // Resize Grip
-    colors[ImGuiCol_ResizeGrip]     = ImVec4(0.80f, 0.15f, 0.15f, 0.50f);
-    colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.90f, 0.20f, 0.20f, 0.70f);
-    colors[ImGuiCol_ResizeGripActive] = ImVec4(1.00f, 0.30f, 0.30f, 0.90f);
+    // ===== Resize Grip =====
+    colors[ImGuiCol_ResizeGrip]     = ImVec4(0.35f, 0.35f, 0.40f, 0.50f);
+    colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.50f, 0.50f, 0.55f, 0.70f);
+    colors[ImGuiCol_ResizeGripActive] = ImVec4(0.70f, 0.70f, 0.75f, 0.90f);
     
-    // Modal Dim
-    colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.0f, 0.0f, 0.0f, 0.45f);
+    // ===== Modal Dim (พื้นหลังเมนู) =====
+    colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.0f, 0.0f, 0.0f, 0.30f); // จางมาก
     
-    // ========== จบ Theme ==========
+    // ==========================================================
     
     ImFont* font = io.Fonts->AddFontFromMemoryTTF(sansbold, sizeof(sansbold), 15.0f, NULL, io.Fonts->GetGlyphRangesCyrillic());
     verdana_smol = io.Fonts->AddFontFromMemoryTTF(verdana, sizeof verdana, 40, NULL, io.Fonts->GetGlyphRangesCyrillic());
