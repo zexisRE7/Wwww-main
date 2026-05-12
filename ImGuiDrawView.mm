@@ -230,7 +230,7 @@ ImFont* Urbanist;
         if (MenDeal)
         {                
             ImGui::SetNextWindowSize(ImVec2(380, 290), ImGuiCond_FirstUseEver);
-            ImGui::Begin(oxorany("SamwilXiter Mod New Update Free Fire"), &MenDeal, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+            ImGui::Begin(oxorany("VINRADIN|MONALISA"), &MenDeal, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 
             if (ImGui::BeginTabBar(oxorany("##MainTabs"), ImGuiTabBarFlags_None)) {
                 
