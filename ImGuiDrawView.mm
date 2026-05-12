@@ -1,4 +1,3 @@
-
 //Require standard library
 #import <Metal/Metal.h>
 #import <MetalKit/MetalKit.h>
@@ -22,6 +21,7 @@
 #include <cinttypes>
 #include <cerrno>
 #include <cctype>
+
 //Imgui library
 #import "Esp/CaptainHook.h"
 #import "Esp/ImGuiDrawView.h"
@@ -38,9 +38,11 @@
 #import "Helper/Monostring.h"
 #include "Helper/font.h"
 #include "Helper/data.h"
+
 ImFont* verdana_smol;
 ImFont* pixel_big = {};
 ImFont* pixel_smol = {};
+
 #include "Helper/Obfuscate.h"
 #import "Helper/Hooks.h"
 #include <OpenGLES/ES2/gl.h>
@@ -60,8 +62,18 @@ ImFont* pixel_smol = {};
     } \
 }
 
+// --- Variables ---
 static float fixLoginTimeout = 60.0f;
 static bool MenDeal = true;
+
+// --- Custom UI Variables (สำหรับเมนูใหม่) ---
+static int current_tab = 3; 
+static bool b_line_fire = false, b_distance = true, b_nearby = true;
+static bool b_nofog = false, b_nospread = false, b_instantloot = false, b_icewall = false, b_aspect = false;
+static bool b_autofire = false, b_fps = false, b_spinbot = false;
+static bool b_streamproof = false;
+static int lang_current = 0;
+static const char* languages[] = { "English", "Thai", "Spanish" };
 
 #define kWidth  [UIScreen mainScreen].bounds.size.width
 #define kHeight [UIScreen mainScreen].bounds.size.height
@@ -92,50 +104,42 @@ ImFont* Urbanist;
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
 
-    // ========== SAMWILXITER STYLE SETUP ==========
+    // ========== SAMWILXITER STYLE SETUP (DARK / ORANGE ACCENT) ==========
     ImGuiStyle& style = ImGui::GetStyle();
     
-    // ความโค้งมน (Rounding)
-    style.WindowRounding = 8.0f;
-    style.FrameRounding = 4.0f;
-    style.TabRounding = 10.0f;    // แท็บโค้งมนสูงเหมือนในรูป
-    style.ScrollbarRounding = 10.0f;
-    style.PopupRounding = 6.0f;
-    style.GrabRounding = 4.0f;
-    
-    // ระยะห่างและการจัดวาง
-    style.WindowPadding = ImVec2(10.0f, 10.0f);
-    style.FramePadding = ImVec2(6.0f, 5.0f);
-    style.ItemSpacing = ImVec2(10.0f, 8.0f);
-    style.WindowTitleAlign = ImVec2(0.5f, 0.5f); // ชื่อหน้าต่างอยู่ตรงกลาง
-    style.WindowBorderSize = 1.0f;
+    // ความโค้งมนตามแบบ UI ในรูป
+    style.WindowRounding = 10.0f;
+    style.ChildRounding = 8.0f;
+    style.FrameRounding = 6.0f;
+    style.GrabRounding = 6.0f;
+    style.ItemSpacing = ImVec2(8, 12);
+    style.WindowPadding = ImVec2(0, 0); // เพื่อให้ Sidebar ชิดขอบพอดี
+    style.WindowBorderSize = 0.0f;
+    style.FrameBorderSize = 0.0f;
 
     ImVec4* colors = style.Colors;
-
-    // พื้นหลังดำสนิท
-    colors[ImGuiCol_WindowBg]       = ImVec4(0.05f, 0.00f, 0.00f, 1.00f);
-    colors[ImGuiCol_TitleBg]        = ImVec4(0.60f, 0.00f, 0.00f, 1.00f); // หัวแดงเข้ม
-    colors[ImGuiCol_TitleBgActive]  = ImVec4(0.70f, 0.00f, 0.00f, 1.00f);
-    colors[ImGuiCol_Border]         = ImVec4(0.50f, 0.00f, 0.00f, 0.40f);
-
-    // แท็บ (Tabs)
-    colors[ImGuiCol_Tab]            = ImVec4(0.30f, 0.00f, 0.00f, 1.00f); // แดงมืด
-    colors[ImGuiCol_TabHovered]     = ImVec4(0.85f, 0.00f, 0.00f, 1.00f);
-    colors[ImGuiCol_TabActive]      = ImVec4(0.85f, 0.00f, 0.00f, 1.00f); // แดงสว่าง (แท็บที่เลือก)
-
-    // Checkbox & Inputs
-    colors[ImGuiCol_FrameBg]        = ImVec4(0.12f, 0.00f, 0.00f, 1.00f);
-    colors[ImGuiCol_FrameBgHovered] = ImVec4(0.20f, 0.00f, 0.00f, 1.00f);
-    colors[ImGuiCol_FrameBgActive]  = ImVec4(0.30f, 0.00f, 0.00f, 1.00f);
-    colors[ImGuiCol_CheckMark]      = ImVec4(0.90f, 0.00f, 0.00f, 1.00f);
-
-    // ปุ่ม
-    colors[ImGuiCol_Button]         = ImVec4(0.40f, 0.00f, 0.00f, 1.00f);
-    colors[ImGuiCol_ButtonHovered]  = ImVec4(0.60f, 0.00f, 0.00f, 1.00f);
-    colors[ImGuiCol_ButtonActive]   = ImVec4(0.80f, 0.00f, 0.00f, 1.00f);
     
-    // ข้อความ
-    colors[ImGuiCol_Text]           = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+    // โทนสีหลัก
+    ImVec4 color_bg = ImVec4(0.06f, 0.07f, 0.09f, 0.98f);
+    ImVec4 color_accent = ImVec4(1.00f, 0.33f, 0.00f, 1.00f); // สีส้ม
+    ImVec4 color_frame = ImVec4(0.12f, 0.13f, 0.15f, 1.00f);
+    ImVec4 color_frame_hover = ImVec4(0.20f, 0.22f, 0.25f, 1.00f);
+    ImVec4 color_text = ImVec4(0.90f, 0.90f, 0.90f, 1.00f);
+
+    colors[ImGuiCol_WindowBg]       = color_bg;
+    colors[ImGuiCol_Border]         = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
+    colors[ImGuiCol_Text]           = color_text;
+    
+    // ปุ่มและช่องกรอกข้อมูล
+    colors[ImGuiCol_Button]         = color_frame;
+    colors[ImGuiCol_ButtonHovered]  = color_frame_hover;
+    colors[ImGuiCol_ButtonActive]   = color_accent;
+    colors[ImGuiCol_FrameBg]        = color_frame;
+    colors[ImGuiCol_FrameBgHovered] = color_frame_hover;
+    colors[ImGuiCol_FrameBgActive]  = color_frame; // ตอนติ๊กจะไปเปลี่ยนสีที่โค้ดแทน
+    colors[ImGuiCol_CheckMark]      = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); // ติ๊กถูกสีขาว
+    colors[ImGuiCol_SliderGrab]     = color_accent;
+    colors[ImGuiCol_SliderGrabActive] = ImVec4(1.0f, 0.45f, 0.1f, 1.0f);
 
     // Load Fonts
     ImFont* font = io.Fonts->AddFontFromMemoryTTF(sansbold, sizeof(sansbold), 15.0f, NULL, io.Fonts->GetGlyphRangesCyrillic());
@@ -229,83 +233,206 @@ ImFont* Urbanist;
         
         if (MenDeal)
         {                
-            ImGui::SetNextWindowSize(ImVec2(380, 290), ImGuiCond_FirstUseEver);
-            ImGui::Begin(oxorany("VINRADIN|MONALISA"), &MenDeal, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+            ImVec4 color_accent = ImVec4(1.00f, 0.33f, 0.00f, 1.00f);
 
-            if (ImGui::BeginTabBar(oxorany("##MainTabs"), ImGuiTabBarFlags_None)) {
-                
-                // ========== TAB 1: ESP ==========
-                if (ImGui::BeginTabItem(oxorany("Esp"))) {
-                    ImGui::Spacing();
-                    
-                    // จัด Layout 2 คอลัมน์สำหรับแถวแรกตามรูป
-                    ImGui::Columns(2, NULL, false);
-                    ImGui::Checkbox(oxorany("Enable Esp"), &Vars.Enable);
-                    ImGui::NextColumn();
-                    ImGui::Checkbox(oxorany("Stream Mode"), &Vars.OOF);
-                    ImGui::Columns(1);
-                    
-                    ImGui::Separator();
-                    ImGui::Spacing();
+            // เซ็ตขนาดเมนู เริ่มต้น 650x420
+            ImGui::SetNextWindowSize(ImVec2(650, 420), ImGuiCond_FirstUseEver);
+            ImGui::Begin(oxorany("VINRADIN|MENU"), &MenDeal, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 
-                    ImGui::Checkbox(oxorany("Esp Line"), &Vars.lines);
-                    ImGui::Checkbox(oxorany("Esp Name"), &Vars.Name);
-                    ImGui::Checkbox(oxorany("Esp Box"), &Vars.Box);
-                    ImGui::Checkbox(oxorany("Esp Skeleton"), &Vars.skeleton);
-                    ImGui::Checkbox(oxorany("Esp Vida"), &Vars.Health);
-                    
-                    ImGui::EndTabItem();
-                }
+            // ==========================================
+            // SIDEBAR (คอลัมน์ซ้าย)
+            // ==========================================
+            ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.04f, 0.05f, 0.06f, 1.00f));
+            ImGui::BeginChild("Sidebar", ImVec2(110, 0), false);
+            ImGui::PopStyleColor();
+            
+            ImGui::SetCursorPosY(20); 
+            
+            const char* tab_names[] = { "Aimbot", "Visuals", "Misc", "Settings" };
+            const char* tab_icons[] = { "(+)", "(O)", "[_]", "{S}" }; // ไอคอนชั่วคราว
+            
+            for (int i = 0; i < 4; i++) {
+                bool is_selected = (current_tab == i);
+                ImGui::PushID(i);
                 
-                // ========== TAB 2: AIMBOT ==========
-                if (ImGui::BeginTabItem(oxorany("Aimbot"))) {
-                    ImGui::Spacing();
-                    ImGui::Checkbox(oxorany("Enable Aimbot"), &Vars.Aimbot);
-                    ImGui::Checkbox(oxorany("SilentAim"), &SilentAim);
-                    ImGui::Checkbox(oxorany("Visible Check"), &Vars.VisibleCheck);
-                    ImGui::Checkbox(oxorany("Ignore Knocked"), &Vars.IgnoreKnocked); 
-                    
-                    ImGui::Separator();
-                    ImGui::SetNextItemWidth(180);
-                    ImGui::Combo(oxorany("Aim Mode"), &Vars.AimMode, Vars.aimModes, 3);
-                    ImGui::SetNextItemWidth(180);
-                    ImGui::SliderFloat(oxorany("Aim FOV"), &Vars.AimFov, 0.0f, 180.0f, "%.0f");
-                    
-                    ImGui::EndTabItem();
-                }
+                ImVec2 pos = ImGui::GetCursorScreenPos();
+                ImVec2 size = ImVec2(110, 75); // ขนาดปุ่มเมนู
                 
-                // ========== TAB 3: MISC ==========
-                if (ImGui::BeginTabItem(oxorany("Misc"))) {
-                    ImGui::Spacing();
-                    ImGui::Checkbox(oxorany("Spin Bot"), &Vars.Box);
-                    ImGui::Checkbox(oxorany("Aim Kill"), &Vars.Enable);
-                    
-                    ImGui::Separator();
-                    if (ImGui::Button(oxorany("Fix Login"), ImVec2(-1, 35))) {
-                        self.view.hidden = YES; 
-                        MenDeal = false; 
-                        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(fixLoginTimeout * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                            self.view.hidden = NO; 
-                            MenDeal = true; 
-                        });
-                    }
-                    ImGui::EndTabItem();
-                }
+                if (ImGui::InvisibleButton("##tab", size)) current_tab = i;
                 
-                // ========== TAB 4: SETTING ==========
-                if (ImGui::BeginTabItem(oxorany("Setting"))) {
-                    ImGui::Spacing();
-                    ImGui::SliderFloat(oxorany("Transparency"), &ImGui::GetStyle().Alpha, 0.1f, 1.0f, "%.2f");
-                    ImGui::SliderFloat(oxorany("Scale Factor"), &fixLoginTimeout, 40.0f, 80.0f, "Fix: %.0f");
-                    ImGui::EndTabItem();
-                }
+                ImDrawList* draw_list = ImGui::GetWindowDrawList();
                 
-                ImGui::EndTabBar();
+                if (is_selected) {
+                    draw_list->AddRectFilled(ImVec2(pos.x, pos.y), ImVec2(pos.x + size.x, pos.y + size.y), IM_COL32(20, 22, 26, 255)); // พื้นหลังไฮไลท์
+                    draw_list->AddRectFilled(ImVec2(pos.x + size.x - 3, pos.y + 15), ImVec2(pos.x + size.x, pos.y + size.y - 15), IM_COL32(255, 85, 0, 255), 2.0f); // แถบส้ม
+                }
+
+                ImVec2 text_size = ImGui::CalcTextSize(tab_names[i]);
+                ImVec2 icon_size = ImGui::CalcTextSize(tab_icons[i]);
+                ImU32 text_col = is_selected ? IM_COL32(255, 255, 255, 255) : IM_COL32(120, 125, 135, 255);
+                
+                draw_list->AddText(ImVec2(pos.x + (size.x - icon_size.x) * 0.5f, pos.y + 15), text_col, tab_icons[i]);
+                draw_list->AddText(ImVec2(pos.x + (size.x - text_size.x) * 0.5f, pos.y + 40), text_col, tab_names[i]);
+
+                ImGui::PopID();
             }
+            ImGui::EndChild();
+
+            ImGui::SameLine(0, 0);
+
+            // ==========================================
+            // MAIN CONTENT (คอลัมน์ขวา)
+            // ==========================================
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(20, 20));
+            ImGui::BeginChild("MainContent", ImVec2(0, 0), false, ImGuiWindowFlags_AlwaysUseWindowPadding);
+            
+            // Helper สำหรับวาด Header และ Checkbox ให้มีสีส้มเมื่อติ๊ก
+            auto DrawHeader = [&](const char* icon, const char* title, const char* desc) {
+                ImVec2 p = ImGui::GetCursorScreenPos();
+                ImDrawList* dl = ImGui::GetWindowDrawList();
+                dl->AddRectFilled(p, ImVec2(p.x + ImGui::GetContentRegionAvail().x, p.y + 40), IM_COL32(10, 12, 15, 255), 8.0f);
+                dl->AddText(ImVec2(p.x + 15, p.y + 12), IM_COL32(255, 85, 0, 255), icon);
+                dl->AddText(ImVec2(p.x + 40, p.y + 12), IM_COL32(255, 85, 0, 255), title);
+                dl->AddText(ImVec2(p.x + 115, p.y + 12), IM_COL32(80, 85, 95, 255), "|");
+                dl->AddText(ImVec2(p.x + 130, p.y + 12), IM_COL32(150, 155, 165, 255), desc);
+                ImGui::Dummy(ImVec2(0, 40));
+            };
+
+            auto DrawCheckbox = [&](const char* label, bool* v) {
+                ImGui::PushStyleColor(ImGuiCol_FrameBg, *v ? color_accent : ImGui::GetStyle().Colors[ImGuiCol_FrameBg]);
+                ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, *v ? ImVec4(1.0f, 0.45f, 0.1f, 1.0f) : ImGui::GetStyle().Colors[ImGuiCol_FrameBgHovered]);
+                ImGui::Checkbox(label, v);
+                ImGui::PopStyleColor(2);
+            };
+
+            // ------------------------------------
+            // TAB 0: AIMBOT
+            // ------------------------------------
+            if (current_tab == 0) {
+                DrawHeader("(+)", "AIMBOT", "Aim assist options.");
+                ImGui::Spacing();
+                
+                DrawCheckbox("Enable Aimbot", &Vars.Aimbot);
+                DrawCheckbox("SilentAim", &SilentAim);
+                DrawCheckbox("Visible Check", &Vars.VisibleCheck);
+                DrawCheckbox("Ignore Knocked", &Vars.IgnoreKnocked); 
+                
+                ImGui::Separator();
+                ImGui::SetNextItemWidth(250);
+                ImGui::Combo("Aim Mode", &Vars.AimMode, Vars.aimModes, 3);
+                ImGui::SetNextItemWidth(250);
+                ImGui::SliderFloat("Aim FOV", &Vars.AimFov, 0.0f, 180.0f, "%.0f");
+            }
+            
+            // ------------------------------------
+            // TAB 1: VISUALS
+            // ------------------------------------
+            else if (current_tab == 1) {
+                DrawHeader("(O)", "VISUALS", "Visual improvements.");
+                ImGui::Spacing();
+
+                DrawCheckbox("Enemy ESP", &Vars.Enable); // ลิ้งค์กับ Vars.Enable ของเดิม
+                
+                DrawCheckbox("Line", &Vars.lines);
+                ImGui::SameLine(ImGui::GetWindowWidth() - 50); ImGui::ColorButton("##linec", ImVec4(1,1,1,1), ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoBorder, ImVec2(20,20));
+
+                DrawCheckbox("Line fire material", &b_line_fire);
+
+                DrawCheckbox("Box", &Vars.Box);
+                ImGui::SameLine(ImGui::GetWindowWidth() - 75); ImGui::ColorButton("##boxc1", ImVec4(1,0,0,1), ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoBorder, ImVec2(20,20));
+                ImGui::SameLine(ImGui::GetWindowWidth() - 50); ImGui::ColorButton("##boxc2", ImVec4(0,1,0,1), ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoBorder, ImVec2(20,20));
+
+                DrawCheckbox("Health", &Vars.Health);
+                DrawCheckbox("Nickname", &Vars.Name);
+                DrawCheckbox("Distance", &b_distance);
+                
+                DrawCheckbox("Skeleton", &Vars.skeleton);
+                ImGui::SameLine(ImGui::GetWindowWidth() - 75); ImGui::ColorButton("##skelc1", ImVec4(1,0,0,1), ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoBorder, ImVec2(20,20));
+                ImGui::SameLine(ImGui::GetWindowWidth() - 50); ImGui::ColorButton("##skelc2", ImVec4(0,1,0,1), ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoBorder, ImVec2(20,20));
+
+                ImGui::Separator();
+
+                DrawCheckbox("Nearby enemies count", &b_nearby);
+
+                ImGui::Text("Counter text color");
+                ImGui::SameLine(ImGui::GetWindowWidth() - 50); ImGui::ColorButton("##ctc", ImVec4(1,0,0,1), ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoBorder, ImVec2(20,20));
+                
+                ImGui::Text("Counter text size");
+                ImGui::SameLine(); ImGui::TextColored(color_accent, "25.0px");
+            }
+            
+            // ------------------------------------
+            // TAB 2: MISC
+            // ------------------------------------
+            else if (current_tab == 2) {
+                DrawHeader("[_]", "MISC", "Game enhancements.");
+                ImGui::Spacing();
+                
+                ImGui::Text("These features are only for fun and may be unsafe.");
+                ImGui::Text("Use them at your own risk!");
+                ImGui::Spacing();
+
+                DrawCheckbox("No fog", &b_nofog);
+                DrawCheckbox("No weapon spread", &b_nospread);
+                DrawCheckbox("Instant loot", &b_instantloot);
+                DrawCheckbox("Inverted IceWall rotation", &b_icewall);
+                DrawCheckbox("Aspect ratio", &b_aspect);
+                DrawCheckbox("Auto-fire", &b_autofire);
+                DrawCheckbox("FPS unlocker", &b_fps);
+                DrawCheckbox("Spinbot", &b_spinbot);
+            }
+            
+            // ------------------------------------
+            // TAB 3: SETTINGS
+            // ------------------------------------
+            else if (current_tab == 3) {
+                DrawHeader("{S}", "SETTINGS", "Configure options.");
+                ImGui::Spacing();
+                
+                ImGui::Text("3.0 (608315a981a0f73) (null | 7ffffbb3fffffff) (0/0/1) (0|0|0|0|0)");
+                
+                ImGui::Text("Accent color");
+                ImGui::SameLine(ImGui::GetWindowWidth() - 50); 
+                ImGui::ColorButton("##accent", color_accent, ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoBorder, ImVec2(20,20));
+
+                ImGui::Text("Subscription time left:"); ImGui::SameLine();
+                ImGui::TextColored(color_accent, "5 days, 4 hours, 11 seconds");
+                
+                ImGui::Text("Build at"); ImGui::SameLine(0, 4);
+                ImGui::TextColored(color_accent, "Apr 28 2026 19:22:59"); ImGui::SameLine(0, 4);
+                ImGui::Text("-"); ImGui::SameLine(0, 4);
+                ImGui::TextColored(color_accent, "1.7.5"); ImGui::SameLine(0, 4);
+                ImGui::Text("for game version"); ImGui::SameLine(0, 4);
+                ImGui::TextColored(color_accent, "1.123.X");
+
+                DrawCheckbox("Streamproof", &b_streamproof);
+
+                ImGui::Spacing();
+                ImGui::Text("Language");
+                ImGui::SetNextItemWidth(-1); 
+                ImGui::Combo("##lang", &lang_current, languages, IM_ARRAYSIZE(languages));
+                
+                ImGui::Spacing(); ImGui::Spacing();
+                
+                // ปุ่ม Full width 3 ปุ่ม
+                ImGui::PushStyleColor(ImGuiCol_Button, color_accent);
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.45f, 0.1f, 1.0f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.8f, 0.25f, 0.0f, 1.0f));
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1,1,1,1));
+                
+                if (ImGui::Button("Disable silent mode", ImVec2(-1, 35))) { /* Action */ }
+                if (ImGui::Button("Save settings", ImVec2(-1, 35))) { /* Action */ }
+                if (ImGui::Button("Load settings", ImVec2(-1, 35))) { /* Action */ }
+                
+                ImGui::PopStyleColor(4);
+            }
+
+            ImGui::EndChild(); // End MainContent
+            ImGui::PopStyleVar(); // Pop WindowPadding
             ImGui::End();
         }
         
-        // --- Game Functions ---
+        // --- Game Functions (เอาคอมเมนต์ออกเพื่อให้เกมรันฟังก์ชัน Hack ตามปกติ) ---
         ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
         get_players();
         draw_watermark();
