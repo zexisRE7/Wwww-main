@@ -1,3 +1,9 @@
+นี่คือโค้ดตัวเต็ม (Full File) ที่นำโค้ดเดิมของคุณมาปรับแต่ง UI ให้กลายเป็นสไตล์
+SamwilXiter Mod (แดง-ดำ, แท็บมน, จัด Layout ใหม่) และ ตัด Emoji ออกทั้งหมด
+ตามที่คุณต้องการครับ
+
+คุณสามารถก๊อปปี้ไปวางทับไฟล์เดิมได้เลย:
+
 //Require standard library
 #import <Metal/Metal.h>
 #import <MetalKit/MetalKit.h>
@@ -28,7 +34,6 @@
 #import "IMGUI/imgui_internal.h"
 #import "IMGUI/imgui_impl_metal.h"
 #import "IMGUI/zzz.h"
-//#import "Hosts/NSObject+URL.h"
 #include "oxorany/oxorany_include.h"
 #import "Helper/Mem.h"
 #include "font.h"
@@ -92,85 +97,57 @@ ImFont* Urbanist;
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
 
-    // ========== DARK RED THEME (à¸ªà¸µà¹à¸à¸à¹à¸à¹à¸¡à¸à¸±à¸à¸à¸·à¹à¸à¸«à¸¥à¸±à¸à¸à¸³) ==========
+    // ========== SAMWILXITER STYLE SETUP ==========
     ImGuiStyle& style = ImGui::GetStyle();
-style.WindowPadding = ImVec2(10.0f, 10.0f);
-style.FramePadding = ImVec2(9.0f, 7.0f);
-style.ScrollbarRounding = 9.0f;
-style.WindowRounding = 14.0f;
-style.FrameRounding = 6.0f;
-style.ChildRounding = 8.0f;
-style.GrabRounding = 4.0f;
-style.PopupRounding = 8.0f;
-style.TabRounding = 6.0f;
-style.WindowBorderSize = 0.5f;
-
-ImVec4* colors = ImGui::GetStyle().Colors;
-
-// ===== พื้นหลังหลัก — ดำเข้มจัดเต็ม =====
-colors[ImGuiCol_WindowBg]       = ImVec4(0.03f, 0.03f, 0.03f, 0.95f); // ดำเข้ม
-colors[ImGuiCol_ChildBg]        = ImVec4(0.02f, 0.02f, 0.02f, 0.90f); // ดำจัด
-colors[ImGuiCol_PopupBg]        = ImVec4(0.05f, 0.05f, 0.05f, 0.96f);
-
-// ===== ข้อความ =====
-colors[ImGuiCol_Text]           = ImVec4(0.98f, 0.98f, 0.98f, 1.00f); // ขาวสว่าง
-colors[ImGuiCol_TextDisabled]   = ImVec4(0.70f, 0.30f, 0.25f, 1.00f); // แดงอมเทา
-
-// ===== ขอบและ Separator (แดงเข้ม) =====
-colors[ImGuiCol_Border]         = ImVec4(0.85f, 0.10f, 0.05f, 0.65f);
-colors[ImGuiCol_Separator]      = ImVec4(0.85f, 0.10f, 0.05f, 0.55f);
-colors[ImGuiCol_SeparatorActive] = ImVec4(1.00f, 0.25f, 0.10f, 0.85f);
-colors[ImGuiCol_SeparatorHovered] = ImVec4(0.95f, 0.20f, 0.08f, 0.75f);
-
-// ===== ปุ่ม (แดงเข้ม) =====
-colors[ImGuiCol_Button]         = ImVec4(0.65f, 0.08f, 0.04f, 0.85f);
-colors[ImGuiCol_ButtonHovered]  = ImVec4(0.85f, 0.15f, 0.06f, 0.95f);
-colors[ImGuiCol_ButtonActive]   = ImVec4(1.00f, 0.30f, 0.12f, 1.00f);
-
-// ===== Checkmark =====
-colors[ImGuiCol_CheckMark]      = ImVec4(1.00f, 0.35f, 0.15f, 1.00f); // แดงสด
-
-// ===== Slider =====
-colors[ImGuiCol_SliderGrab]     = ImVec4(0.85f, 0.15f, 0.06f, 0.95f);
-colors[ImGuiCol_SliderGrabActive] = ImVec4(1.00f, 0.35f, 0.15f, 1.00f);
-
-// ===== Header =====
-colors[ImGuiCol_Header]         = ImVec4(0.60f, 0.06f, 0.03f, 0.75f);
-colors[ImGuiCol_HeaderHovered]  = ImVec4(0.80f, 0.12f, 0.05f, 0.90f);
-colors[ImGuiCol_HeaderActive]   = ImVec4(0.95f, 0.25f, 0.10f, 0.98f);
-
-// ===== TAB — ชื่อแท็บสีแดงเข้ม =====
-colors[ImGuiCol_Tab]            = ImVec4(0.50f, 0.05f, 0.02f, 0.85f); // แดงเข้มจัด
-colors[ImGuiCol_TabHovered]     = ImVec4(0.80f, 0.15f, 0.06f, 0.95f); // แดงปานกลาง
-colors[ImGuiCol_TabActive]      = ImVec4(0.95f, 0.30f, 0.12f, 1.00f); // แดงสด (แท็บที่เลือก)
-
-// ===== Frame (พื้นหลัง Input) =====
-colors[ImGuiCol_FrameBg]        = ImVec4(0.10f, 0.02f, 0.01f, 0.75f);
-colors[ImGuiCol_FrameBgHovered] = ImVec4(0.20f, 0.05f, 0.02f, 0.85f);
-colors[ImGuiCol_FrameBgActive]  = ImVec4(0.35f, 0.08f, 0.03f, 0.95f);
-
-// ===== Title Bar (แถบหัวข้อ) =====
-colors[ImGuiCol_TitleBg]        = ImVec4(0.50f, 0.05f, 0.02f, 0.95f); // แดงเข้ม
-colors[ImGuiCol_TitleBgActive]  = ImVec4(0.75f, 0.12f, 0.05f, 1.00f); // แดงปานกลาง
-
-// ===== Scrollbar =====
-colors[ImGuiCol_ScrollbarBg]    = ImVec4(0.06f, 0.01f, 0.00f, 0.70f);
-colors[ImGuiCol_ScrollbarGrab]  = ImVec4(0.60f, 0.06f, 0.03f, 0.85f);
-colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.80f, 0.12f, 0.05f, 0.95f);
-colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.95f, 0.25f, 0.10f, 1.00f);
-
-// ===== Resize Grip =====
-colors[ImGuiCol_ResizeGrip]     = ImVec4(0.60f, 0.06f, 0.03f, 0.75f);
-colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.80f, 0.12f, 0.05f, 0.90f);
-colors[ImGuiCol_ResizeGripActive] = ImVec4(0.95f, 0.25f, 0.10f, 0.95f);
-
-// ===== Modal Dim (พื้นหลังเวลาเปิดเมนู) =====
-colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.0f, 0.0f, 0.0f, 0.65f);
     
+    // ความโค้งมน (Rounding)
+    style.WindowRounding = 8.0f;
+    style.FrameRounding = 4.0f;
+    style.TabRounding = 10.0f;    // แท็บโค้งมนสูงเหมือนในรูป
+    style.ScrollbarRounding = 10.0f;
+    style.PopupRounding = 6.0f;
+    style.GrabRounding = 4.0f;
+    
+    // ระยะห่างและการจัดวาง
+    style.WindowPadding = ImVec2(10.0f, 10.0f);
+    style.FramePadding = ImVec2(6.0f, 5.0f);
+    style.ItemSpacing = ImVec2(10.0f, 8.0f);
+    style.WindowTitleAlign = ImVec2(0.5f, 0.5f); // ชื่อหน้าต่างอยู่ตรงกลาง
+    style.WindowBorderSize = 1.0f;
+
+    ImVec4* colors = style.Colors;
+
+    // พื้นหลังดำสนิท
+    colors[ImGuiCol_WindowBg]       = ImVec4(0.05f, 0.00f, 0.00f, 1.00f);
+    colors[ImGuiCol_TitleBg]        = ImVec4(0.60f, 0.00f, 0.00f, 1.00f); // หัวแดงเข้ม
+    colors[ImGuiCol_TitleBgActive]  = ImVec4(0.70f, 0.00f, 0.00f, 1.00f);
+    colors[ImGuiCol_Border]         = ImVec4(0.50f, 0.00f, 0.00f, 0.40f);
+
+    // แท็บ (Tabs)
+    colors[ImGuiCol_Tab]            = ImVec4(0.30f, 0.00f, 0.00f, 1.00f); // แดงมืด
+    colors[ImGuiCol_TabHovered]     = ImVec4(0.85f, 0.00f, 0.00f, 1.00f);
+    colors[ImGuiCol_TabActive]      = ImVec4(0.85f, 0.00f, 0.00f, 1.00f); // แดงสว่าง (แท็บที่เลือก)
+
+    // Checkbox & Inputs
+    colors[ImGuiCol_FrameBg]        = ImVec4(0.12f, 0.00f, 0.00f, 1.00f);
+    colors[ImGuiCol_FrameBgHovered] = ImVec4(0.20f, 0.00f, 0.00f, 1.00f);
+    colors[ImGuiCol_FrameBgActive]  = ImVec4(0.30f, 0.00f, 0.00f, 1.00f);
+    colors[ImGuiCol_CheckMark]      = ImVec4(0.90f, 0.00f, 0.00f, 1.00f);
+
+    // ปุ่ม
+    colors[ImGuiCol_Button]         = ImVec4(0.40f, 0.00f, 0.00f, 1.00f);
+    colors[ImGuiCol_ButtonHovered]  = ImVec4(0.60f, 0.00f, 0.00f, 1.00f);
+    colors[ImGuiCol_ButtonActive]   = ImVec4(0.80f, 0.00f, 0.00f, 1.00f);
+    
+    // ข้อความ
+    colors[ImGuiCol_Text]           = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+
+    // Load Fonts
     ImFont* font = io.Fonts->AddFontFromMemoryTTF(sansbold, sizeof(sansbold), 15.0f, NULL, io.Fonts->GetGlyphRangesCyrillic());
     verdana_smol = io.Fonts->AddFontFromMemoryTTF(verdana, sizeof verdana, 40, NULL, io.Fonts->GetGlyphRangesCyrillic());
     pixel_big = io.Fonts->AddFontFromMemoryTTF((void*)smallestpixel, sizeof smallestpixel, 128, NULL, io.Fonts->GetGlyphRangesCyrillic());
     pixel_smol = io.Fonts->AddFontFromMemoryTTF((void*)smallestpixel, sizeof smallestpixel, 10*2, NULL, io.Fonts->GetGlyphRangesCyrillic());
+    
     ImGui_ImplMetal_Init(_device);
 
     return self;
@@ -226,25 +203,10 @@ colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.0f, 0.0f, 0.0f, 0.65f);
     io.MouseDown[0] = hasActiveTouch;
 }
 
-- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
-{
-    [self updateIOWithTouchEvent:event];
-}
-
-- (void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
-{
-    [self updateIOWithTouchEvent:event];
-}
-
-- (void)touchesCancelled:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
-{
-    [self updateIOWithTouchEvent:event];
-}
-
-- (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
-{
-    [self updateIOWithTouchEvent:event];
-}
+- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event { [self updateIOWithTouchEvent:event]; }
+- (void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event { [self updateIOWithTouchEvent:event]; }
+- (void)touchesCancelled:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event { [self updateIOWithTouchEvent:event]; }
+- (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event { [self updateIOWithTouchEvent:event]; }
 
 #pragma mark - MTKViewDelegate
 
@@ -259,59 +221,72 @@ colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.0f, 0.0f, 0.0f, 0.65f);
     io.DeltaTime = 1 / float(view.preferredFramesPerSecond ?: 60);
     
     id<MTLCommandBuffer> commandBuffer = [self.commandQueue commandBuffer];
-        
     [self.view setUserInteractionEnabled:MenDeal];
 
     MTLRenderPassDescriptor* renderPassDescriptor = view.currentRenderPassDescriptor;
     if (renderPassDescriptor != nil)
     {
         id <MTLRenderCommandEncoder> renderEncoder = [commandBuffer renderCommandEncoderWithDescriptor:renderPassDescriptor];
-        [renderEncoder pushDebugGroup:@"ImGui Jane"];
+        [renderEncoder pushDebugGroup:@"ImGui Main"];
 
         ImGui_ImplMetal_NewFrame(renderPassDescriptor);
         ImGui::NewFrame();
         
-        CGFloat x = (([UIApplication sharedApplication].windows[0].rootViewController.view.frame.size.width) - 380) / 2;
-        CGFloat y = (([UIApplication sharedApplication].windows[0].rootViewController.view.frame.size.height) - 260) / 2;
-        ImGui::SetNextWindowPos(ImVec2(x, y), ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowSize(ImVec2(365, 270), ImGuiCond_FirstUseEver);
-        
-        if (MenDeal == true)
+        if (MenDeal)
         {                
-            ImGui::Begin(oxorany("tele@monalisa"), &MenDeal);
-            if (ImGui::BeginTabBar(oxorany("Tab"), ImGuiTabBarFlags_FittingPolicyScroll)) {
-                // ===== TAB 1: ESP =====
-                if (ImGui::BeginTabItem(("Esp"))) {
-                    ImGui::Checkbox(oxorany("Enable Esp"), &Vars.Enable);
-                    if (ImGui::BeginTable("split", 2))
-                    {
-                        ImGui::TableNextColumn();
-                        ImGui::Checkbox(oxorany("Esp Line"), &Vars.lines);
-                        ImGui::TableNextColumn();
-                        ImGui::Checkbox(oxorany("Stream Mode"), &Vars.OOF);
-                        
-                        ImGui::TableNextColumn();
-                        ImGui::Checkbox(oxorany("Esp Name"), &Vars.Name);
-                        ImGui::TableNextColumn();
-                        ImGui::Checkbox(oxorany("Esp Box"), &Vars.Box);
-                        
-                        ImGui::TableNextColumn();
-                        ImGui::Checkbox(oxorany("Esp Skeleton"), &Vars.skeleton);
-                        ImGui::TableNextColumn();
-                        ImGui::Checkbox(oxorany("Esp Vida"), &Vars.Health);
-                        
-                        ImGui::TableNextColumn();
-                        ImGui::Checkbox(oxorany("3D Circle"), &Vars.circlepos);
-                        ImGui::TableNextColumn();
-                        ImGui::Checkbox(oxorany("Outline"), &Vars.Outline);
-                    }
-                    ImGui::EndTable();
-                    ImGui::Checkbox(oxorany("Out of Screen"), &Vars.OOF);
-                    ImGui::SameLine();
-                    ImGui::Checkbox(oxorany("Enemy Count"), &Vars.enemycount);
+            ImGui::SetNextWindowSize(ImVec2(380, 290), ImGuiCond_FirstUseEver);
+            ImGui::Begin(oxorany("SamwilXiter Mod New Update Free Fire"), &MenDeal, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+
+            if (ImGui::BeginTabBar(oxorany("##MainTabs"), ImGuiTabBarFlags_None)) {
+                
+                // ========== TAB 1: ESP ==========
+                if (ImGui::BeginTabItem(oxorany("Esp"))) {
+                    ImGui::Spacing();
                     
-                    // Fix Login Button
-                    if (ImGui::Button(oxorany("Fix Login"))) {
+                    // จัด Layout 2 คอลัมน์สำหรับแถวแรกตามรูป
+                    ImGui::Columns(2, NULL, false);
+                    ImGui::Checkbox(oxorany("Enable Esp"), &Vars.Enable);
+                    ImGui::NextColumn();
+                    ImGui::Checkbox(oxorany("Stream Mode"), &Vars.OOF);
+                    ImGui::Columns(1);
+                    
+                    ImGui::Separator();
+                    ImGui::Spacing();
+
+                    ImGui::Checkbox(oxorany("Esp Line"), &Vars.lines);
+                    ImGui::Checkbox(oxorany("Esp Name"), &Vars.Name);
+                    ImGui::Checkbox(oxorany("Esp Box"), &Vars.Box);
+                    ImGui::Checkbox(oxorany("Esp Skeleton"), &Vars.skeleton);
+                    ImGui::Checkbox(oxorany("Esp Vida"), &Vars.Health);
+                    
+                    ImGui::EndTabItem();
+                }
+                
+                // ========== TAB 2: AIMBOT ==========
+                if (ImGui::BeginTabItem(oxorany("Aimbot"))) {
+                    ImGui::Spacing();
+                    ImGui::Checkbox(oxorany("Enable Aimbot"), &Vars.Aimbot);
+                    ImGui::Checkbox(oxorany("SilentAim"), &SilentAim);
+                    ImGui::Checkbox(oxorany("Visible Check"), &Vars.VisibleCheck);
+                    ImGui::Checkbox(oxorany("Ignore Knocked"), &Vars.IgnoreKnocked); 
+                    
+                    ImGui::Separator();
+                    ImGui::SetNextItemWidth(180);
+                    ImGui::Combo(oxorany("Aim Mode"), &Vars.AimMode, Vars.aimModes, 3);
+                    ImGui::SetNextItemWidth(180);
+                    ImGui::SliderFloat(oxorany("Aim FOV"), &Vars.AimFov, 0.0f, 180.0f, "%.0f");
+                    
+                    ImGui::EndTabItem();
+                }
+                
+                // ========== TAB 3: MISC ==========
+                if (ImGui::BeginTabItem(oxorany("Misc"))) {
+                    ImGui::Spacing();
+                    ImGui::Checkbox(oxorany("Spin Bot"), &Vars.Box);
+                    ImGui::Checkbox(oxorany("Aim Kill"), &Vars.Enable);
+                    
+                    ImGui::Separator();
+                    if (ImGui::Button(oxorany("Fix Login"), ImVec2(-1, 35))) {
                         self.view.hidden = YES; 
                         MenDeal = false; 
                         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(fixLoginTimeout * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -319,50 +294,14 @@ colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.0f, 0.0f, 0.0f, 0.65f);
                             MenDeal = true; 
                         });
                     }
-                    ImGui::SameLine();
-                    ImGui::SetNextItemWidth(100);
-                    ImGui::SliderFloat(oxorany("##fixlogin"), &fixLoginTimeout, 40.0f, 80.0f, oxorany("Fix %.0f"));
-                    ImGui::Separator();
                     ImGui::EndTabItem();
                 }
                 
-                // ===== TAB 2: AIMBOT =====
-                if (ImGui::BeginTabItem(("Aimbot"))) {
+                // ========== TAB 4: SETTING ==========
+                if (ImGui::BeginTabItem(oxorany("Setting"))) {
                     ImGui::Spacing();
-                    ImGui::Checkbox(oxorany("SilentAim"), &SilentAim);
-                    ImGui::Checkbox(oxorany("CheckIsVisible"), &CheckWall1);
-                    ImGui::Checkbox("Enable Aimbot", &Vars.Aimbot);
-                    ImGui::SameLine();
-                    ImGui::Checkbox("Visible", &Vars.VisibleCheck);
-                    ImGui::SameLine();
-                    ImGui::Checkbox("Knocked", &Vars.IgnoreKnocked); 
-                    ImGui::Combo("##1", &Vars.AimWhen, Vars.dir, 4);
-                    ImGui::Combo("##2", &Vars.AimHitbox, Vars.aimHitboxes, 3);
-                    ImGui::Combo("##3", &Vars.AimMode, Vars.aimModes, 3);
-                    if (Vars.AimMode == 2) {
-                        ImGui::SliderFloat(oxorany("##Fov"), &Vars.AimFov, 0.0f, 360.0f, oxorany("AimFov %.0f"));
-                    }
-                    ImGui::EndTabItem();
-                }
-                
-                // ===== TAB 3: MISC =====
-                if (ImGui::BeginTabItem(("Misc"))) {
-                    ImGui::Spacing();
-                    ImGui::TextDisabled("Miscellaneous Settings");
-                    ImGui::Separator();
-                    ImGui::Checkbox("AIMKILL BUTTON", &Vars.Enable);
-                    ImGui::Checkbox("AI PLYER BUTTON", &Vars.lines);
-                    ImGui::Checkbox("SPIN BOT BUTTON", &Vars.Box);
-                    ImGui::EndTabItem();
-                }
-                
-                // ===== TAB 4: SETTING =====
-                if (ImGui::BeginTabItem(("Setting"))) {
-                    ImGui::Spacing();
-                    ImGui::TextDisabled("General Settings");
-                    ImGui::Separator();
-                    ImGui::SliderFloat("Transparency", &Vars.AimFov, 0.0f, 1.0f, "%.2f");
-                    ImGui::SliderFloat("Scale", &fixLoginTimeout, 0.5f, 2.0f, "%.2f");
+                    ImGui::SliderFloat(oxorany("Transparency"), &ImGui::GetStyle().Alpha, 0.1f, 1.0f, "%.2f");
+                    ImGui::SliderFloat(oxorany("Scale Factor"), &fixLoginTimeout, 40.0f, 80.0f, "Fix: %.0f");
                     ImGui::EndTabItem();
                 }
                 
@@ -371,34 +310,26 @@ colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.0f, 0.0f, 0.0f, 0.65f);
             ImGui::End();
         }
         
+        // --- Game Functions ---
         ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
         get_players();
         draw_watermark();
         aimbot();
         game_sdk->init();
         
-        if (Vars.AimFov > 0) {
-            Vars.isAimFov = true;
-        } else {
-            Vars.isAimFov = false;
-        }
+        if (Vars.AimFov > 0) { Vars.isAimFov = true; } else { Vars.isAimFov = false; }
         
         ImGui::Render();
-        ImDrawData* draw_data = ImGui::GetDrawData();
-        ImGui_ImplMetal_RenderDrawData(draw_data, commandBuffer, renderEncoder);
+        ImGui_ImplMetal_RenderDrawData(ImGui::GetDrawData(), commandBuffer, renderEncoder);
       
         [renderEncoder popDebugGroup];
         [renderEncoder endEncoding];
-
         [commandBuffer presentDrawable:view.currentDrawable];
     }
 
     [commandBuffer commit];
 }
 
-- (void)mtkView:(MTKView*)view drawableSizeWillChange:(CGSize)size
-{
-    
-}
+- (void)mtkView:(MTKView*)view drawableSizeWillChange:(CGSize)size {}
 
 @end
