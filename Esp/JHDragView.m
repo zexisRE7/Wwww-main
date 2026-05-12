@@ -1,33 +1,39 @@
 #import "JHDragView.h"
 
 @interface JHDragView ()
-@property (nonatomic, strong) UILabel *fpsLabel;
-@property (nonatomic, strong) CADisplayLink *displayLink;
-@property (nonatomic, assign) NSInteger frameCount;
-@property (nonatomic, assign) CFTimeInterval lastTimestamp;
 @end
 
 @implementation JHDragView
 
 - (instancetype)initWithFrame:(CGRect)frame {
+    // กำหนดขนาดเริ่มต้น (ถ้า frame ไม่ถูกต้อง)
     if (CGRectGetWidth(frame) <= 0 || CGRectGetHeight(frame) <= 0) {
         frame = CGRectMake([UIScreen mainScreen].bounds.size.width - 200, 130, 65, 65);
     }
 
     self = [super initWithFrame:frame];
     if (self) {
-        self.backgroundColor = [UIColor colorWithWhite:0 alpha:0.25];
+        // พื้นหลังโปร่งแสง (ดำจางๆ)
+        self.backgroundColor = [UIColor colorWithWhite:0 alpha:0.35];
         self.layer.cornerRadius = CGRectGetWidth(self.bounds) / 2;
         self.clipsToBounds = YES;
+        
+        // Shadow (เงา) ให้ดูมีมิติ
+        self.layer.shadowColor = [UIColor blackColor].CGColor;
+        self.layer.shadowOpacity = 0.4;
+        self.layer.shadowRadius = 8;
+        self.layer.shadowOffset = CGSizeMake(0, 2);
+        self.layer.masksToBounds = NO;
 
-        // Avatar image
+        // Avatar image (รูปโปรไฟล์)
         UIImageView *avatar = [[UIImageView alloc] initWithFrame:CGRectMake(10, 10, 45, 45)];
         avatar.layer.cornerRadius = 22.5;
         avatar.clipsToBounds = YES;
         avatar.contentMode = UIViewContentModeScaleAspectFill;
         [self addSubview:avatar];
 
-        NSURL *url = [NSURL URLWithString:@"https://files.manuscdn.com/user_upload_by_module/session_file/310519663282347718/jqJIxfyTTlsjRdyT.JPG"];
+        // ดาวน์โหลดรูปจาก URL
+        NSURL *url = [NSURL URLWithString:@"https://www.google.com/imgres?imgurl=https://i.pinimg.com/236x/a2/21/e8/a221e85a81a16a8eadb2890303f3d871.jpg&imgrefurl=https://in.pinterest.com/egehankayawq/angievalentine/&h=220&w=236&tbnid=FyGBec2l3gOE_M&tbnh=217&tbnw=233&osm=1&hcb=1&source=lens-native&docid=pxyEBto_5OIcxM"];
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
             NSData *imageData = [NSData dataWithContentsOfURL:url];
             if (imageData) {
@@ -37,64 +43,11 @@
                 });
             }
         });
-
-        // FPS Label
-        self.fpsLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, CGRectGetHeight(self.bounds) - 18, CGRectGetWidth(self.bounds), 15)];
-        self.fpsLabel.font = [UIFont boldSystemFontOfSize:10];
-        self.fpsLabel.textAlignment = NSTextAlignmentCenter;
-        self.fpsLabel.textColor = [UIColor greenColor];
-        self.fpsLabel.text = @"60 FPS";
-        [self addSubview:self.fpsLabel];
-
-        // Gradient Border
-        [self setupGradientBorder];
-
-        // FPS Monitor
-        self.displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(updateFPS:)];
-        [self.displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
     }
     return self;
 }
 
-- (void)setupGradientBorder {
-    CAShapeLayer *borderShape = [CAShapeLayer layer];
-    borderShape.path = [UIBezierPath bezierPathWithRoundedRect:self.bounds cornerRadius:self.layer.cornerRadius].CGPath;
-    borderShape.lineWidth = 3.0;
-    borderShape.fillColor = [UIColor clearColor].CGColor;
-    borderShape.strokeColor = [UIColor whiteColor].CGColor;
-
-    CAGradientLayer *gradient = [CAGradientLayer layer];
-    gradient.frame = CGRectMake(-self.bounds.size.width, 0, self.bounds.size.width * 3, self.bounds.size.height);
-    gradient.colors = @[
-        (__bridge id)[UIColor redColor].CGColor,
-        (__bridge id)[UIColor orangeColor].CGColor,
-        (__bridge id)[UIColor yellowColor].CGColor,
-        (__bridge id)[UIColor greenColor].CGColor,
-        (__bridge id)[UIColor blueColor].CGColor,
-        (__bridge id)[UIColor purpleColor].CGColor,
-        (__bridge id)[UIColor redColor].CGColor
-    ];
-    gradient.startPoint = CGPointMake(0, 0.5);
-    gradient.endPoint = CGPointMake(1, 0.5);
-
-    CALayer *container = [CALayer layer];
-    container.frame = self.bounds;
-    container.mask = borderShape;
-    [container addSublayer:gradient];
-    [self.layer addSublayer:container];
-
-    CABasicAnimation *move = [CABasicAnimation animationWithKeyPath:@"position.x"];
-    move.fromValue = @(-self.bounds.size.width);
-    move.toValue = @(self.bounds.size.width * 2);
-    move.duration = 4.0;
-    move.repeatCount = HUGE_VALF;
-    move.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear];
-    [gradient addAnimation:move forKey:@"move"];
-}
-
-#pragma mark - Touch
-
-- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {}
+#pragma mark - Touch (ลากได้)
 
 - (void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
     UITouch *touch = [touches anyObject];
@@ -110,29 +63,7 @@
     [self shouldResetFrame];
 }
 
-#pragma mark - FPS
-
-- (void)updateFPS:(CADisplayLink *)link {
-    static NSInteger count = 0;
-    static CFTimeInterval last = 0;
-
-    if (last == 0) {
-        last = link.timestamp;
-        return;
-    }
-
-    count++;
-    CFTimeInterval delta = link.timestamp - last;
-    if (delta >= 1.0) {
-        NSInteger fps = (NSInteger)(count / delta);
-        self.fpsLabel.text = [NSString stringWithFormat:@"%ld FPS", (long)fps];
-        self.fpsLabel.textColor = fps >= 55 ? [UIColor greenColor] : [UIColor redColor];
-        count = 0;
-        last = link.timestamp;
-    }
-}
-
-#pragma mark - Stay in Screen
+#pragma mark - Stay in Screen (ไม่ให้หลุดจอ)
 
 - (void)shouldResetFrame {
     CGFloat maxX = CGRectGetWidth(self.superview.frame);
@@ -148,4 +79,3 @@
 }
 
 @end
-
