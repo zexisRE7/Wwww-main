@@ -92,7 +92,7 @@ ImFont* Urbanist;
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
 
-    // ========== DARK GRAY MONOCHROME THEME (โปร่งใสสุด) ==========
+    // ========== RED/ORANGE THEME (à¸ªà¸µà¹à¸à¸/à¸ªà¹à¸¡) ==========
     ImGuiStyle& style = ImGui::GetStyle();
     style.WindowPadding = ImVec2(10.0f, 10.0f);
     style.FramePadding = ImVec2(9.0f, 7.0f);
@@ -107,65 +107,65 @@ ImFont* Urbanist;
     
     ImVec4* colors = ImGui::GetStyle().Colors;
     
-    // ===== พื้นหลังหลัก — โปร่งใสสุด! =====
-    colors[ImGuiCol_WindowBg]       = ImVec4(0.04f, 0.04f, 0.06f, 0.75f); // โปร่งแสง เห็นเกมชัด
-    colors[ImGuiCol_ChildBg]        = ImVec4(0.03f, 0.03f, 0.04f, 0.60f);
-    colors[ImGuiCol_PopupBg]        = ImVec4(0.05f, 0.05f, 0.07f, 0.85f);
+    // ===== à¸à¸·à¹à¸à¸«à¸¥à¸±à¸à¸«à¸¥à¸±à¸ â à¹à¸à¸à¹à¸à¸à¹à¸à¹à¸¡ =====
+    colors[ImGuiCol_WindowBg]       = ImVec4(0.15f, 0.04f, 0.04f, 0.85f); // à¹à¸à¸à¹à¸à¹à¸¡à¹à¸à¸£à¹à¸à¹à¸ªà¸
+    colors[ImGuiCol_ChildBg]        = ImVec4(0.12f, 0.03f, 0.03f, 0.70f);
+    colors[ImGuiCol_PopupBg]        = ImVec4(0.18f, 0.05f, 0.05f, 0.90f);
     
-    // ===== ข้อความ =====
-    colors[ImGuiCol_Text]           = ImVec4(0.95f, 0.95f, 0.98f, 1.00f); // ขาวอมเทา
-    colors[ImGuiCol_TextDisabled]   = ImVec4(0.55f, 0.55f, 0.60f, 1.00f);
+    // ===== à¸à¹à¸­à¸à¸§à¸²à¸¡ =====
+    colors[ImGuiCol_Text]           = ImVec4(0.98f, 0.95f, 0.92f, 1.00f); // à¸à¸²à¸§à¸­à¸¡à¹à¸«à¸¥à¸·à¸­à¸
+    colors[ImGuiCol_TextDisabled]   = ImVec4(0.70f, 0.50f, 0.45f, 1.00f);
     
-    // ===== เส้นขอบและ Separator (เทาจาง) =====
-    colors[ImGuiCol_Border]         = ImVec4(0.65f, 0.65f, 0.70f, 0.40f);
-    colors[ImGuiCol_Separator]      = ImVec4(0.65f, 0.65f, 0.70f, 0.35f);
-    colors[ImGuiCol_SeparatorActive] = ImVec4(0.80f, 0.80f, 0.85f, 0.60f);
-    colors[ImGuiCol_SeparatorHovered] = ImVec4(0.75f, 0.75f, 0.80f, 0.50f);
+    // ===== à¹à¸ªà¹à¸à¸à¸­à¸à¹à¸¥à¸° Separator (à¹à¸à¸à¸à¸²à¸) =====
+    colors[ImGuiCol_Border]         = ImVec4(0.85f, 0.35f, 0.25f, 0.50f);
+    colors[ImGuiCol_Separator]      = ImVec4(0.85f, 0.35f, 0.25f, 0.40f);
+    colors[ImGuiCol_SeparatorActive] = ImVec4(1.00f, 0.50f, 0.30f, 0.70f);
+    colors[ImGuiCol_SeparatorHovered] = ImVec4(0.95f, 0.45f, 0.28f, 0.60f);
     
-    // ===== ปุ่ม (Gray Scale) =====
-    colors[ImGuiCol_Button]         = ImVec4(0.30f, 0.30f, 0.35f, 0.65f);
-    colors[ImGuiCol_ButtonHovered]  = ImVec4(0.50f, 0.50f, 0.55f, 0.85f);
-    colors[ImGuiCol_ButtonActive]   = ImVec4(0.65f, 0.65f, 0.70f, 0.95f);
+    // ===== à¸à¸¸à¹à¸¡ (Red/Orange Scale) =====
+    colors[ImGuiCol_Button]         = ImVec4(0.80f, 0.25f, 0.15f, 0.75f); // à¹à¸à¸à¸ªà¹à¸¡
+    colors[ImGuiCol_ButtonHovered]  = ImVec4(0.95f, 0.40f, 0.20f, 0.90f); // à¸ªà¹à¸¡à¸ªà¸§à¹à¸²à¸
+    colors[ImGuiCol_ButtonActive]   = ImVec4(1.00f, 0.50f, 0.25f, 1.00f); // à¸ªà¹à¸¡à¸ªà¸à¹à¸ª
     
     // ===== Checkmark =====
-    colors[ImGuiCol_CheckMark]      = ImVec4(0.80f, 0.80f, 0.85f, 1.00f);
+    colors[ImGuiCol_CheckMark]      = ImVec4(1.00f, 0.60f, 0.30f, 1.00f); // à¸ªà¹à¸¡à¸ªà¸à¹à¸ª
     
     // ===== Slider =====
-    colors[ImGuiCol_SliderGrab]     = ImVec4(0.50f, 0.50f, 0.55f, 0.85f);
-    colors[ImGuiCol_SliderGrabActive] = ImVec4(0.70f, 0.70f, 0.75f, 1.00f);
+    colors[ImGuiCol_SliderGrab]     = ImVec4(0.95f, 0.40f, 0.20f, 0.90f);
+    colors[ImGuiCol_SliderGrabActive] = ImVec4(1.00f, 0.55f, 0.30f, 1.00f);
     
     // ===== Header (Tab) =====
-    colors[ImGuiCol_Header]         = ImVec4(0.25f, 0.25f, 0.30f, 0.60f);
-    colors[ImGuiCol_HeaderHovered]  = ImVec4(0.45f, 0.45f, 0.50f, 0.80f);
-    colors[ImGuiCol_HeaderActive]   = ImVec4(0.60f, 0.60f, 0.65f, 0.90f);
+    colors[ImGuiCol_Header]         = ImVec4(0.75f, 0.20f, 0.10f, 0.65f);
+    colors[ImGuiCol_HeaderHovered]  = ImVec4(0.90f, 0.35f, 0.15f, 0.85f);
+    colors[ImGuiCol_HeaderActive]   = ImVec4(1.00f, 0.45f, 0.20f, 0.95f);
     
-    // ===== Tab =====
-    colors[ImGuiCol_Tab]            = ImVec4(0.20f, 0.20f, 0.25f, 0.65f);
-    colors[ImGuiCol_TabHovered]     = ImVec4(0.40f, 0.40f, 0.45f, 0.80f);
-    colors[ImGuiCol_TabActive]      = ImVec4(0.55f, 0.55f, 0.60f, 0.95f);
+    // ===== Tab (à¹à¸à¸/à¸ªà¹à¸¡ à¸ªà¸³à¸«à¸£à¸±à¸à¹à¸à¹à¸) =====
+    colors[ImGuiCol_Tab]            = ImVec4(0.70f, 0.15f, 0.05f, 0.70f); // à¹à¸à¸à¹à¸à¹à¸¡
+    colors[ImGuiCol_TabHovered]     = ImVec4(0.85f, 0.30f, 0.12f, 0.85f); // à¹à¸à¸à¸à¸²à¸à¸à¸¥à¸²à¸
+    colors[ImGuiCol_TabActive]      = ImVec4(1.00f, 0.45f, 0.20f, 0.98f); // à¸ªà¹à¸¡à¸ªà¸à¹à¸ª (à¹à¸à¹à¸à¸à¸µà¹à¹à¸¥à¸·à¸­à¸)
     
     // ===== Frame =====
-    colors[ImGuiCol_FrameBg]        = ImVec4(0.15f, 0.15f, 0.18f, 0.55f);
-    colors[ImGuiCol_FrameBgHovered] = ImVec4(0.25f, 0.25f, 0.30f, 0.70f);
-    colors[ImGuiCol_FrameBgActive]  = ImVec4(0.35f, 0.35f, 0.40f, 0.85f);
+    colors[ImGuiCol_FrameBg]        = ImVec4(0.20f, 0.05f, 0.03f, 0.65f);
+    colors[ImGuiCol_FrameBgHovered] = ImVec4(0.35f, 0.12f, 0.06f, 0.80f);
+    colors[ImGuiCol_FrameBgActive]  = ImVec4(0.50f, 0.18f, 0.08f, 0.90f);
     
     // ===== Title Bar =====
-    colors[ImGuiCol_TitleBg]        = ImVec4(0.20f, 0.20f, 0.25f, 0.70f);
-    colors[ImGuiCol_TitleBgActive]  = ImVec4(0.35f, 0.35f, 0.40f, 0.85f);
+    colors[ImGuiCol_TitleBg]        = ImVec4(0.65f, 0.12f, 0.05f, 0.80f); // à¹à¸à¸à¹à¸à¹à¸¡
+    colors[ImGuiCol_TitleBgActive]  = ImVec4(0.85f, 0.25f, 0.10f, 0.95f); // à¹à¸à¸à¸à¸²à¸à¸à¸¥à¸²à¸
     
     // ===== Scrollbar =====
-    colors[ImGuiCol_ScrollbarBg]    = ImVec4(0.08f, 0.08f, 0.10f, 0.50f);
-    colors[ImGuiCol_ScrollbarGrab]  = ImVec4(0.35f, 0.35f, 0.40f, 0.65f);
-    colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.50f, 0.50f, 0.55f, 0.80f);
-    colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.65f, 0.65f, 0.70f, 1.00f);
+    colors[ImGuiCol_ScrollbarBg]    = ImVec4(0.12f, 0.03f, 0.02f, 0.60f);
+    colors[ImGuiCol_ScrollbarGrab]  = ImVec4(0.75f, 0.20f, 0.10f, 0.75f);
+    colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.90f, 0.35f, 0.15f, 0.85f);
+    colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(1.00f, 0.50f, 0.25f, 0.95f);
     
     // ===== Resize Grip =====
-    colors[ImGuiCol_ResizeGrip]     = ImVec4(0.35f, 0.35f, 0.40f, 0.50f);
-    colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.50f, 0.50f, 0.55f, 0.70f);
-    colors[ImGuiCol_ResizeGripActive] = ImVec4(0.70f, 0.70f, 0.75f, 0.90f);
+    colors[ImGuiCol_ResizeGrip]     = ImVec4(0.75f, 0.20f, 0.10f, 0.60f);
+    colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.90f, 0.35f, 0.15f, 0.75f);
+    colors[ImGuiCol_ResizeGripActive] = ImVec4(1.00f, 0.50f, 0.25f, 0.90f);
     
-    // ===== Modal Dim (พื้นหลังเมนู) =====
-    colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.0f, 0.0f, 0.0f, 0.30f); // จางมาก
+    // ===== Modal Dim (à¸à¸·à¹à¸à¸«à¸¥à¸±à¸à¹à¸¡à¸à¸¹) =====
+    colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.0f, 0.0f, 0.0f, 0.40f); // à¸à¸³à¸à¸²à¸
     
     // ==========================================================
     
@@ -280,24 +280,28 @@ ImFont* Urbanist;
         
         if (MenDeal == true)
         {                
-            ImGui::Begin(oxorany("I AM FROM TAI WAN"), &MenDeal);
+            ImGui::Begin(oxorany("SamwilXiter Mod New Update Free Fire"), &MenDeal);
             if (ImGui::BeginTabBar(oxorany("Tab"), ImGuiTabBarFlags_FittingPolicyScroll)) {
-                if (ImGui::BeginTabItem(("ESP"))) {
-                    ImGui::Checkbox(oxorany("Enable Cheats"), &Vars.Enable);
-                    if (ImGui::BeginTable("split", 4))
+                // ===== TAB 1: ESP (Eye Icon) =====
+                if (ImGui::BeginTabItem(("ð ESP"))) {
+                    ImGui::Checkbox(oxorany("Enable Esp"), &Vars.Enable);
+                    if (ImGui::BeginTable("split", 2))
                     {
                         ImGui::TableNextColumn();
-                        ImGui::Checkbox(oxorany("Line"), &Vars.lines);
+                        ImGui::Checkbox(oxorany("Esp Line"), &Vars.lines);
                         ImGui::TableNextColumn();
-                        ImGui::Checkbox(oxorany("Box"), &Vars.Box);
+                        ImGui::Checkbox(oxorany("Stream Mode"), &Vars.OOF);
+                        
                         ImGui::TableNextColumn();
-                        ImGui::Checkbox(oxorany("Health"), &Vars.Health);
+                        ImGui::Checkbox(oxorany("Esp Name"), &Vars.Name);
                         ImGui::TableNextColumn();
-                        ImGui::Checkbox(oxorany("Name"), &Vars.Name);
+                        ImGui::Checkbox(oxorany("Esp Box"), &Vars.Box);
+                        
                         ImGui::TableNextColumn();
-                        ImGui::Checkbox(oxorany("Skeleton"), &Vars.skeleton);
+                        ImGui::Checkbox(oxorany("Esp Skeleton"), &Vars.skeleton);
                         ImGui::TableNextColumn();
-                        ImGui::Checkbox(oxorany("Distance"), &Vars.Distance);
+                        ImGui::Checkbox(oxorany("Esp Vida"), &Vars.Health);
+                        
                         ImGui::TableNextColumn();
                         ImGui::Checkbox(oxorany("3D Circle"), &Vars.circlepos);
                         ImGui::TableNextColumn();
@@ -323,7 +327,9 @@ ImFont* Urbanist;
                     ImGui::Separator();
                     ImGui::EndTabItem();
                 }
-                if (ImGui::BeginTabItem(("AimBot"))) {
+                
+                // ===== TAB 2: AIMBOT (Crosshair Icon) =====
+                if (ImGui::BeginTabItem(("ð¯ Aimbot"))) {
                     ImGui::Spacing();
                     ImGui::Checkbox(oxorany("SilentAim"), &SilentAim);
                     ImGui::Checkbox(oxorany("CheckIsVisible"), &CheckWall1);
@@ -340,15 +346,28 @@ ImFont* Urbanist;
                     }
                     ImGui::EndTabItem();
                 }
-                if (ImGui::BeginTabItem(("Info Developer"))) {
-                    ImGui::TextDisabled("MONALISA");
-                    ImGui::TextDisabled("JAY");
-                    ImGui::TextDisabled("SIX X86");
-                    ImGui::TextDisabled("JIN422");
-                    ImGui::TextDisabled("DILET499"); 
-                    ImGui::TextDisabled("HOPGX32");
+                
+                // ===== TAB 3: MISC (Gear Icon) =====
+                if (ImGui::BeginTabItem(("â Misc"))) {
+                    ImGui::Spacing();
+                    ImGui::TextDisabled("Miscellaneous Settings");
+                    ImGui::Separator();
+                    ImGui::Checkbox("Feature 1", &Vars.Enable);
+                    ImGui::Checkbox("Feature 2", &Vars.lines);
+                    ImGui::Checkbox("Feature 3", &Vars.Box);
                     ImGui::EndTabItem();
                 }
+                
+                // ===== TAB 4: SETTING (Wrench Icon) =====
+                if (ImGui::BeginTabItem(("ð§ Setting"))) {
+                    ImGui::Spacing();
+                    ImGui::TextDisabled("General Settings");
+                    ImGui::Separator();
+                    ImGui::SliderFloat("Transparency", &Vars.AimFov, 0.0f, 1.0f, "%.2f");
+                    ImGui::SliderFloat("Scale", &fixLoginTimeout, 0.5f, 2.0f, "%.2f");
+                    ImGui::EndTabItem();
+                }
+                
                 ImGui::EndTabBar();
             }
             ImGui::End();
