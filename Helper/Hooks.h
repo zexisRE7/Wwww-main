@@ -943,31 +943,35 @@ static void DoResetAccount() {
 }
 
 // ============================================================
-// Mute Gun Sound Hook
-// Class : PlayerAudioComponent (internal class : MonoBehaviour)
-// Method: PlayFireSoundInAnimationEvent — RVA: 0x49E3C94  (FF OB53)
-// ปิดเสียงปืนตัวเอง: set ZX_MuteGunSound = true จากเมนู
+// Mute Gun Sound + Hide Bullet Tracer
+// ============================================================
+// 1) PlayFireSoundInAnimationEvent — RVA: 0x49E3C94  (PlayerAudioComponent)
+//    hook = ไม่เล่นเสียงปืนของตัวเอง
+// 2) FindWeaponEffectConfigDataById — RVA: 0x36E8E7C  (CollectionDataManager)
+//    hook = set ShowMyGunTraceEffect (0x65) = false → ไม่เห็น tracer กระสุน
+//    ref: WeaponEffectConfigData
+//          0x65 = ShowMyGunTraceEffect (bool)
+//          0x68 = PlayMyFireSound      (bool)
+// body ทั้งหมดอยู่ใน ImGuiDrawView.mm (ต้องการ H5hook.h)
 // ============================================================
 void (*_PlayFireSoundInAnim)(void* self, void* soundName) = nullptr;
 static void hook_PlayFireSoundInAnim(void* self, void* soundName) {
     if (ZX_MuteGunSound) return;   // ไม่เรียก orig = ไม่มีเสียงปืน
     if (_PlayFireSoundInAnim) _PlayFireSoundInAnim(self, soundName);
 }
+void initMuteGunSoundHook(void);   // body อยู่ใน ImGuiDrawView.mm
 
-void initMuteGunSoundHook(void) {
-    static bool hooked = false;
-    if (hooked) return;
-    hooked = true;
-    NSString* patch = StaticInlineHookPatch(
-        ("Frameworks/UnityFramework.framework/UnityFramework"),
-        0x49E3C94, nullptr);
-    if (patch) {
-        void* orig = StaticInlineHookFunction(
-            ("Frameworks/UnityFramework.framework/UnityFramework"),
-            0x49E3C94, (void*)hook_PlayFireSoundInAnim);
-        if (orig) *(void**)(&_PlayFireSoundInAnim) = orig;
+// FindWeaponEffectConfigDataById hook — ซ่อน tracer + optional ปิดเสียงผ่าน config
+void* (*_FindWeaponEffectConfigById)(void* self, uint32_t iid) = nullptr;
+static void* hook_FindWeaponEffectConfigById(void* self, uint32_t iid) {
+    void* cfg = _FindWeaponEffectConfigById ? _FindWeaponEffectConfigById(self, iid) : nullptr;
+    if (cfg && ZX_MuteGunSound) {
+        *(bool*)((uint64_t)cfg + 0x65) = false;   // ShowMyGunTraceEffect = false
+        *(bool*)((uint64_t)cfg + 0x68) = false;   // PlayMyFireSound      = false
     }
+    return cfg;
 }
+void initHideBulletTracerHook(void);   // body อยู่ใน ImGuiDrawView.mm
 
 // ============================================================
 // AutoFire Hook
