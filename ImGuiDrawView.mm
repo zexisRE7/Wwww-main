@@ -107,9 +107,11 @@ void DrawCustomCheckbox(const char* label, bool* value) {
     ImU32 cb_col = *value ? IM_COL32(255, 85, 0, 255) : IM_COL32(45, 48, 55, 255);
     dl->AddRectFilled(cb_pos, ImVec2(cb_pos.x + cb_size.x, cb_pos.y + cb_size.y), cb_col, 5.0f);
  
-    // Interaction
+    // Interaction — ใช้ label เป็น ID เพื่อป้องกัน ID conflict
+    char btn_id[256];
+    snprintf(btn_id, sizeof(btn_id), "##cb_%s", label);
     ImGui::SetCursorScreenPos(p);
-    ImGui::InvisibleButton("##cb", ImVec2(width, height));
+    ImGui::InvisibleButton(btn_id, ImVec2(width, height));
     if (ImGui::IsItemClicked()) {
         *value = !(*value);
     }
@@ -438,7 +440,7 @@ ImFont* Urbanist;
  
             ImGui::SetCursorPosY(20);
  
-            const char* tab_names[] = { "Aimbot", "Visuals", "Misc", "Settings", "Account" };
+            const char* tab_names[] = { "", "", "", "", "" };
  
             for (int i = 0; i < 5; i++) {
                 bool is_selected = (current_tab == i);
@@ -602,3 +604,4 @@ ImFont* Urbanist;
 - (void)mtkView:(MTKView*)view drawableSizeWillChange:(CGSize)size {}
  
 @end
+ 
