@@ -109,35 +109,35 @@ game_sdk_t *game_sdk = new game_sdk_t();
 void game_sdk_t::init()
   {
       // ── OB54 Updated RVAs ─────────────────────────────────────────
-      this->GetHp = (int (*)(void *))getRealOffset(oxo("0x6C97EB8"));               // get_HP()
-      this->Curent_Match = (void *(*)())getRealOffset(oxo("0x4E355B0"));            // TODO: verify OB54
-      this->GetLocalPlayer = (void *(*)(void *))getRealOffset(oxo("0x55C2C7C"));    // GetLocalPlayerOrObServer()
-      this->GetHeadPositions = (void *(*)(void *))getRealOffset(oxo("0x53C791C"));  // get_HeadBoneTransform()
-      this->get_position = (Vector3(*)(void *))getRealOffset(oxo("0x91CA5D0"));     // get_position_Injected
-      this->Component_GetTransform = (void *(*)(void *))getRealOffset(oxo("0x1610CD0")); // get_transform()
-      this->get_camera = (void *(*)())getRealOffset(oxo("0x915E9E4"));              // Camera.get_main()
-      this->WorldToViewpoint = (Vector3(*)(void*, Vector3, int))getRealOffset(oxo("0x915E364")); // WorldToViewportPoint
-      this->get_isVisible = (bool (*)(void *))getRealOffset(oxo("0x9179C08"));
-      this->get_isLocalTeam = (bool (*)(void *))getRealOffset(oxo("0x53E20C4"));    // IsLocalTeammate()
-      this->get_IsDieing = (bool (*)(void *))getRealOffset(oxo("0x53AA18C"));
-      this->get_MaxHP = (int (*)(void *))getRealOffset(oxo("0x6C9F15C"));
-      this->GetForward = (Vector3(*)(void *))getRealOffset(oxo("0x91CAF64"));       // get_forward()
-      this->set_aim = (void (*)(void *, Quaternion))getRealOffset(oxo("0x53C4534")); // SetAimRotation(Quaternion)
-      this->get_IsSighting = (bool (*)(void *))getRealOffset(oxo("0x53B769C"));
-      this->get_IsFiring = (bool (*)(void *))getRealOffset(oxo("0x551C294"));       // get_IsFiringFromPRI()
-      this->name = (monoString * (*)(void *player)) getRealOffset(oxo("0x1E88A18")); // get_name()
-      this->_GetHeadPositions = (void *(*)(void *))getRealOffset(oxo("0x53C791C")); // get_HeadBoneTransform()
-      this->_newHipMods = (void *(*)(void *))getRealOffset(oxo("0x4AA1BD8"));       // TODO: update OB54
-      this->_GetLeftAnkleTF = (void *(*)(void *))getRealOffset(oxo("0x5454DE0"));
-      this->_GetRightAnkleTF = (void *(*)(void *))getRealOffset(oxo("0x5454EEC"));
-      this->_GetLeftToeTF = (void *(*)(void *))getRealOffset(oxo("0x5454FF8"));
-      this->_GetRightToeTF = (void *(*)(void *))getRealOffset(oxo("0x5455104"));
-      this->_getLeftHandTF = (void *(*)(void *))getRealOffset(oxo("0x53C3608"));
-      this->_getRightHandTF = (void *(*)(void *))getRealOffset(oxo("0x53C370C"));
-      this->_getLeftForeArmTF = (void *(*)(void *))getRealOffset(oxo("0x53C3810"));
-      this->_getRightForeArmTF = (void *(*)(void *))getRealOffset(oxo("0x53C3914"));
-  }
-
+      this->GetHp = (int (*)(void *))getRealOffset(oxo("0x543592C")); 
+    this->Curent_Match = (void *(*)())getRealOffset(oxo("0x55C4DA4")); 
+    this->GetLocalPlayer = (void *(*)(void *))getRealOffset(oxo("0x2FFE494")); 
+    this->GetHeadPositions = (void *(*)(void *))getRealOffset(oxo("0x54547E0")); 
+    this->get_position = (Vector3(*)(void *))getRealOffset(oxo("0x91CA56C")); 
+    this->Component_GetTransform = (void *(*)(void *))getRealOffset(oxo("0x91B82E4")); 
+    this->get_camera = (void *(*)())getRealOffset(oxo("0x915E9E4")); 
+    this->WorldToViewpoint = (Vector3(*)(void*, Vector3, int))getRealOffset(oxo("0x915E364")); 
+    this->get_isVisible = (bool (*)(void *))getRealOffset(oxo("0x53C8894")); 
+    this->get_isLocalTeam = (bool (*)(void *))getRealOffset(oxo("0x53E20C4")); 
+    this->get_IsDieing = (bool (*)(void *))getRealOffset(oxo("0x53AA18C")); 
+    this->get_MaxHP = (int (*)(void *))getRealOffset(oxo("0x5435A3C")); 
+    this->GetForward = (Vector3(*)(void *))getRealOffset(oxo("0x91CAF64")); 
+    this->set_aim = (void (*)(void *, Quaternion))getRealOffset(oxo("0x53C4534")); 
+    this->get_IsSighting = (bool (*)(void *))getRealOffset(oxo("0x53B769C")); 
+    this->get_IsFiring = (bool (*)(void *))getRealOffset(oxo("0x53ACC9C")); 
+    this->name = (monoString * (*)(void *player)) getRealOffset(oxo("0x53BE8E0")); 
+ 
+    this->_GetHeadPositions = (void *(*)(void *))getRealOffset(oxo("0x54547E0")); 
+    this->_newHipMods = (void *(*)(void *))getRealOffset(oxo("0x5454990")); 
+    this->_GetLeftAnkleTF = (void *(*)(void *))getRealOffset(oxo("0x5454DE0")); 
+    this->_GetRightAnkleTF = (void *(*)(void *))getRealOffset(oxo("0x5454EEC")); 
+    this->_GetLeftToeTF = (void *(*)(void *))getRealOffset(oxo("0x5454FF8")); 
+    this->_GetRightToeTF = (void *(*)(void *))getRealOffset(oxo("0x5455104")); 
+    this->_getLeftHandTF = (void *(*)(void *))getRealOffset(oxo("0x53C3608")); 
+    this->_getRightHandTF = (void *(*)(void *))getRealOffset(oxo("0x53C370C")); 
+    this->_getLeftForeArmTF = (void *(*)(void *))getRealOffset(oxo("0x53C3810")); 
+    this->_getRightForeArmTF = (void *(*)(void *))getRealOffset(oxo("0x53C3914")); 
+}
 
 bool IsGod(void *player){
 return *(bool *)((uint64_t) player + 0xF4C);
