@@ -152,7 +152,7 @@ void *get_gameObject(void *Pthis)
 }
 
 static void *GetWeaponOnHand1(void *local) {
-    void *(*_GetWeaponOnHand1)(void *local) = (void *(*)(void *))getRealOffset(0x53BE110) // OB54;
+    void *(*_GetWeaponOnHand1)(void *local) = (void *(*)(void *))getRealOffset(0x53BE110); // OB54
     return _GetWeaponOnHand1(local);
 }
 
