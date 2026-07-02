@@ -39,15 +39,13 @@ struct Vars_t
     float fovLineColor[4] = {1.0f, 1.0f, 1.0f, 1.0f};
     ImVec4 boxColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
     float AimSpeed = 10.0f;
-      bool IgnoreKnocked = true;
-      bool FlyAlt = false;
-      float FlyAltSpeed = 8.0f;
-      bool StopMove = false;
-      bool XMove = false;
-      float XMoveMult = 8.0f;
-      float fovLineColor[4] = {1.0f, 0.55f, 0.75f, 1.0f};
-      ImVec4 boxColor = ImVec4(1.0f, 0.55f, 0.75f, 1.0f);
-  } Vars;
+    bool IgnoreKnocked = true;
+    bool FlyAlt = false;
+    float FlyAltSpeed = 8.0f;
+    bool StopMove = false;
+    bool XMove = false;
+    float XMoveMult = 8.0f;
+} Vars;
 
 
 struct HitObjectInfo {
