@@ -262,7 +262,7 @@ ImFont* Urbanist;
             
             if (MenDeal == true)
             {                
-                ImGui::Begin(oxorany("PREMIUM MENU"), &MenDeal, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+                ImGui::Begin(oxorany("MONSTER"), &MenDeal, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
                 
                 if (ImGui::BeginTabBar(oxorany("MainTabs"), ImGuiTabBarFlags_None)) {
                     
@@ -388,14 +388,14 @@ ImFont* Urbanist;
                   s_spawnT = 0.0f;
                   for (int si = 0; si < 2; si++) {
                       SakuraPetal p;
-                      p.x=((float)rand()/RAND_MAX)*pW; p.y=-12.f;
-                      p.vx=(((float)rand()/RAND_MAX)-.5f)*50.f;
-                      p.vy=35.f+((float)rand()/RAND_MAX)*55.f;
-                      p.angle=((float)rand()/RAND_MAX)*6.28318f;
-                      p.angVel=(((float)rand()/RAND_MAX)-.5f)*3.f;
-                      p.alpha=.55f+((float)rand()/RAND_MAX)*.45f;
-                      p.size=4.5f+((float)rand()/RAND_MAX)*6.f;
-                      p.maxLife=p.life=5.5f+((float)rand()/RAND_MAX)*4.f;
+                      p.x=((float)rand()/(float)RAND_MAX)*pW; p.y=-12.f;
+                      p.vx=(((float)rand()/(float)RAND_MAX)-.5f)*50.f;
+                      p.vy=35.f+((float)rand()/(float)RAND_MAX)*55.f;
+                      p.angle=((float)rand()/(float)RAND_MAX)*6.28318f;
+                      p.angVel=(((float)rand()/(float)RAND_MAX)-.5f)*3.f;
+                      p.alpha=.55f+((float)rand()/(float)RAND_MAX)*.45f;
+                      p.size=4.5f+((float)rand()/(float)RAND_MAX)*6.f;
+                      p.maxLife=p.life=5.5f+((float)rand()/(float)RAND_MAX)*4.f;
                       s_petals.push_back(p);
                   }
               }
