@@ -262,7 +262,7 @@ ImFont* Urbanist;
             
             if (MenDeal == true)
             {                
-                ImGui::Begin(oxorany("MONSTER CHEAT"), &MenDeal, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+                ImGui::Begin(oxorany("FluckMenu | OB54")), &MenDeal, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
                 
                 if (ImGui::BeginTabBar(oxorany("MainTabs"), ImGuiTabBarFlags_None)) {
                     
@@ -288,7 +288,24 @@ ImFont* Urbanist;
                         ImGui::Checkbox(oxorany("Out of Screen Indicator"), &Vars.OOF);
                         ImGui::SameLine();
                         ImGui::Checkbox(oxorany("Enemy Count"), &Vars.enemycount);
-                        
+                        ImGui::SameLine();
+                        ImGui::Checkbox(oxorany("ESP Count"), &Vars.ESPCount);
+
+                        ImGui::Spacing();
+                        ImGui::Separator();
+                        ImGui::Checkbox(oxorany("FOV Aim Glow"), &Vars.fovaimglow);
+                        ImGui::SameLine();
+                        ImGui::Checkbox(oxorany("Ignore Knocked"), &Vars.IgnoreKnocked);
+
+                        ImGui::Spacing();
+                        ImGui::Separator();
+                        ImGui::TextColored(ImVec4(0.90f,0.25f,0.50f,1.0f), oxorany("🎨  Colors"));
+                        ImGui::Separator();
+                        ImGui::SetNextItemWidth(-1);
+                        ImGui::ColorEdit4(oxorany("FOV Line Color"), Vars.fovLineColor, ImGuiColorEditFlags_AlphaBar);
+                        ImGui::SetNextItemWidth(-1);
+                        ImGui::ColorEdit4(oxorany("Box Color"), (float*)&Vars.boxColor, ImGuiColorEditFlags_AlphaBar);
+
                         ImGui::EndTabItem();
                     }
                     
@@ -328,7 +345,7 @@ ImFont* Urbanist;
 
                           ImGui::Spacing();
                           // ── 🌸 UNDERKILL ─────────────────────────────────────────
-                          ImGui::TextColored(ImVec4(0.90f,0.25f,0.50f,1.0f), oxorany(" UnderKill"));
+                          ImGui::TextColored(ImVec4(0.90f,0.25f,0.50f,1.0f), oxorany("⬇  UnderKill"));
                           ImGui::Separator();
                           ImGui::Checkbox(oxorany("UnderKill (Go Underground)"), &Vars.UnderKill);
                           if (Vars.UnderKill) {
@@ -359,29 +376,3 @@ ImFont* Urbanist;
                               ImGui::SameLine();
                               ImGui::TextColored(ImVec4(0.20f,0.80f,0.30f,1.0f), oxorany(" ✓ ACTIVE"));
                           }
-
-                          ImGui::EndTabItem();
-                      }
-
-                    ImGui::EndTabBar();
-                }
-
-                ImGui::End();
-            }
-
-            ImGui::Render();
-            ImGui_ImplMetal_RenderDrawData(ImGui::GetDrawData(), commandBuffer, renderEncoder);
-
-            [renderEncoder popDebugGroup];
-            [renderEncoder endEncoding];
-            [commandBuffer presentDrawable:view.currentDrawable];
-        }
-
-        [commandBuffer commit];
-}
-
-- (void)mtkView:(nonnull MTKView *)view drawableSizeWillChange:(CGSize)size {
-    // Required by MTKViewDelegate — update display if needed on size change
-}
-
-@end
