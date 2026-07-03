@@ -380,8 +380,6 @@ void *Player = players->getValues()[i];
     if (game_sdk->get_isLocalTeam(Player))
                 continue;
 
-            if (IsGod(Player))
-                continue;
 
             int hp = game_sdk->GetHp(Player);
             if (Vars.IgnoreKnocked && hp <= 0)
@@ -426,7 +424,7 @@ void *getItransform(void *itransform) {
 
 static float get_Range(void *pthis)
 {
-    return ((float (*)(void *))getRealOffset(ENCRYPTOFFSET("0x4E8703C")))(pthis);
+    return ((float (*)(void *))getRealOffset(ENCRYPTOFFSET("0x658C0EC")))(pthis);
 }
 
 bool isEnemyInRangeWeapon(void *player, void *enemy, void* weapon)
@@ -447,7 +445,7 @@ bool isEnemyInRangeWeapon(void *player, void *enemy, void* weapon)
 
 
 Vector3 GetHipPosition(void* player) {
-    void *HipITF= *(void **)((uint64_t) player + 0x648);
+    void *HipITF= *(void **)((uint64_t) player + 0x60556CC);
     void *HipTF = getItransform(HipITF);
     Vector3 Hip = Transform_INTERNAL_GetPosition(HipTF);
     return Hip;
