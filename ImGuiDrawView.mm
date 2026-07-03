@@ -262,7 +262,7 @@ ImFont* Urbanist;
             
             if (MenDeal == true)
             {                
-                ImGui::Begin(oxorany("MONSTER"), &MenDeal, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+                ImGui::Begin(oxorany("FluckMenu | OB54")), &MenDeal, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
                 
                 if (ImGui::BeginTabBar(oxorany("MainTabs"), ImGuiTabBarFlags_None)) {
                     
@@ -292,151 +292,70 @@ ImFont* Urbanist;
                         ImGui::EndTabItem();
                     }
                     
-                    if (ImGui::BeginTabItem(oxorany("Aimbot"))) {
-                        ImGui::Spacing();
-                        ImGui::Checkbox(oxorany("Enable Aimbot"), &Vars.Aimbot);
-                        
-                        ImGui::Separator();
-                        ImGui::Checkbox(oxorany("Visibility Check"), &Vars.VisibleCheck);
-                        ImGui::SameLine();
-                        ImGui::Checkbox(oxorany("Ignore Knocked"), &Vars.IgnoreKnocked);
-                        
-                        ImGui::Text(oxorany("Aimbot Trigger:"));
-                        ImGui::SetNextItemWidth(-1);
-                        ImGui::Combo(oxorany("##AimTrigger"), &Vars.AimWhen, Vars.dir, 4);
-                        
-                        ImGui::Text(oxorany("Target Bone:"));
-                        ImGui::SetNextItemWidth(-1);
-                        ImGui::Combo(oxorany("##AimBone"), &Vars.AimHitbox, Vars.aimHitboxes, 3);
-                        
-                        ImGui::Text(oxorany("Aimbot Mode:"));
-                        ImGui::SetNextItemWidth(-1);
-                        ImGui::Combo(oxorany("##AimMode"), &Vars.AimMode, Vars.aimModes, 3);
-                        
-                        if (Vars.AimMode == 2) {
-                            ImGui::Text(oxorany("Field of View:"));
-                            ImGui::SliderFloat(oxorany("##Fov"), &Vars.AimFov, 0.0f, 360.0f, "%.0f°");
-                        }
-                        
-                        ImGui::EndTabItem();
-                    }
                     
-                    if (ImGui::BeginTabItem(oxorany("Extra"))) {
+                      if (ImGui::BeginTabItem(oxorany("Extra"))) {
                           ImGui::Spacing();
-                          ImGui::TextColored(ImVec4(0.90f,0.25f,0.50f,1.0f), oxorany("Movement Hacks"));
+
+                          // ── 🌸 FLY HACKS ─────────────────────────────────────────
+                          ImGui::TextColored(ImVec4(0.90f,0.25f,0.50f,1.0f), oxorany("✈  Fly Hacks"));
                           ImGui::Separator();
-                          if (ImGui::BeginTable("ExtraTable", 2)) {
-                              ImGui::TableNextColumn();
-                              ImGui::Checkbox(oxorany("Fly Alt"), &Vars.FlyAlt);
-                              ImGui::TableNextColumn();
-                              ImGui::Checkbox(oxorany("Stop Move"), &Vars.StopMove);
-                              ImGui::TableNextColumn();
-                              ImGui::Checkbox(oxorany("XMove"), &Vars.XMove);
-                              ImGui::EndTable();
-                          }
+                          ImGui::Checkbox(oxorany("Fly Alt"), &Vars.FlyAlt);
+                          ImGui::SameLine();
+                          ImGui::Checkbox(oxorany("Fly Untra (Noclip)"), &Vars.FlyUntra);
                           if (Vars.FlyAlt) {
-                              ImGui::Text(oxorany("Fly Speed:"));
+                              ImGui::Text(oxorany("Fly Alt Speed:"));
                               ImGui::SetNextItemWidth(-1);
-                              ImGui::SliderFloat(oxorany("##FlySpeed"), &Vars.FlyAltSpeed, 1.0f, 30.0f, "%.1f");
+                              ImGui::SliderFloat(oxorany("##FlyAltSpd"), &Vars.FlyAltSpeed, 1.0f, 30.0f, "%.1f");
                           }
+                          if (Vars.FlyUntra) {
+                              ImGui::Text(oxorany("Noclip Speed:"));
+                              ImGui::SetNextItemWidth(-1);
+                              ImGui::SliderFloat(oxorany("##FlyUntraSpd"), &Vars.FlyUntraSpeed, 1.0f, 40.0f, "%.1f");
+                          }
+
+                          ImGui::Spacing();
+                          // ── 🌸 MOVEMENT ──────────────────────────────────────────
+                          ImGui::TextColored(ImVec4(0.90f,0.25f,0.50f,1.0f), oxorany("🏃  Movement"));
+                          ImGui::Separator();
+                          ImGui::Checkbox(oxorany("Stop Move"), &Vars.StopMove);
+                          ImGui::SameLine();
+                          ImGui::Checkbox(oxorany("Speed Holizon"), &Vars.SpeedHolizon);
+                          if (Vars.SpeedHolizon) {
+                              ImGui::Text(oxorany("Slow Factor (0=stop, 1=normal):"));
+                              ImGui::SetNextItemWidth(-1);
+                              ImGui::SliderFloat(oxorany("##SpeedHolizonMult"), &Vars.SpeedHolizonMult, 0.01f, 1.0f, "%.2f");
+                          }
+
+                          ImGui::Spacing();
+                          // ── 🌸 UNDERKILL ─────────────────────────────────────────
+                          ImGui::TextColored(ImVec4(0.90f,0.25f,0.50f,1.0f), oxorany("⬇  UnderKill"));
+                          ImGui::Separator();
+                          ImGui::Checkbox(oxorany("UnderKill (Go Underground)"), &Vars.UnderKill);
+                          if (Vars.UnderKill) {
+                              ImGui::Text(oxorany("Depth (meters):"));
+                              ImGui::SetNextItemWidth(-1);
+                              ImGui::SliderFloat(oxorany("##UnderKillDepth"), &Vars.UnderKillDepth, 0.5f, 20.0f, "%.1fm");
+                          }
+
+                          ImGui::Spacing();
+                          // ── 🌸 ATTACK ────────────────────────────────────────────
+                          ImGui::TextColored(ImVec4(0.90f,0.25f,0.50f,1.0f), oxorany("⚔  Attack"));
+                          ImGui::Separator();
+                          ImGui::Checkbox(oxorany("XMove (High DMG)"), &Vars.XMove);
+                          ImGui::SameLine();
+                          ImGui::Checkbox(oxorany("UpPlayer (Lift Enemy)"), &Vars.UpPlayer);
                           if (Vars.XMove) {
                               ImGui::Text(oxorany("XMove Power:"));
                               ImGui::SetNextItemWidth(-1);
                               ImGui::SliderFloat(oxorany("##XMoveMult"), &Vars.XMoveMult, 1.0f, 20.0f, "%.0fx");
                           }
-                          ImGui::Spacing();
-                          ImGui::TextColored(ImVec4(0.65f,0.65f,0.65f,1.0f), oxorany("FlyAlt: Jump to fly up"));
-                          ImGui::TextColored(ImVec4(0.65f,0.65f,0.65f,1.0f), oxorany("StopMove: Freeze position"));
-                          ImGui::TextColored(ImVec4(0.65f,0.65f,0.65f,1.0f), oxorany("XMove: Massive damage"));
-                          ImGui::EndTabItem();
-                      }
-                                          if (ImGui::BeginTabItem(oxorany("Settings"))) {
-                        ImGui::Spacing();
-                        ImGui::Text(oxorany("Login Fix Utility"));
-                        if (ImGui::Button(oxorany("Apply Login Fix"), ImVec2(-1, 30))) {
-                            self.view.hidden = YES; 
-                            MenDeal = false; 
-                            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(fixLoginTimeout * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                                self.view.hidden = NO; 
-                                MenDeal = true; 
-                            });
-                        }
-                        
-                        ImGui::Text(oxorany("Fix Timeout (Seconds):"));
-                        ImGui::SliderFloat(oxorany("##fixlogin"), &fixLoginTimeout, 40.0f, 80.0f, "%.0fs");
-                        
-                        ImGui::Separator();
-                        ImGui::TextColored(ImVec4(0.28f, 0.56f, 1.00f, 1.00f), oxorany("Developer Info:"));
-                        ImGui::Text(oxorany("Telegram: @THEBRAZILI"));
-                        
-                        ImGui::EndTabItem();
-                    }
-                    ImGui::EndTabBar();
-                }
-                ImGui::End();
-            }
-            
-            ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
-
-              // ── Sakura Petal Particle System ─────────────────────────────
-              struct SakuraPetal { float x,y,vx,vy,angle,angVel,alpha,size,life,maxLife; };
-              static std::vector<SakuraPetal> s_petals;
-              static float s_spawnT = 0.0f;
-              float pdt = io.DeltaTime, pW = io.DisplaySize.x, pH = io.DisplaySize.y;
-              s_spawnT += pdt;
-              if (s_spawnT > 0.06f && (int)s_petals.size() < 120) {
-                  s_spawnT = 0.0f;
-                  for (int si = 0; si < 2; si++) {
-                      SakuraPetal p;
-                      p.x=((float)rand()/(float)RAND_MAX)*pW; p.y=-12.f;
-                      p.vx=(((float)rand()/(float)RAND_MAX)-.5f)*50.f;
-                      p.vy=35.f+((float)rand()/(float)RAND_MAX)*55.f;
-                      p.angle=((float)rand()/(float)RAND_MAX)*6.28318f;
-                      p.angVel=(((float)rand()/(float)RAND_MAX)-.5f)*3.f;
-                      p.alpha=.55f+((float)rand()/(float)RAND_MAX)*.45f;
-                      p.size=4.5f+((float)rand()/(float)RAND_MAX)*6.f;
-                      p.maxLife=p.life=5.5f+((float)rand()/(float)RAND_MAX)*4.f;
-                      s_petals.push_back(p);
-                  }
-              }
-              for (auto it=s_petals.begin(); it!=s_petals.end(); ) {
-                  it->x+=(it->vx+sinf(it->angle*2.f)*15.f)*pdt;
-                  it->y+=it->vy*pdt; it->angle+=it->angVel*pdt; it->life-=pdt;
-                  if (it->life<=0.f||it->y>pH+20.f){it=s_petals.erase(it);continue;}
-                  float fade=it->alpha*(it->life/it->maxLife), s=it->size, ang=it->angle;
-                  ImVec2 pc(it->x,it->y);
-                  for (int k=0;k<5;k++) {
-                      float pa=ang+k*1.25664f;
-                      draw_list->AddCircleFilled(ImVec2(pc.x+cosf(pa)*s*.55f, pc.y+sinf(pa)*s*.55f),
-                          s*.48f, ImColor(1.f,.68f+(float)(k&1)*.08f,.80f,fade), 7);
-                  }
-                  draw_list->AddCircleFilled(pc,s*.28f,ImColor(1.f,.90f,.70f,fade*.9f),6);
-                  ++it;
-              }
-              // ─────────────────────────────────────────────────────────────
-
-              get_players();
-            draw_watermark();
-            aimbot();
-            game_sdk->init();
-            
-            Vars.isAimFov = (Vars.AimFov > 0);
-            
-            ImGui::Render();
-            ImDrawData* draw_data = ImGui::GetDrawData();
-            ImGui_ImplMetal_RenderDrawData(draw_data, commandBuffer, renderEncoder);
-          
-            [renderEncoder popDebugGroup];
-            [renderEncoder endEncoding];
-
-            [commandBuffer presentDrawable:view.currentDrawable];
-        }
-
-        [commandBuffer commit];
-}
-
-- (void)mtkView:(MTKView*)view drawableSizeWillChange:(CGSize)size
-{
-}
-
-@end
+                          if (Vars.UpPlayer) {
+                              ImGui::Text(oxorany("Lift Speed:"));
+                              ImGui::SetNextItemWidth(-1);
+                              ImGui::SliderFloat(oxorany("##UpPlayerSpd"), &Vars.UpPlayerSpeed, 5.0f, 60.0f, "%.1f");
+                          }
+                          ImGui::Checkbox(oxorany("AimKill Send (Bypass Patch)"), &Vars.AimKillSend);
+                          if (Vars.AimKillSend) {
+                              ImGui::SameLine();
+                              ImGui::TextColored(ImVec4(0.20f,0.80f,0.30f,1.0f), oxorany(" ✓ ACTIVE"));
+                          }
