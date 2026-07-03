@@ -347,6 +347,7 @@ void *GetClosestEnemysilent()
 {
     try
     {
+        float shortestDistance = 99999.0f;
         void *closestEnemy = NULL;
 
         void *get_MatchGame = game_sdk->Curent_Match();
@@ -612,12 +613,6 @@ void get_players()
                       }
                   }
 
-                  // ส่ง hit vector ขนาดใหญ่ไปยัง enemy → server process via physics path
-                              (void (*)(void *, Vector3))getRealOffset(ENCRYPTOFFSET("0x53BB09C"));
-                          // ทิศทาง: ยิงขึ้นฟ้า + กระแทก
-                          Vector3 dir   = Vector3::Normalized(enPos - _lppos);
-                          for (int k = 0; k < 8; k++)
-                      }
                   }
               }
           }
