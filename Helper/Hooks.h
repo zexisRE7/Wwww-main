@@ -39,7 +39,7 @@ struct Vars_t
       // ── Player Manipulation ────────────────────────
       bool UpPlayer    = false;   // ดึงศัตรูขึ้นฟ้า
       float UpPlayerSpeed = 20.0f;
-      bool AimKillSend = false;   // kill bypass TakeDamage (ForceMoveByClientHit)
+
   } Vars;
 
 
@@ -347,7 +347,6 @@ void *GetClosestEnemysilent()
 {
     try
     {
-        float shortestDistance = 99999.0f;
         void *closestEnemy = NULL;
 
         void *get_MatchGame = game_sdk->Curent_Match();
@@ -613,19 +612,11 @@ void get_players()
                       }
                   }
 
-                  // ── AIMKILL SEND: Kill ผ่าน ForceMoveByClientHit (bypass patch) ─
                   // ส่ง hit vector ขนาดใหญ่ไปยัง enemy → server process via physics path
-                  if (Vars.AimKillSend) {
-                      void *akEnemy = GetClosestEnemysilent();
-                      if (akEnemy) {
-                          void (*_ForceMoveHit)(void *, Vector3) =
                               (void (*)(void *, Vector3))getRealOffset(ENCRYPTOFFSET("0x53BB09C"));
                           // ทิศทาง: ยิงขึ้นฟ้า + กระแทก
-                          Vector3 enPos = getPosition(akEnemy);
                           Vector3 dir   = Vector3::Normalized(enPos - _lppos);
-                          Vector3 force(dir.x * 999.0f, 999.0f, dir.z * 999.0f);
                           for (int k = 0; k < 8; k++)
-                              _ForceMoveHit(akEnemy, force);
                       }
                   }
               }
