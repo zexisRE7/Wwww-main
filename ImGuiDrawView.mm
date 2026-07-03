@@ -262,7 +262,7 @@ ImFont* Urbanist;
             
             if (MenDeal == true)
             {                
-                ImGui::Begin(oxorany("Fluckv2"), &MenDeal, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+                ImGui::Begin(oxorany("FluckMenu | OB54"), &MenDeal, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
                 
                 if (ImGui::BeginTabBar(oxorany("MainTabs"), ImGuiTabBarFlags_None)) {
                     
@@ -370,8 +370,6 @@ ImFont* Urbanist;
                               ImGui::Text(oxorany("Lift Speed:"));
                               ImGui::SetNextItemWidth(-1);
                               ImGui::SliderFloat(oxorany("##UpPlayerSpd"), &Vars.UpPlayerSpeed, 5.0f, 60.0f, "%.1f");
-                          }
-                              ImGui::SameLine();
                           }
 
                           ImGui::EndTabItem();
