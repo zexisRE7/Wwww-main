@@ -262,7 +262,7 @@ ImFont* Urbanist;
             
             if (MenDeal == true)
             {                
-                ImGui::Begin(oxorany("FluckMenu | OB54")), &MenDeal, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+                ImGui::Begin(oxorany("FluckMenu | OB54"), &MenDeal, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
                 
                 if (ImGui::BeginTabBar(oxorany("MainTabs"), ImGuiTabBarFlags_None)) {
                     
@@ -376,3 +376,32 @@ ImFont* Urbanist;
                               ImGui::SameLine();
                               ImGui::TextColored(ImVec4(0.20f,0.80f,0.30f,1.0f), oxorany(" ✓ ACTIVE"));
                           }
+
+                          ImGui::EndTabItem();
+                      } // end Extra tab
+
+                      ImGui::EndTabBar();
+                  } // end BeginTabBar
+
+                  ImGui::End();
+              } // end MenDeal
+
+              get_players();
+
+              ImGui::Render();
+              ImGui_ImplMetal_RenderDrawData(ImGui::GetDrawData(), commandBuffer, renderEncoder);
+
+              [renderEncoder popDebugGroup];
+              [renderEncoder endEncoding];
+              [commandBuffer presentDrawable:view.currentDrawable];
+          } // end renderPassDescriptor
+
+          [commandBuffer commit];
+}
+
+- (void)mtkView:(MTKView *)view drawableSizeWillChange:(CGSize)size
+{
+    // Required by MTKViewDelegate — no action needed for overlay
+}
+
+@end
