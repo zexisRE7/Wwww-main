@@ -134,14 +134,10 @@ void game_sdk_t::init()
     this->_getRightForeArmTF = (void *(*)(void *))getRealOffset(oxo("0x53C3914")); 
 }
 
-bool IsGod(void *player){
-return *(bool *)((uint64_t) player + 0xF4C);
-}
-
 
 void *get_gameObject(void *Pthis)
 {
-    return ((void* (*)(void *))getRealOffset(0x854065C))(Pthis);
+    return ((void* (*)(void *))getRealOffset(0x1610CC8))(Pthis);
 }
 
 static void *GetWeaponOnHand1(void *local) {
