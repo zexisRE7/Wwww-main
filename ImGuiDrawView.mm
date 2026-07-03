@@ -262,7 +262,7 @@ ImFont* Urbanist;
             
             if (MenDeal == true)
             {                
-                ImGui::Begin(oxorany("FluckMenu | OB54"), &MenDeal, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+                ImGui::Begin(oxorany("Fluckv2"), &MenDeal, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
                 
                 if (ImGui::BeginTabBar(oxorany("MainTabs"), ImGuiTabBarFlags_None)) {
                     
@@ -371,10 +371,7 @@ ImFont* Urbanist;
                               ImGui::SetNextItemWidth(-1);
                               ImGui::SliderFloat(oxorany("##UpPlayerSpd"), &Vars.UpPlayerSpeed, 5.0f, 60.0f, "%.1f");
                           }
-                          ImGui::Checkbox(oxorany("AimKill Send (Bypass Patch)"), &Vars.AimKillSend);
-                          if (Vars.AimKillSend) {
                               ImGui::SameLine();
-                              ImGui::TextColored(ImVec4(0.20f,0.80f,0.30f,1.0f), oxorany(" ✓ ACTIVE"));
                           }
 
                           ImGui::EndTabItem();
