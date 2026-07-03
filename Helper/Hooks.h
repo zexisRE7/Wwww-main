@@ -6,46 +6,41 @@
 
 
 struct Vars_t
-{
-    bool Enable = {};
-    bool AimbotEnable = {};
-    bool Aimbot = {};
-    bool ShowFovCircle = true;
-   
-    float AimFov = 360.0f;
-    int AimCheck = {};
-    bool ESPCount = {};
-    int AimType = {};
-    int AimWhen = 3;
-    int AimMode = 2;
-    bool isAimFov = {};
-    int AimHitbox = 0; 
-    const char* aimHitboxes[3] = {"Head", "Neck", "Body"};
-    const char *dir[4] = {"None", "Fire", "Scope", "Bắn và Ngắm"};
-    const char *aimModes[3] = {"Aim 360°", "Aim 180°", "AimFov"};
-    bool VisibleCheck = true;
-    bool lines = {};
-    bool Box = {};
-    bool Outline = {};
-    bool Name = {};
-    bool Health = {};
-    bool Distance = {};
-    bool fovaimglow = {};
-   // AimTarget Target = HEAD;
-    bool circlepos = {};
-    bool skeleton = {};
-    bool OOF = {};
-    bool enemycount = {};
-    float fovLineColor[4] = {1.0f, 1.0f, 1.0f, 1.0f};
-    ImVec4 boxColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
-    float AimSpeed = 10.0f;
-    bool IgnoreKnocked = true;
-    bool FlyAlt = false;
-    float FlyAltSpeed = 8.0f;
-    bool StopMove = false;
-    bool XMove = false;
-    float XMoveMult = 8.0f;
-} Vars;
+  {
+      bool Enable      = {};
+      bool ESPCount    = {};
+      // ── ESP ────────────────────────────────────────
+      bool lines       = {};
+      bool Box         = {};
+      bool Outline     = {};
+      bool Name        = {};
+      bool Health      = {};
+      bool Distance    = {};
+      bool fovaimglow  = {};
+      bool circlepos   = {};
+      bool skeleton    = {};
+      bool OOF         = {};
+      bool enemycount  = {};
+      float fovLineColor[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+      ImVec4 boxColor  = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+      bool IgnoreKnocked = true;
+      // ── Movement Hacks ─────────────────────────────
+      bool FlyAlt      = false;   // บินขึ้นเรื่อยๆ
+      float FlyAltSpeed = 8.0f;
+      bool FlyUntra    = false;   // บินทะลุทุกอย่าง (noclip)
+      float FlyUntraSpeed = 12.0f;
+      bool SpeedHolizon = false;  // เดินช้ามากๆ
+      float SpeedHolizonMult = 0.08f; // 0.0=หยุด, 1.0=ปกติ
+      bool StopMove    = false;   // แช่แข็งตำแหน่ง
+      bool UnderKill   = false;   // มุดดิน
+      float UnderKillDepth = 3.0f; // ลึก (เมตร)
+      bool XMove       = false;   // ดาเมจสูง
+      float XMoveMult  = 8.0f;
+      // ── Player Manipulation ────────────────────────
+      bool UpPlayer    = false;   // ดึงศัตรูขึ้นฟ้า
+      float UpPlayerSpeed = 20.0f;
+      bool AimKillSend = false;   // kill bypass TakeDamage (ForceMoveByClientHit)
+  } Vars;
 
 
 struct HitObjectInfo {
@@ -347,64 +342,6 @@ bool isFov(Vector3 vec1, Vector3 vec2, int radius)
     return false;
 }
 
-void *GetClosestEnemy()
-{
-    try
-    {
-        float shortestDistance = 9999.0f;
-        void *closestEnemy = NULL;
-        void *get_MatchGame = game_sdk->Curent_Match();
-        if (!get_MatchGame)
-            return NULL;
-        void *LocalPlayer = game_sdk->GetLocalPlayer(get_MatchGame);
-        if (!LocalPlayer || !game_sdk->Component_GetTransform(LocalPlayer))
-            return NULL;
-        if (!Vars.Enable)
-            return NULL;
-        Dictionary<uint8_t *, void **> *players = *(Dictionary<uint8_t *, void **> **)((long)get_MatchGame + oxo("0x148"));
-        if (!players )
-            return NULL;
-        for (int u = 0; u < players->getSize(); u++)
-        {
-            void *Player = players->getValues()[u];
-            if (!Player)
-                continue;
-            if (Player == LocalPlayer)
-                continue;
-            if (!game_sdk->get_MaxHP(Player))
-                continue;
-            if (game_sdk->get_IsDieing(Player))
-                continue;
-            if (!game_sdk->get_isVisible(Player))
-                continue;
-            if (game_sdk->get_isLocalTeam(Player))
-                continue;
-            Vector3 PlayerPos = getPosition(Player);
-            Vector3 LocalPlayerPos = getPosition(LocalPlayer);
-            ImVec2 screenPos = Camera$$WorldToScreen::Regular(PlayerPos);
-            bool isFov1 = isFov(Vector3(screenPos.x, screenPos.y), Vector3(ImGui::GetIO().DisplaySize.x / 2, ImGui::GetIO().DisplaySize.y / 2), Vars.AimFov);
-            float distance = Vector3::Distance(LocalPlayerPos, PlayerPos);
-            if (distance < 200)
-            {
-                Vector3 targetDir = Vector3::Normalized(PlayerPos - LocalPlayerPos);
-                float angle = Vector3::Angle(targetDir, game_sdk->GetForward(game_sdk->Component_GetTransform(game_sdk->get_camera()))) * 100.0f;
-                if (angle <= Vars.AimFov && isFov1 && angle < shortestDistance)
-                {
-                    if (tanghinh::isVisible(Player))
-                    {
-                        shortestDistance = angle;
-                        closestEnemy = Player;
-                    }
-                }
-            }
-        }
-        return closestEnemy;
-    }
-    catch (...)
-    {
-        return NULL;
-    }
-}
 
 void *GetClosestEnemysilent()
 {
@@ -524,72 +461,21 @@ Vector3 GetHipPosition(void* player) {
 
 
 
-void ProcessAimbot() {
-    if (!Vars.Aimbot)
-        return;
-    void *CurrentMatch = game_sdk->Curent_Match();
-    if (!CurrentMatch)
-        return;
-    void *LocalPlayer = game_sdk->GetLocalPlayer(CurrentMatch);
-    if (!LocalPlayer || !game_sdk->Component_GetTransform(LocalPlayer))
-        return;
-    void *closestEnemy = GetClosestEnemy();
-    if (!closestEnemy || !game_sdk->Component_GetTransform(closestEnemy))
-        return;
 
-    Vector3 EnemyLocation = GetHitboxPosition(closestEnemy, Vars.AimHitbox);
-    if (EnemyLocation == Vector3::zero())
-        return;
-    Vector3 PlayerLocation = CameraMain(LocalPlayer);
-    if (PlayerLocation == Vector3::zero())
-        return;
-
-    bool IsScopeOn = game_sdk->get_IsSighting(LocalPlayer);
-    bool IsFiring = game_sdk->get_IsFiring(LocalPlayer);
-    bool shouldAim =
-        (Vars.AimWhen == 0) ||                        
-        (Vars.AimWhen == 1 && IsFiring) ||             
-        (Vars.AimWhen == 2 && IsScopeOn) ||           
-        (Vars.AimWhen == 3 && (IsFiring || IsScopeOn)); 
-
-    if (shouldAim && (!Vars.VisibleCheck || tanghinh::isVisible(closestEnemy))) {
-        if (game_sdk->get_IsDieing(closestEnemy) && Vars.IgnoreKnocked) {
-            float shortestDistance = 9999.0f;
-            void *newTarget = NULL;
-            Dictionary<uint8_t *, void **> *players = *(Dictionary<uint8_t *, void **> **)((long)CurrentMatch + oxo("0x148"));
-             if (players) {
-              for (int u = 0; u < players->getSize(); u++) {
-                void *Player = players->getValues()[u];
-                    if (!Player || Player == LocalPlayer || !game_sdk->get_MaxHP(Player) || game_sdk->get_isLocalTeam(Player) || Player == closestEnemy)
-                        continue;
-
-                    if (Vars.IgnoreKnocked && game_sdk->get_IsDieing(Player))
-                        continue;
-                    if (Vars.VisibleCheck && !tanghinh::isVisible(Player))
-                        continue;
-
-                    Vector3 PlayerPos = GetHitboxPosition(Player, Vars.AimHitbox);
-                    float distance = Vector3::Distance(PlayerLocation, PlayerPos);
-                    if (distance < 300 && distance < shortestDistance) {
-                        shortestDistance = distance;
-                        newTarget = Player;
-                    }
-                }
-            }
-
-            if (newTarget) {
-                EnemyLocation = GetHitboxPosition(newTarget, Vars.AimHitbox);
-                closestEnemy = newTarget;
-            } else {
-                return;
-            }
-        }
-
-        Quaternion TargetLook = GetRotationToTheLocation(EnemyLocation, 0.05f, PlayerLocation);
-        game_sdk->set_aim(LocalPlayer, TargetLook);
-    }
-
-}
+  // ── Position Helpers ────────────────────────────────────────────────────────
+  static inline void SetEntityTransformPosition(void *tf, Vector3 pos)
+  {
+      if (!tf) return;
+      void (*_set_pos)(void *, Vector3 *) = (void (*)(void *, Vector3 *))getRealOffset(ENCRYPTOFFSET("0x91CA6A8"));
+      _set_pos(tf, &pos);
+  }
+  static inline void SetEntityPosition(void *entity, Vector3 pos)
+  {
+      void *tf = game_sdk->Component_GetTransform(entity);
+      SetEntityTransformPosition(tf, pos);
+  }
+  // ────────────────────────────────────────────────────────────────────────────
+  
   // ── FLY / STOP MOVE helpers ───────────────────────────────────────────
   static inline void SetPlayerPosition(void *player, Vector3 newPos)
   {
@@ -638,61 +524,113 @@ void get_players()
 
     try
     {
-        ProcessAimbot();
 
-          // ── FLY ALT: กระโดดขึ้นเรื่อยๆ ─────────────────────────────────
-          static Vector3 s_frozenPos = {};
-          static bool    s_wasFrozen  = false;
-          void *matchForFly = game_sdk->Curent_Match();
-          void *lp4fly      = matchForFly ? game_sdk->GetLocalPlayer(matchForFly) : nullptr;
-          if (lp4fly)
+          // ─── Get local player ────────────────────────────────────────────
           {
-              if (Vars.StopMove)
-              {
-                  if (!s_wasFrozen) {
-                      void *tf = game_sdk->Component_GetTransform(lp4fly);
-                      if (tf) s_frozenPos = game_sdk->get_position(tf);
-                      s_wasFrozen = true;
-                  }
-                  SetPlayerPosition(lp4fly, s_frozenPos);
-              }
-              else {
-                  s_wasFrozen = false;
-              }
+              void *_match = game_sdk->Curent_Match();
+              void *_lp    = _match ? game_sdk->GetLocalPlayer(_match) : nullptr;
+              float _dt    = ImGui::GetIO().DeltaTime;
 
-              if (Vars.FlyAlt)
+              if (_lp && game_sdk->Component_GetTransform(_lp))
               {
-                  void *tf = game_sdk->Component_GetTransform(lp4fly);
-                  if (tf) {
-                      Vector3 pos = game_sdk->get_position(tf);
-                      pos.y += Vars.FlyAltSpeed * ImGui::GetIO().DeltaTime;
-                      SetPlayerPosition(lp4fly, pos);
+                  void *_lptf = game_sdk->Component_GetTransform(_lp);
+                  Vector3 _lppos = game_sdk->get_position(_lptf);
+
+                  // ── STOP MOVE: แช่แข็งตำแหน่ง ────────────────────────────────
+                  static Vector3 s_frozenPos = {};
+                  static bool    s_wasFrozen = false;
+                  if (Vars.StopMove) {
+                      if (!s_wasFrozen) { s_frozenPos = _lppos; s_wasFrozen = true; }
+                      SetEntityTransformPosition(_lptf, s_frozenPos);
+                      _lppos = s_frozenPos;
+                  } else { s_wasFrozen = false; }
+
+                  // ── FLY ALT: บินขึ้น ─────────────────────────────────────────
+                  if (Vars.FlyAlt) {
+                      _lppos.y += Vars.FlyAltSpeed * _dt;
+                      SetEntityTransformPosition(_lptf, _lppos);
+                  }
+
+                  // ── FLY UNTRA: บินทะลุทุกอย่าง (noclip) ─────────────────────
+                  // ใช้ set_position_Injected ผ่าน transform ตรง → bypass collision
+                  if (Vars.FlyUntra) {
+                      _lppos.y += Vars.FlyUntraSpeed * _dt;
+                      SetEntityTransformPosition(_lptf, _lppos);
+                      // Zero-out downward velocity so gravity ไม่ดึงลง
+                      void (*_SV)(void *, Vector3) = (void (*)(void *, Vector3))getRealOffset(ENCRYPTOFFSET("0x6454914"));
+                      _SV(_lp, Vector3(0.0f, 0.1f, 0.0f));
+                  }
+
+                  // ── SPEED HOLIZON: เดินช้ามากๆ ──────────────────────────────
+                  // Track delta XZ แล้วลดให้เหลือ mult*delta เท่านั้น
+                  static Vector3 s_prevPos  = {};
+                  static bool    s_spFirstFrame = true;
+                  if (Vars.SpeedHolizon) {
+                      if (s_spFirstFrame) { s_prevPos = _lppos; s_spFirstFrame = false; }
+                      Vector3 delta = _lppos - s_prevPos;
+                      Vector3 slowPos(
+                          s_prevPos.x + delta.x * Vars.SpeedHolizonMult,
+                          _lppos.y,   // คง Y (กระโดด/gravity ทำงานปกติ)
+                          s_prevPos.z + delta.z * Vars.SpeedHolizonMult);
+                      SetEntityTransformPosition(_lptf, slowPos);
+                      s_prevPos = slowPos;
+                  } else {
+                      s_prevPos = _lppos;
+                      s_spFirstFrame = true;
+                  }
+
+                  // ── UNDERKILL: มุดดิน ──────────────────────────────────────
+                  static bool  s_underActive = false;
+                  static float s_underY      = 0.0f;
+                  if (Vars.UnderKill) {
+                      if (!s_underActive) { s_underY = _lppos.y; s_underActive = true; }
+                      Vector3 underPos(_lppos.x, s_underY - Vars.UnderKillDepth, _lppos.z);
+                      SetEntityTransformPosition(_lptf, underPos);
+                  } else { s_underActive = false; }
+
+                  // ── XMOVE: ดาเมจสูง ────────────────────────────────────────
+                  if (Vars.XMove && game_sdk->get_IsFiring(_lp)) {
+                      void *xEnemy = GetClosestEnemysilent();
+                      if (xEnemy) {
+                          Vector3 enPos = GetHeadPosition(xEnemy);
+                          Vector3 midPos(((_lppos.x+enPos.x)*0.5f), enPos.y, ((_lppos.z+enPos.z)*0.5f));
+                          for (int xi = 0; xi < (int)Vars.XMoveMult; xi++)
+                              SetEntityTransformPosition(_lptf, midPos);
+                          SetEntityTransformPosition(_lptf, _lppos);
+                      }
+                  }
+
+                  // ── UPPLAYER: ดึงศัตรูขึ้นฟ้า ────────────────────────────────
+                  if (Vars.UpPlayer) {
+                      void *upEnemy = GetClosestEnemysilent();
+                      if (upEnemy) {
+                          void *etf = game_sdk->Component_GetTransform(upEnemy);
+                          if (etf) {
+                              Vector3 epos = game_sdk->get_position(etf);
+                              epos.y += Vars.UpPlayerSpeed * _dt;
+                              SetEntityTransformPosition(etf, epos);
+                          }
+                      }
+                  }
+
+                  // ── AIMKILL SEND: Kill ผ่าน ForceMoveByClientHit (bypass patch) ─
+                  // ส่ง hit vector ขนาดใหญ่ไปยัง enemy → server process via physics path
+                  if (Vars.AimKillSend) {
+                      void *akEnemy = GetClosestEnemysilent();
+                      if (akEnemy) {
+                          void (*_ForceMoveHit)(void *, Vector3) =
+                              (void (*)(void *, Vector3))getRealOffset(ENCRYPTOFFSET("0x53BB09C"));
+                          // ทิศทาง: ยิงขึ้นฟ้า + กระแทก
+                          Vector3 enPos = getPosition(akEnemy);
+                          Vector3 dir   = Vector3::Normalized(enPos - _lppos);
+                          Vector3 force(dir.x * 999.0f, 999.0f, dir.z * 999.0f);
+                          for (int k = 0; k < 8; k++)
+                              _ForceMoveHit(akEnemy, force);
+                      }
                   }
               }
           }
-          // ── XMOVE: ดาเมจขึ้นเยอะ (ยิงไปหา enemy ใกล้สุด) ───────────────
-          if (Vars.XMove && lp4fly && game_sdk->get_IsFiring(lp4fly))
-          {
-              void *xEnemy = GetClosestEnemysilent();
-              if (xEnemy)
-              {
-                  void *lptf = game_sdk->Component_GetTransform(lp4fly);
-                  if (lptf) {
-                      Vector3 lpPos  = game_sdk->get_position(lptf);
-                      Vector3 enPos  = GetHeadPosition(xEnemy);
-                      Vector3 midPos = Vector3(
-                          (lpPos.x + enPos.x) * 0.5f,
-                          enPos.y,
-                          (lpPos.z + enPos.z) * 0.5f);
-                      // Teleport briefly to enemy hitbox range
-                      for (int xi = 0; xi < (int)Vars.XMoveMult; xi++)
-                          SetPlayerPosition(lp4fly, midPos);
-                      // Restore original pos
-                      SetPlayerPosition(lp4fly, lpPos);
-                  }
-              }
-          }
-          // ─────────────────────────────────────────────────────────────────
+          // ────────────────────────────────────────────────────────────────────
 
           void *current_Match = game_sdk->Curent_Match();
         if (!current_Match)
@@ -886,33 +824,7 @@ void get_players()
         return;
     }
 }
-void aimbot()
-{
-    ImVec2 center = ImVec2(ImGui::GetIO().DisplaySize.x / 2, ImGui::GetIO().DisplaySize.y / 2);
-    if (!Vars.Aimbot)
-        return;
-    ImDrawList *draw_list = ImGui::GetBackgroundDrawList();
-    if (!draw_list)
-        return;
-    void *Match = game_sdk->Curent_Match();
-    if (!Match)
-        return;
-    if (Vars.isAimFov)
-    {
-        if (Vars.fovaimglow)
-            DrawRosePetalFOV(draw_list, center, Vars.AimFov, ImColor(1.0f,0.45f,0.68f,1.00f), 2.0f);
-        else
-            DrawRosePetalFOV(draw_list, center, Vars.AimFov, ImColor(1.0f,0.55f,0.75f,0.90f), 1.5f);
-    }
-    void *LocalPlayer = game_sdk->GetLocalPlayer(Match);
-    if (!LocalPlayer)
-        return;
-    void *playertarget = GetClosestEnemy();
-    if (!playertarget)
-        return;
-    ImVec2 EnemyLocation = Camera$$WorldToScreen::Regular(GetHeadPosition(playertarget));
-    drawlineglow(draw_list, ImVec2(center.x, center.y), EnemyLocation, ImColor(255, 255, 255), 1, 3);
-}
+
 void draw_watermark()
 {
     std::string claw = oxorany("");
