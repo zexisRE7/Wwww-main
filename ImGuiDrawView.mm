@@ -262,7 +262,7 @@ ImFont* Urbanist;
             
             if (MenDeal == true)
             {                
-                ImGui::Begin(oxorany("FluckMenu | OB54")), &MenDeal, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+                ImGui::Begin(oxorany("MONSTER CHEAT"), &MenDeal, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
                 
                 if (ImGui::BeginTabBar(oxorany("MainTabs"), ImGuiTabBarFlags_None)) {
                     
@@ -328,7 +328,7 @@ ImFont* Urbanist;
 
                           ImGui::Spacing();
                           // ── 🌸 UNDERKILL ─────────────────────────────────────────
-                          ImGui::TextColored(ImVec4(0.90f,0.25f,0.50f,1.0f), oxorany("⬇  UnderKill"));
+                          ImGui::TextColored(ImVec4(0.90f,0.25f,0.50f,1.0f), oxorany(" UnderKill"));
                           ImGui::Separator();
                           ImGui::Checkbox(oxorany("UnderKill (Go Underground)"), &Vars.UnderKill);
                           if (Vars.UnderKill) {
@@ -359,3 +359,29 @@ ImFont* Urbanist;
                               ImGui::SameLine();
                               ImGui::TextColored(ImVec4(0.20f,0.80f,0.30f,1.0f), oxorany(" ✓ ACTIVE"));
                           }
+
+                          ImGui::EndTabItem();
+                      }
+
+                    ImGui::EndTabBar();
+                }
+
+                ImGui::End();
+            }
+
+            ImGui::Render();
+            ImGui_ImplMetal_RenderDrawData(ImGui::GetDrawData(), commandBuffer, renderEncoder);
+
+            [renderEncoder popDebugGroup];
+            [renderEncoder endEncoding];
+            [commandBuffer presentDrawable:view.currentDrawable];
+        }
+
+        [commandBuffer commit];
+}
+
+- (void)mtkView:(nonnull MTKView *)view drawableSizeWillChange:(CGSize)size {
+    // Required by MTKViewDelegate — update display if needed on size change
+}
+
+@end
